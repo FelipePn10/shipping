@@ -11,7 +11,7 @@ import redirex.shipping.repositories.UserRepository;
 import java.util.ArrayList;
 
 @Service
-public abstract class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     public CustomUserDetailsService(UserRepository userRepository) {
@@ -26,4 +26,5 @@ public abstract class CustomUserDetailsService implements UserDetailsService {
     }
 }
 
-// CustomUserDetailsService permite que o Spring Security carregue informações sobre o usuário a partir do banco de dados. E o método loadUserByUsername recupera o usuário pelo email.
+// CustomUserDetailsService permite que o Spring Security carregue informações sobre o usuário a partir do banco de dados.
+// E o método loadUserByUsername recupera o usuário pelo email.
