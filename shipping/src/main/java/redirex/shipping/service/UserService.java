@@ -22,4 +22,8 @@ public class UserService {
                 .build();
         return userRepository.save(user);
     }
+
+    public User registerNewUser(RegisterUserDTO registerUserDTO) {
+        return register(registerUserDTO);
+    }
 }
