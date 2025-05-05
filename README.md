@@ -118,7 +118,6 @@ logging.level.redirex.shipping=DEBUG
 ## 🏗 Estrutura do Projeto
 
 ```plaintext
-📦 picpay
 ├── infrastructure/
 │   └── docker/
 │       └── docker-compose.yml       # Configuração do PostgreSQL
