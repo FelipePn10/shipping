@@ -3,6 +3,8 @@ package redirex.shipping.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,6 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import redirex.shipping.security.JwtAuthenticationFilter;
 
 import java.util.Arrays;
+import java.util.Properties;
 
 @Configuration
 @EnableWebSecurity
@@ -61,4 +64,29 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
+    @Bean
+    public JavaMailSender getJavaMailSender() {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost(mailHost);
+        mailSender.setPort(Integer.parseInt(mailPort));
+
+        mailSender.setUsername(mailUsername);
+        mailSender.setPassword(mailPassword);
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", mailTransportProtocol);
+        props.put("mail.smtp.auth", mailSmtpAuth);
+        props.put("mail.smtp.starttls.enable", mailSmtpEnable);
+
+        return mailSender;
+    }
+    // As variáveis são injetadas de application.properties
+    private String mailHost;
+    private String mailPort;
+    private String mailUsername;
+    private String mailPassword;
+    private String mailTransportProtocol;
+    private Boolean mailSmtpAuth;
+    private Boolean mailSmtpEnable;
 }

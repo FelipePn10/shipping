@@ -1,5 +1,7 @@
 package redirex.shipping.controllers;
 
+import jakarta.persistence.Entity;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,18 +11,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.entity.UserEntity;
+import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.service.UserService;
 
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/user")
 public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody RegisterUserDTO registerUserDTO) {

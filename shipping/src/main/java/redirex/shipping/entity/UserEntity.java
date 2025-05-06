@@ -5,9 +5,10 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users", indexes = {
@@ -18,6 +19,8 @@ import java.util.Objects;
 @Getter
 @Setter
 public class UserEntity implements Serializable {
+    // Fornece um token único para cada solicitação de reset da sua senha.
+    String token = UUID.randomUUID().toString();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -87,6 +90,11 @@ public class UserEntity implements Serializable {
     @Size(max = 50, message = "Role must not exceed 50 characters")
     @Column(nullable = false)
     private String role;
+
+    //Gerenciar tokens de reset
+    private String passwordResetToken;
+    private LocalDateTime passwordResetTokenExpiry;
+
 
     public UserEntity(
             String fullname,
