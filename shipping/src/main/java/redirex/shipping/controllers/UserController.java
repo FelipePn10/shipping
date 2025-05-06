@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.RegisterUserDTO;
-import redirex.shipping.entity.User;
+import redirex.shipping.entity.UserEntity;
 import redirex.shipping.service.UserService;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public class UserController {
     public ResponseEntity<?> registerUser(@RequestBody RegisterUserDTO registerUserDTO) {
         try {
             logger.info("Recebida requisição para criar usuário: {}", registerUserDTO.getEmail());
-            User newUser = userService.registerNewUser(registerUserDTO);
+            UserEntity newUser = userService.registerNewUser(registerUserDTO);
             logger.info("Usuário criado com sucesso: {}", newUser.getEmail());
             return new ResponseEntity<>(newUser, HttpStatus.CREATED);
         } catch (DataIntegrityViolationException e) {
@@ -39,10 +39,10 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserEntity>> getAllUsers() {
         try {
             logger.info("Recebida requisição para listar todos os usuários");
-            List<User> users = userService.getAllUsers();
+            List<UserEntity> users = userService.getAllUsers();
             logger.info("Retornando {} usuários", users.size());
             return new ResponseEntity<>(users, HttpStatus.OK);
         } catch (Exception e) {

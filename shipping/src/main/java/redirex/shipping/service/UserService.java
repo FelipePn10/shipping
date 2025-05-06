@@ -1,15 +1,17 @@
 package redirex.shipping.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.dto.RegisterUserDTO;
-import redirex.shipping.entity.User;
+import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.UserRepository;
-
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,36 +21,65 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User register(RegisterUserDTO dto) {
-        try {
-            User user = User.builder()
-                    .fullname(dto.getFullname())
-                    .email(dto.getEmail())
-                    .password(passwordEncoder.encode(dto.getPassword()))
-                    .cpf(dto.getCpf())
-                    .phone(dto.getPhone())
-                    .address(dto.getAddress())
-                    .complement(dto.getComplement())
-                    .city(dto.getCity())
-                    .state(dto.getState())
-                    .zipcode(dto.getZipcode())
-                    .country(dto.getCountry())
-                    .occupation(dto.getOccupation())
-                    .role("ROLE_USER")
-                    .build();
-            return userRepository.save(user);
-        } catch (Exception e) {
-            logger.error("Erro ao criar usuário: {}", e.getMessage(), e);
-            throw new RuntimeException("Erro ao criar usuário: " + e.getMessage(), e);
+    public static class UserRegistrationException extends RuntimeException {
+        public UserRegistrationException(String message) {
+            super(message);
+        }
+
+        public UserRegistrationException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 
-    public User registerNewUser(RegisterUserDTO registerUserDTO) {
+    @Transactional
+    public UserEntity register(@Valid RegisterUserDTO dto) {
+        validateUserNotExists(dto.getEmail(), dto.getCpf());
+
+        try {
+            UserEntity user = new UserEntity(
+                    dto.getFullname(),
+                    dto.getEmail(),
+                    passwordEncoder.encode(dto.getPassword()),
+                    dto.getCpf(),
+                    dto.getPhone(),
+                    dto.getAddress(),
+                    dto.getComplement(),
+                    dto.getCity(),
+                    dto.getState(),
+                    dto.getZipcode(),
+                    dto.getCountry(),
+                    dto.getOccupation(),
+                    "ROLE_USER"
+            );
+            return userRepository.save(user);
+        } catch (Exception e) {
+            logger.error("Failed to register user with email: {}", dto.getEmail(), e);
+            throw new UserRegistrationException("Failed to register user", e);
+        }
+    }
+
+    @Transactional
+    public UserEntity registerNewUser(@Valid RegisterUserDTO registerUserDTO) {
         return register(registerUserDTO);
     }
 
-    public List<User> getAllUsers() {
-        logger.info("Buscando todos os usuários");
+    @Transactional(readOnly = true)
+    public List<UserEntity> getAllUsers() {
+        logger.info("Retrieving all users");
         return userRepository.findAll();
+    }
+
+    private void validateUserNotExists(String email, String cpf) {
+        Optional<UserEntity> existingUserByEmail = userRepository.findByEmail(email);
+        if (existingUserByEmail.isPresent()) {
+            logger.warn("Attempt to register duplicate email: {}", email);
+            throw new UserRegistrationException("Email already registered");
+        }
+
+        Optional<UserEntity> existingUserByCpf = userRepository.findByCpf(cpf);
+        if (existingUserByCpf.isPresent()) {
+            logger.warn("Attempt to register duplicate CPF: {}", cpf);
+            throw new UserRegistrationException("CPF already registered");
+        }
     }
 }
