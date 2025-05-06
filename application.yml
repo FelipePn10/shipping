@@ -3,4 +3,4 @@ security:
     - /auth/**
     - /public/**
   jwt:
-    expiration: 3600000 # 1 hora
+    expiration: 8600000

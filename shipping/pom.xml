@@ -74,6 +74,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>me.paulschwarz</groupId>
+			<artifactId>spring-dotenv</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+
+
 		<!-- JWT dependencies -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
