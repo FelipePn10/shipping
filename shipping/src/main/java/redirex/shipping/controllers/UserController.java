@@ -1,7 +1,7 @@
 package redirex.shipping.controllers;
 
-import jakarta.persistence.Entity;
-import jakarta.servlet.http.HttpServletRequest;
+
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +13,6 @@ import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.service.UserService;
-
-import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.List;
 
 @RestController
@@ -29,7 +27,7 @@ public class UserController {
     private UserRepository userRepository;
 
     @PostMapping
-    public ResponseEntity<?> registerUser(@RequestBody RegisterUserDTO registerUserDTO) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
         try {
             logger.info("Recebida requisição para criar usuário: {}", registerUserDTO.getEmail());
             UserEntity newUser = userService.registerNewUser(registerUserDTO);
@@ -43,7 +41,6 @@ public class UserController {
             return new ResponseEntity<>("Erro ao criar usuário: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-
     @GetMapping
     public ResponseEntity<List<UserEntity>> getAllUsers() {
         try {

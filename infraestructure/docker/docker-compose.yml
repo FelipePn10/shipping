@@ -19,7 +19,9 @@ services:
       retries: 5
 
   backend:
-    image: maven:3.8.6-openjdk-17
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: auth-backend
     working_dir: /app
     command: mvn spring-boot:run
@@ -32,11 +34,14 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/authdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres123
 
 volumes:
   postgres_data:
 
 networks:
   app-network:
-    name: app-network
     driver: bridge

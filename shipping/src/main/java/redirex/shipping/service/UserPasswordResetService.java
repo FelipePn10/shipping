@@ -23,7 +23,7 @@ public class UserPasswordResetService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Value("${password.reset.token.timeout.minutes:30}")
+    @Value("${password.reset.token.timeout.minutes:15}")
     private long passwordResetTimeout;
 
     public void generateResetToken(UserEntity user) {

@@ -44,18 +44,20 @@ public class AuthController {
         this.emailService = emailService;
         this.passwordResetService = passwordResetService;
     }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
-        logger.info("Login attempt for email: {}", loginDTO.getEmail());
+        logger.info("Login attempt for email: {}", loginDTO.getUsername());
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getSenha())
+                    new UsernamePasswordAuthenticationToken(
+                            loginDTO.getUsername(),
+                            loginDTO.getPassword()
+                    )
             );
-            String token = jwtUtil.generateToken(loginDTO.getEmail());
+            String token = jwtUtil.generateToken(loginDTO.getUsername());
             return ResponseEntity.ok(new LoginResponse(token));
         } catch (BadCredentialsException e) {
-            logger.warn("Invalid credentials for email: {}", loginDTO.getEmail());
+            logger.warn("Invalid credentials for email: {}", loginDTO.getUsername());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Credenciais inválidas"));
         } catch (Exception e) {
             logger.error("Error processing login: {}", e.getMessage());
