@@ -1,16 +1,15 @@
 package redirex.shipping.dto;
 
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class RegisterUserDTO {
+public class RegisterEnterpriseDTO {
 
-    @NotBlank(message = "Full name is required")
-    @Size(max = 255, message = "Full name must not exceed 255 characters")
-    private String fullname;
+    @NotBlank(message = "Company name is required")
+    @Size(max = 255, message = "Company name must not exceed 255 characters")
+    private String name;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
@@ -21,9 +20,9 @@ public class RegisterUserDTO {
     @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 
-    @NotBlank(message = "CPF is required")
-    @Pattern(regexp = "\\d{11}", message = "CPF must be 11 digits")
-    private String cpf;
+    @NotBlank(message = "CNPJ is required")
+    @Pattern(regexp = "\\d{14}", message = "CNPJ must be 14 digits")
+    private String cnpj;
 
     @NotBlank(message = "Phone is required")
     @Size(max = 20, message = "Phone must not exceed 20 characters")
@@ -57,8 +56,8 @@ public class RegisterUserDTO {
     private String occupation;
 
     // Getters e Setters
-    public String getFullname() { return fullname; }
-    public void setFullname(String fullname) { this.fullname = fullname; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -66,8 +65,8 @@ public class RegisterUserDTO {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public String getCpf() { return cpf; }
-    public void setCpf(String cpf) { this.cpf = cpf; }
+    public String getCnpj() { return cnpj; }
+    public void setCnpj(String cnpj) { this.cnpj = cnpj; }
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }

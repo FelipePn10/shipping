@@ -34,43 +34,16 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
-    private final UserEmailService emailService;
-    private final UserPasswordResetService passwordResetService;
+
     private final TokenBlacklistService tokenBlacklistService;
-    private final UserService userService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
-            UserRepository userRepository,
-            UserEmailService emailService,
-            UserPasswordResetService passwordResetService,
-            TokenBlacklistService tokenBlacklistService,
-            UserService userService) {
+            TokenBlacklistService tokenBlacklistService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.userRepository = userRepository;
-        this.emailService = emailService;
-        this.passwordResetService = passwordResetService;
         this.tokenBlacklistService = tokenBlacklistService;
-        this.userService = userService;
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
-        try {
-            logger.info("Recebida requisição para criar usuário: {}", registerUserDTO.getEmail());
-            UserEntity newUser = userService.registerNewUser(registerUserDTO);
-            logger.info("Usuário criado com sucesso: {}", newUser.getEmail());
-            return new ResponseEntity<>(newUser, HttpStatus.CREATED);
-        } catch (DataIntegrityViolationException e) {
-            logger.error("Erro de integridade de dados: {}", e.getMessage(), e);
-            return new ResponseEntity<>("Erro: Email, CPF ou outro campo único já existe", HttpStatus.CONFLICT);
-        } catch (Exception e) {
-            logger.error("Erro ao criar usuário: {}", e.getMessage(), e);
-            return new ResponseEntity<>("Erro ao criar usuário: " + e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
     }
 
     @PostMapping("/login")
@@ -141,54 +114,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse("Token inválido"));
         }
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO) {
-        logger.info("Password reset request for email: {}", forgotPasswordDTO.getEmail());
-        Optional<UserEntity> userOptional = userRepository.findByEmail(forgotPasswordDTO.getEmail());
-        if (userOptional.isEmpty()) {
-            logger.warn("No user found with email: {}", forgotPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Usuário não encontrado"));
-        }
-
-        UserEntity user = userOptional.get();
-        passwordResetService.generateResetToken(user);
-        userRepository.save(user);
-        emailService.sendPasswordResetEmail(user.getEmail(), user.getPasswordResetToken());
-        return ResponseEntity.ok(new SuccessResponse("Email de redefinição de senha enviado com sucesso"));
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
-        logger.info("Password reset attempt for email: {}", resetPasswordDTO.getEmail());
-        Optional<UserEntity> userOptional = userRepository.findByEmail(resetPasswordDTO.getEmail());
-        if (userOptional.isEmpty()) {
-            logger.warn("No user found with email: {}", resetPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Usuário não encontrado"));
-        }
-
-        UserEntity user = userOptional.get();
-        if (user.getPasswordResetToken() == null || user.getPasswordResetTokenExpiry() == null) {
-            logger.warn("No valid reset token for email: {}", resetPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Token de redefinição inválido"));
-        }
-
-        if (!user.getPasswordResetToken().equals(resetPasswordDTO.getToken())) {
-            logger.warn("Invalid token for email: {}", resetPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Token de redefinição inválido"));
-        }
-
-        if (user.getPasswordResetTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
-            logger.warn("Expired token for email: {}", resetPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Token de redefinição expirado"));
-        }
-
-        user.setPassword(resetPasswordDTO.getNewPassword()); // Senha será codificada pelo serviço
-        user.setPasswordResetToken(null);
-        user.setPasswordResetTokenExpiry(null);
-        userRepository.save(user);
-        return ResponseEntity.ok(new SuccessResponse("Senha redefinida com sucesso"));
     }
 
     // Classes auxiliares para respostas
