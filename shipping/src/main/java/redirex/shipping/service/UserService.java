@@ -61,7 +61,9 @@ public class UserService {
 
     @Transactional
     public UserEntity registerNewUser(@Valid RegisterUserDTO registerUserDTO) {
-        return register(registerUserDTO);
+        UserEntity user = new UserEntity();
+        user.setPassword(passwordEncoder.encode(registerUserDTO.getPassword()));
+        return userRepository.save(user);
     }
 
     @Transactional(readOnly = true)

@@ -1,15 +1,12 @@
 package redirex.shipping.controllers;
 
 
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.service.UserService;
@@ -26,21 +23,6 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
-        try {
-            logger.info("Recebida requisição para criar usuário: {}", registerUserDTO.getEmail());
-            UserEntity newUser = userService.registerNewUser(registerUserDTO);
-            logger.info("Usuário criado com sucesso: {}", newUser.getEmail());
-            return new ResponseEntity<>(newUser, HttpStatus.CREATED);
-        } catch (DataIntegrityViolationException e) {
-            logger.error("Erro de integridade de dados: {}", e.getMessage(), e);
-            return new ResponseEntity<>("Erro: Email, CPF ou outro campo único já existe", HttpStatus.CONFLICT);
-        } catch (Exception e) {
-            logger.error("Erro ao criar usuário: {}", e.getMessage(), e);
-            return new ResponseEntity<>("Erro ao criar usuário: " + e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
     @GetMapping
     public ResponseEntity<List<UserEntity>> getAllUsers() {
         try {

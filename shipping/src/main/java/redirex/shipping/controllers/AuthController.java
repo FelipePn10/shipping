@@ -1,8 +1,11 @@
 package redirex.shipping.controllers;
 
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,17 +14,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.ForgotPasswordDTO;
 import redirex.shipping.dto.LoginDTO;
+import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.dto.ResetPasswordDTO;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.security.JwtUtil;
+import redirex.shipping.service.TokenBlacklistService;
 import redirex.shipping.service.UserPasswordResetService;
+import redirex.shipping.service.UserService;
 import redirex.shipping.service.email.UserEmailService;
 
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/public/auth")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -31,37 +37,109 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserEmailService emailService;
     private final UserPasswordResetService passwordResetService;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final UserService userService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             UserRepository userRepository,
             UserEmailService emailService,
-            UserPasswordResetService passwordResetService) {
+            UserPasswordResetService passwordResetService,
+            TokenBlacklistService tokenBlacklistService,
+            UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordResetService = passwordResetService;
+        this.tokenBlacklistService = tokenBlacklistService;
+        this.userService = userService;
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
+        try {
+            logger.info("Recebida requisição para criar usuário: {}", registerUserDTO.getEmail());
+            UserEntity newUser = userService.registerNewUser(registerUserDTO);
+            logger.info("Usuário criado com sucesso: {}", newUser.getEmail());
+            return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+        } catch (DataIntegrityViolationException e) {
+            logger.error("Erro de integridade de dados: {}", e.getMessage(), e);
+            return new ResponseEntity<>("Erro: Email, CPF ou outro campo único já existe", HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            logger.error("Erro ao criar usuário: {}", e.getMessage(), e);
+            return new ResponseEntity<>("Erro ao criar usuário: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
-        logger.info("Login attempt for email: {}", loginDTO.getUsername());
+        logger.info("Login attempt for username: {}", loginDTO.getEmail());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            loginDTO.getUsername(),
+                            loginDTO.getEmail(),
                             loginDTO.getPassword()
                     )
             );
-            String token = jwtUtil.generateToken(loginDTO.getUsername());
+            String token = jwtUtil.generateToken(loginDTO.getEmail()); // gera o token ao realizar o login
             return ResponseEntity.ok(new LoginResponse(token));
         } catch (BadCredentialsException e) {
-            logger.warn("Invalid credentials for email: {}", loginDTO.getUsername());
+            logger.warn("Invalid credentials for email: {}", loginDTO.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Credenciais inválidas"));
         } catch (Exception e) {
             logger.error("Error processing login: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Erro ao processar login"));
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        final String BEARER_PREFIX = "Bearer ";
+        final int BEARER_PREFIX_LENGTH = BEARER_PREFIX.length();
+
+        logger.info("Logout request received");
+
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith(BEARER_PREFIX)) {
+            logger.warn("Invalid Authorization header format");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Cabeçalho de autorização inválido"));
+        }
+
+        String token = header.substring(BEARER_PREFIX_LENGTH);
+
+        try {
+            if (tokenBlacklistService.isTokenBlacklisted(token)) {
+                logger.warn("Token já está na blacklist");
+                return ResponseEntity.badRequest()
+                        .body(new ErrorResponse("Token já invalidado"));
+            }
+
+            long expirationInSeconds = jwtUtil.getExpirationTimeInSeconds(token);
+
+            if (expirationInSeconds <= 0) {
+                logger.warn("Token já expirado");
+                return ResponseEntity.badRequest()
+                        .body(new ErrorResponse("Token já expirado"));
+            }
+
+            tokenBlacklistService.addToBlacklist(token, expirationInSeconds);
+            logger.info("Token invalidado com sucesso. Expira em {} segundos", expirationInSeconds);
+
+            return ResponseEntity.ok()
+                    .body(new SuccessResponse("Logout realizado com sucesso"));
+
+        } catch (TokenBlacklistService.RedisOperationException e) {
+            logger.error("Falha na comunicação com Redis: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(new ErrorResponse("Serviço indisponível"));
+
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.error("Token JWT inválido: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Token inválido"));
         }
     }
 
