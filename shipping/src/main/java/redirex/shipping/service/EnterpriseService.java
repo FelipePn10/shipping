@@ -2,6 +2,7 @@ package redirex.shipping.service;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,12 +12,11 @@ import redirex.shipping.entity.EnterpriseEntity;
 import redirex.shipping.repositories.EnterpriseRepository;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
 public class EnterpriseService {
-    private static final Logger logger = (Logger) LoggerFactory.getLogger(EnterpriseService.class);
+    private static final Logger logger = LoggerFactory.getLogger(EnterpriseService.class);
 
     private EnterpriseRepository enterpriseRepository;
     private PasswordEncoder passwordEncoder;
@@ -53,7 +53,7 @@ public class EnterpriseService {
             );
             return enterpriseRepository.save(enterprise);
         } catch (Exception e) {
-            logger.warning("Failed to register enterprise with email: {}");
+            logger.error("Failed to register enterprise with email: {}");
             throw new EnterpriseRegistrationException("Failed to register enterprise", e);
         }
     }
@@ -74,13 +74,13 @@ public class EnterpriseService {
     private void validateEnterpriseNotExists(String email, String cnpj) {
         Optional<EnterpriseEntity> existingUserByEmail = enterpriseRepository.findByEmail(email);
         if (existingUserByEmail.isPresent()) {
-            logger.warning("Attempt to register duplicate email: {}");
+            logger.warn("Attempt to register duplicate email: {}");
             throw new EnterpriseRegistrationException("Email already registered");
         }
 
         Optional<EnterpriseEntity> existingUserByCnpj = enterpriseRepository.findByCnpj(cnpj);
         if (existingUserByCnpj.isPresent()) {
-            logger.warning("Attempt to register duplicate CPF: {}");
+            logger.warn("Attempt to register duplicate CPF: {}");
             throw new EnterpriseRegistrationException("CPF already registered");
         }
     }

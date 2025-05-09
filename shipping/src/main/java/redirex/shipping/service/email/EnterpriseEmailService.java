@@ -1,5 +1,7 @@
 package redirex.shipping.service.email;
 
+import redirex.shipping.util.email.EnterpriseEmailDetailsUtil;
+
 public interface EnterpriseEmailService {
 
     /**
@@ -8,13 +10,13 @@ public interface EnterpriseEmailService {
      * @param to    Endereço de email do destinatário
      * @param token Token de confirmação de cadastro
      */
-    void sendRegistrationConfirmationEmail(String to, String token);
+    void sendPasswordResetEmail(String to, String token);
 
     /**
      * Envia um email de redefinição de senha.
      *
-     * @param to    Endereço de email do destinatário
-     * @param token Token de redefinição de senha
+     * @param details Endereço de email do destinatário
+     * @return Menssagem indicando o resultado do envio
      */
-    void sendPasswordResetEmail(String to, String token);
+    String sendSimpleMail(EnterpriseEmailDetailsUtil details);
 }

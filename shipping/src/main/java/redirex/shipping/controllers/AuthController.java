@@ -12,10 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
-import redirex.shipping.dto.ForgotPasswordDTO;
-import redirex.shipping.dto.LoginDTO;
-import redirex.shipping.dto.RegisterUserDTO;
-import redirex.shipping.dto.ResetPasswordDTO;
+import redirex.shipping.dto.*;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.security.JwtUtil;
@@ -60,6 +57,27 @@ public class AuthController {
             return ResponseEntity.ok(new LoginResponse(token));
         } catch (BadCredentialsException e) {
             logger.warn("Invalid credentials for email: {}", loginDTO.getEmail());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Credenciais inválidas"));
+        } catch (Exception e) {
+            logger.error("Error processing login: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Erro ao processar login"));
+        }
+    }
+
+    @PostMapping("/login/enterprise")
+    public ResponseEntity<?> loginEnterprise(@Valid @RequestBody LoginEnterpriseDTO loginEnterpriseDTO) {
+        logger.info("Login attempt for email: {}", loginEnterpriseDTO.getEmail());
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginEnterpriseDTO.getEmail(),
+                            loginEnterpriseDTO.getPassword()
+                    )
+            );
+            String token = jwtUtil.generateToken(loginEnterpriseDTO.getEmail()); // gera o token ao realizar o login
+            return ResponseEntity.ok(new LoginResponse(token));
+        } catch (BadCredentialsException e) {
+            logger.warn("Invalid credentials for email: {}", loginEnterpriseDTO.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Credenciais inválidas"));
         } catch (Exception e) {
             logger.error("Error processing login: {}", e.getMessage());

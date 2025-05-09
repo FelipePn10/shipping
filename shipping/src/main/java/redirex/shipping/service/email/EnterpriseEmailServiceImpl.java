@@ -11,14 +11,13 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import redirex.shipping.util.email.EnterpriseEmailDetailsUtil;
-import redirex.shipping.util.email.UserEmailDetailsUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.Year;
 
 @Service
-public class EnterpriseEmailServiceImpl implements UserEmailService {
+public class EnterpriseEmailServiceImpl implements EnterpriseEmailService {
     private static final Logger logger = LoggerFactory.getLogger(EnterpriseEmailServiceImpl.class);
 
     private final JavaMailSender javaMailSender;
@@ -50,19 +49,22 @@ public class EnterpriseEmailServiceImpl implements UserEmailService {
     }
 
     @Override
-    public String sendSimpleMail(UserEmailDetailsUtil details) throws MailException {
+    public String sendSimpleMail(EnterpriseEmailDetailsUtil details) throws MailException {
         logger.info("Sending email to: {}", details.getRecipient());
         validateEmailDetails(details);
+
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
             prepareEmail(helper, details);
             javaMailSender.send(message);
+
             logger.info("Email sent successfully to: {}", details.getRecipient());
             return "Email enviado com sucesso";
 
         } catch (MessagingException | UnsupportedEncodingException e) {
+            logger.error("Falied to send email to {}: {}", details.getRecipient(), e.getMessage());
             throw new MailException("Erro ao enviar email") {
             };
         }
@@ -76,7 +78,7 @@ public class EnterpriseEmailServiceImpl implements UserEmailService {
             String resetLink = frontendUrl + "/reset-password?email=" + to + "&token=" + encodedToken;
 
             // Correção: Usar UserEmailDetailsUtil em vez de EnterpriseEmailDetailsUtil
-            UserEmailDetailsUtil details = new UserEmailDetailsUtil();
+            EnterpriseEmailDetailsUtil details = new EnterpriseEmailDetailsUtil();
             details.setRecipient(to);
             details.setSubject("Redefinição de Senha - " + appName);
             details.setMsgBody(buildPasswordResetEmailHtml(resetLink));
@@ -89,7 +91,7 @@ public class EnterpriseEmailServiceImpl implements UserEmailService {
         }
     }
 
-    private void prepareEmail(MimeMessageHelper helper, UserEmailDetailsUtil details)
+    private void prepareEmail(MimeMessageHelper helper, EnterpriseEmailDetailsUtil details)
             throws MessagingException, UnsupportedEncodingException {
         helper.setFrom(mailFrom, appName);
         helper.setTo(details.getRecipient());
@@ -139,7 +141,7 @@ public class EnterpriseEmailServiceImpl implements UserEmailService {
                 .toString();
     }
 
-    private void validateEmailDetails(UserEmailDetailsUtil details) {
+    private void validateEmailDetails(EnterpriseEmailDetailsUtil details) {
         if (details.getRecipient() == null || details.getRecipient().isBlank()) {
             throw new IllegalArgumentException("Destinatário não pode ser vazio");
         }

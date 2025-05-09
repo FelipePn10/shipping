@@ -7,22 +7,10 @@ public class EnterpriseEmailDetailsUtil {
     private String textContent;
 
     public EnterpriseEmailDetailsUtil() {
-    }
-
-    public EnterpriseEmailDetailsUtil(String recipient, String subject, String msgBody, String textContent) {
         this.recipient = recipient;
         this.subject = subject;
         this.msgBody = msgBody;
         this.textContent = textContent;
-    }
-
-    // Getters e Setters
-    public String getRecipient() {
-        return recipient;
-    }
-
-    public void setRecipient(String recipient) {
-        this.recipient = recipient;
     }
 
     public String getSubject() {
@@ -31,6 +19,14 @@ public class EnterpriseEmailDetailsUtil {
 
     public void setSubject(String subject) {
         this.subject = subject;
+    }
+
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
     }
 
     public String getMsgBody() {
@@ -49,13 +45,19 @@ public class EnterpriseEmailDetailsUtil {
         this.textContent = textContent;
     }
 
+    public EnterpriseEmailDetailsUtil(String recipient, String subject, String msgBody) {
+        this.recipient = recipient;
+        this.subject = subject;
+        this.msgBody = msgBody;
+    }
+
     @Override
     public String toString() {
         return "EnterpriseEmailDetailsUtil{" +
                 "recipient='" + recipient + '\'' +
                 ", subject='" + subject + '\'' +
-                ", msgBody='" + msgBody + '\'' +
-                ", textContent='" + textContent + '\'' +
+                ", msgBody='" + abbreviate(msgBody, 50) + '\'' +
+                ", textContent='" + abbreviate(textContent, 50) + '\'' +
                 '}';
     }
 
