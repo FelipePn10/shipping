@@ -6,13 +6,14 @@ import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.entity.Shipment;
 import redirex.shipping.entity.UserCouponEntity;
 import redirex.shipping.repositories.ShipmentRepository;
+import redirex.shipping.repositories.UserCouponRepository;
 
 @Service
 public class ShipmentService {
     @Autowired
     private ShipmentRepository shipmentRepository;
     @Autowired
-    private redirex.shipping.repository.UserCouponRepository userCouponRepository;
+    private UserCouponRepository userCouponRepository;
 
     @Transactional
     public void applyCouponToShipment(Long shipmentId, Long userCouponId) {
