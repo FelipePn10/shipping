@@ -8,6 +8,7 @@ import redirex.shipping.entity.AdminEntity;
 import redirex.shipping.entity.NotificationEntity;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.enums.NotificationTypeEnum;
+import redirex.shipping.repositories.AdminRepository;
 import redirex.shipping.repositories.NotificationRepository;
 import redirex.shipping.repositories.UserRepository;
 
@@ -16,7 +17,7 @@ public class NotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
     @Autowired
-    private redirex.shipping.repository.AdminRepository adminRepository;
+    private AdminRepository adminRepository;
     @Autowired
     private UserRepository userRepository;
 
