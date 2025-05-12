@@ -25,7 +25,7 @@ import java.util.Objects;
                 @Index(name = "idx_wallet_transaction_related_shipment_id", columnList = "related_shipment_id")
         }
 )
-public class WalletTransaction implements Serializable {
+public class WalletTransactionEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -36,7 +36,7 @@ public class WalletTransaction implements Serializable {
     @NotNull(message = "User wallet is required")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_wallet_id", nullable = false)
-    private UserWallet userWallet;
+    private UserWalletEntity userWalletEntity;
 
     @NotNull(message = "Transaction type is required")
     @Enumerated(EnumType.STRING)
@@ -81,7 +81,7 @@ public class WalletTransaction implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        WalletTransaction that = (WalletTransaction) o;
+        WalletTransactionEntity that = (WalletTransactionEntity) o;
         return id != null && Objects.equals(id, that.id);
     }
 

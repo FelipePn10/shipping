@@ -21,7 +21,7 @@ import java.util.Objects;
                 columnNames = {"wallet_id", "currency"}
         )
 )
-public class WalletBalance implements Serializable {
+public class WalletBalanceEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -32,7 +32,7 @@ public class WalletBalance implements Serializable {
     @NotNull(message = "Wallet is required")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "wallet_id", nullable = false)
-    private UserWallet wallet;
+    private UserWalletEntity wallet;
 
     @NotNull(message = "Currency is required")
     @Enumerated(EnumType.STRING)
@@ -49,7 +49,7 @@ public class WalletBalance implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        WalletBalance that = (WalletBalance) o;
+        WalletBalanceEntity that = (WalletBalanceEntity) o;
         return id != null && Objects.equals(id, that.id);
     }
 

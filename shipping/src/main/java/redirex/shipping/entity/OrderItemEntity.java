@@ -102,9 +102,9 @@ public class OrderItemEntity implements Serializable {
     @Column(nullable = false)
     private boolean requestedConsolidation = false; // Valor padrão
 
-    @ManyToOne(fetch = FetchType.LAZY) // Muitos OrderItems para um Shipment
+    @ManyToOne(fetch = FetchType.LAZY) // Muitos OrderItems para um ShipmentEntity
     @JoinColumn(name = "shipment_id", nullable = true) // Nome da FK na tabela order_items. 'nullable = true' pois um item pode não estar em um envio ainda.
-    private Shipment shipment; // Referência ao envio ao qual este item pertence
+    private ShipmentEntity shipmentEntity; // Referência ao envio ao qual este item pertence
 
     // --- Callbacks de Ciclo de Vida JPA ---
 

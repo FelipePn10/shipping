@@ -25,7 +25,7 @@ import java.util.Set;
         @Index(name = "idx_shipment_status", columnList = "status"),
         @Index(name = "idx_shipment_tracking_code", columnList = "tracking_code")
 })
-public class Shipment implements Serializable {
+public class ShipmentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -105,13 +105,13 @@ public class Shipment implements Serializable {
     // Método auxiliar para adicionar OrderItemEntity
     public void addOrderItem(OrderItemEntity orderItem) {
         orderItems.add(orderItem);
-        orderItem.setShipment(this);
+        orderItem.setShipmentEntity(this);
     }
 
     // Método auxiliar para remover OrderItemEntity
     public void removeOrderItem(OrderItemEntity orderItem) {
         orderItems.remove(orderItem);
-        orderItem.setShipment(null);
+        orderItem.setShipmentEntity(null);
     }
 
     /**
@@ -193,8 +193,8 @@ public class Shipment implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Shipment shipment = (Shipment) o;
-        return id != null && Objects.equals(id, shipment.id);
+        ShipmentEntity shipmentEntity = (ShipmentEntity) o;
+        return id != null && Objects.equals(id, shipmentEntity.id);
     }
 
     @Override

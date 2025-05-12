@@ -22,7 +22,7 @@ import java.util.Objects;
                 @Index(name = "idx_user_wallet_user_id", columnList = "user_id")
         }
 )
-public class UserWallet implements Serializable {
+public class UserWalletEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -37,7 +37,7 @@ public class UserWallet implements Serializable {
 
     @Builder.Default
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<WalletBalance> balances = new ArrayList<>();
+    private List<WalletBalanceEntity> balances = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -51,7 +51,7 @@ public class UserWallet implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserWallet that = (UserWallet) o;
+        UserWalletEntity that = (UserWalletEntity) o;
         return id != null && Objects.equals(id, that.id);
     }
 
@@ -61,12 +61,12 @@ public class UserWallet implements Serializable {
     }
 
     // Métodos utilitários para manipulação dos saldos
-    public void addBalance(WalletBalance balance) {
+    public void addBalance(WalletBalanceEntity balance) {
         balances.add(balance);
         balance.setWallet(this);
     }
 
-    public void removeBalance(WalletBalance balance) {
+    public void removeBalance(WalletBalanceEntity balance) {
         balances.remove(balance);
         balance.setWallet(null);
     }
