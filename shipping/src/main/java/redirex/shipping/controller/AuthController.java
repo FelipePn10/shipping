@@ -1,11 +1,10 @@
-package redirex.shipping.controllers;
+package redirex.shipping.controller;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,15 +12,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.*;
-import redirex.shipping.entity.UserEntity;
-import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.TokenBlacklistService;
-import redirex.shipping.service.UserPasswordResetService;
-import redirex.shipping.service.UserService;
-import redirex.shipping.service.email.UserEmailService;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/public/auth")

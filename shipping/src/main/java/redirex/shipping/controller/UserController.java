@@ -1,4 +1,4 @@
-package redirex.shipping.controllers;
+package redirex.shipping.controller;
 
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.ForgotPasswordDTO;
@@ -15,8 +14,6 @@ import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.dto.ResetPasswordDTO;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.UserRepository;
-import redirex.shipping.security.JwtUtil;
-import redirex.shipping.service.TokenBlacklistService;
 import redirex.shipping.service.UserPasswordResetService;
 import redirex.shipping.service.UserService;
 import redirex.shipping.service.email.UserEmailService;

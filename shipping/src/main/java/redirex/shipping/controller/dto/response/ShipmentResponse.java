@@ -1,5 +1,6 @@
-package redirex.shipping.dto;
+package redirex.shipping.controller.dto.response;
 
+import lombok.Builder;
 import lombok.Data;
 import redirex.shipping.enums.ShipmentStatuEnum;
 
@@ -8,7 +9,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class ShipmentDTO {
+@Builder
+public class ShipmentResponse {
     private Long id;
     private Long userId;
     private List<Long> orderItemIds;

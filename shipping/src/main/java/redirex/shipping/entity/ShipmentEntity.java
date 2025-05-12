@@ -6,7 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import redirex.shipping.enums.CouponTypeEnum;
-import redirex.shipping.enums.ShipmentStatus;
+import redirex.shipping.enums.ShipmentStatuEnum;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -83,7 +83,7 @@ public class ShipmentEntity implements Serializable {
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ShipmentStatus status = ShipmentStatus.PENDING_PAYMENT;
+    private ShipmentStatuEnum status = ShipmentStatuEnum.PENDING_PAYMENT;
 
     @Column
     private LocalDateTime paidShippingAt;

@@ -1,4 +1,4 @@
-package redirex.shipping.controllers;
+package redirex.shipping.controller;
 
 
 import jakarta.validation.Valid;

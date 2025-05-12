@@ -1,9 +1,11 @@
-package redirex.shipping.dto;
+package redirex.shipping.controller.dto.response;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class AddressDTO {
+@Builder
+public class AddressResponse {
     private Long id;
     private String street;
     private String city;

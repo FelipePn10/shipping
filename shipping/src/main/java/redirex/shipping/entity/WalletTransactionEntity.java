@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import redirex.shipping.enums.CurrencyEnum;
-import redirex.shipping.enums.WalletTransactionType;
+import redirex.shipping.enums.WalletTransactionTypeEnum;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -41,7 +41,7 @@ public class WalletTransactionEntity implements Serializable {
     @NotNull(message = "Transaction type is required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private WalletTransactionType type;
+    private WalletTransactionTypeEnum type;
 
     @NotNull(message = "Amount is required")
     @Digits(integer = 15, fraction = 4, message = "Amount format is invalid")

@@ -1,5 +1,6 @@
-package redirex.shipping.dto;
+package redirex.shipping.controller.dto.response;
 
+import lombok.Builder;
 import lombok.Data;
 import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.WalletTransactionTypeEnum;
@@ -8,7 +9,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class WalletTransactionDTO {
+@Builder
+public class WalletTransactionResponse {
     private Long id;
     private Long userWalletId;
     private WalletTransactionTypeEnum type;
