@@ -1,0 +1,59 @@
+package redirex.shipping.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@Entity
+@Table(name = "addresses")
+public class AddressEntity {
+    public enum ResidenceType {
+        HOUSE, APARTMENT, COMMERCIAL, OTHER
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = "Recipient name is required")
+    @Size(max = 255)
+    private String recipientName;
+
+    @NotBlank(message = "Street is required")
+    @Size(max = 255)
+    private String street;
+
+    @Size(max = 255)
+    private String complement;
+
+    @NotBlank(message = "City is required")
+    @Size(max = 100)
+    private String city;
+
+    @NotBlank(message = "State is required")
+    @Size(max = 100)
+    private String state;
+
+    @NotBlank(message = "Zipcode is required")
+    @Size(max = 20)
+    private String zipcode;
+
+    @NotBlank(message = "Country is required")
+    @Size(max = 100)
+    private String country;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private ResidenceType residenceType = ResidenceType.HOUSE;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
+}

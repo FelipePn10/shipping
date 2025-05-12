@@ -51,35 +51,6 @@ public class UserEntity implements Serializable {
     @Column(nullable = false)
     private String phone;
 
-    @NotBlank(message = "Address is required")
-    @Size(max = 255, message = "Address must not exceed 255 characters")
-    @Column(nullable = false)
-    private String address;
-
-    @Size(max = 255, message = "Complement must not exceed 255 characters")
-    @Column
-    private String complement;
-
-    @NotBlank(message = "City is required")
-    @Size(max = 100, message = "City must not exceed 100 characters")
-    @Column(nullable = false)
-    private String city;
-
-    @NotBlank(message = "State is required")
-    @Size(max = 100, message = "State must not exceed 100 characters")
-    @Column(nullable = false)
-    private String state;
-
-    @NotBlank(message = "Zipcode is required")
-    @Size(max = 20, message = "Zipcode must not exceed 20 characters")
-    @Column(nullable = false)
-    private String zipcode;
-
-    @NotBlank(message = "Country is required")
-    @Size(max = 100, message = "Country must not exceed 100 characters")
-    @Column(nullable = false)
-    private String country;
-
     @NotBlank(message = "Occupation is required")
     @Size(max = 100, message = "Occupation must not exceed 100 characters")
     @Column(nullable = false)
@@ -102,12 +73,6 @@ public class UserEntity implements Serializable {
             String password,
             String cpf,
             String phone,
-            String address,
-            String complement,
-            String city,
-            String state,
-            String zipcode,
-            String country,
             String occupation,
             String role) {
         this.fullname = fullname;
@@ -115,12 +80,6 @@ public class UserEntity implements Serializable {
         this.password = password;
         this.cpf = cpf;
         this.phone = phone;
-        this.address = address;
-        this.complement = complement;
-        this.city = city;
-        this.state = state;
-        this.zipcode = zipcode;
-        this.country = country;
         this.occupation = occupation;
         this.role = role;
     }
