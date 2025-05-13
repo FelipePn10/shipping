@@ -8,7 +8,7 @@ import redirex.shipping.enums.WalletTransactionTypeEnum;
 import java.util.List;
 
 public interface WalletTransactionRepository extends JpaRepository<WalletTransactionEntity, Long> {
-    List<WalletTransactionEntity> findByUserWallet(UserWalletEntity userWalletEntity);
+    List<WalletTransactionEntity> findByUserWallet(UserWalletEntity userWallet);
     List<WalletTransactionEntity> findByType(WalletTransactionTypeEnum type);
     List<WalletTransactionEntity> findByRelatedOrderItemId(Long orderItemId);
     List<WalletTransactionEntity> findByRelatedShipmentId(Long shipmentId);
