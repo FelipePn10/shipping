@@ -3,6 +3,7 @@ package redirex.shipping.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.Serializable;
@@ -28,14 +29,18 @@ public class UserEntity implements Serializable {
 
     @NotBlank(message = "Full name is required")
     @Size(max = 255, message = "Full name must not exceed 255 characters")
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String fullname;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     @Size(max = 255, message = "Email must not exceed 255 characters")
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")

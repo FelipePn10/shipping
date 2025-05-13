@@ -40,6 +40,12 @@ public class WarehouseService {
         logger.info("Order item {} assigned to warehouse {}", orderItemId, warehouseId);
     }
 
+        public WarehouseResponse findById(Long id) {
+            WarehouseEntity warehouse = warehouseRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Warehouse not found"));
+            return warehouseMapper.toResponse(warehouse);
+        }
+
     @Transactional(readOnly = true)
     public WarehouseResponse findWarehouseById(Long id) {
         logger.info("Finding warehouse by ID: {}", id);

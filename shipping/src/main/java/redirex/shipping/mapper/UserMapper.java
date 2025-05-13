@@ -1,18 +1,21 @@
 package redirex.shipping.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.springframework.stereotype.Component;
 import redirex.shipping.controller.dto.response.UserResponse;
-import redirex.shipping.dto.UserDTO;
 import redirex.shipping.entity.UserEntity;
 
-@Mapper(componentModel = "spring")
-public interface UserMapper {
-    UserDTO toDTO(UserEntity entity);
+@Component
+public class UserMapper {
 
-    @Mapping(target = "password", ignore = true)
-    UserEntity toEntity(UserDTO dto);
-
-    @Mapping(source = "fullname", target = "name")
-    UserResponse toResponse(UserEntity entity);
+    public UserResponse toResponse(UserEntity user) {
+        if (user == null) {
+            return null;
+        }
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getFullname())
+                .email(user.getEmail())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
 }
