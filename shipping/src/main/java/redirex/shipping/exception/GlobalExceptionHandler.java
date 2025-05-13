@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-// E aqui o manipulador global para capturar exceções e retornar respostas HTTP padronizadas.
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -32,6 +31,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PaymentException.class)
     public ResponseEntity<Map<String, Object>> handlePaymentException(PaymentException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(UserRegistrationException.class)
+    public ResponseEntity<Map<String, Object>> handleUserRegistrationException(UserRegistrationException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 

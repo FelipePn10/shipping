@@ -2,9 +2,8 @@ package redirex.shipping.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.OrderItemStatusEnum;
 
@@ -13,120 +12,116 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
-@Table(name = "order_items")
+@Table(
+        name = "order_items",
+        indexes = {
+                @Index(name = "idx_order_item_user_id", columnList = "user_id"),
+                @Index(name = "idx_order_item_status", columnList = "status")
+        }
+)
 public class OrderItemEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull(message = "User is required")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
     @NotBlank(message = "Product URL is required")
-    @Size(max = 2048, message = "Product URL must not exceed 2048 characters")
-    @Column(nullable = false, length = 2048)
+    @Size(max = 255, message = "Product URL must not exceed 255 characters")
+    @Column(name = "product_url", nullable = false)
     private String productUrl;
 
     @NotNull(message = "Product value is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Product value must be positive")
-    @Digits(integer = 15, fraction = 4, message = "Product value format is invalid")
-    @Column(nullable = false, precision = 19, scale = 4)
+    @Column(name = "product_value", nullable = false, precision = 19, scale = 4)
     private BigDecimal productValue;
 
     @NotNull(message = "Original currency is required")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 3) // Tamanho suficiente para códigos de moeda (ex: BRL, USD)
+    @Column(name = "original_currency", nullable = false, length = 3)
     private CurrencyEnum originalCurrency;
 
     @NotBlank(message = "Origin country is required")
     @Size(max = 100, message = "Origin country must not exceed 100 characters")
-    @Column(nullable = false, length = 100)
+    @Column(name = "origin_country", nullable = false)
     private String originCountry;
 
-
     @NotNull(message = "Category is required")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_categories", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
     private ProductCategoryEntity category;
 
     @NotBlank(message = "Recipient CPF is required")
-    @Pattern(regexp = "\\d{11}", message = "Recipient CPF must contain exactly 11 digits")
-    @Column(nullable = false, length = 11)
+    @Size(max = 14, message = "Recipient CPF must not exceed 14 characters")
+    @Column(name = "recipient_cpf", nullable = false)
     private String recipientCpf;
 
-    @NotNull(message = "Shipping address is required")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "addresses", nullable = false)
+    @NotNull(message = "Address is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id", nullable = false)
     private AddressEntity address;
 
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderItemStatusEnum status = OrderItemStatusEnum.CREATING_ORDER; // Valor padrão
+    private OrderItemStatusEnum status;
 
-    @Column(nullable = false, updatable = false) // Não pode ser nulo, não pode ser atualizado após criação
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(nullable = true) // Pode Ser Nulo
+    @Column(name = "payment_deadline")
     private LocalDateTime paymentDeadline;
 
-    @ManyToOne(fetch = FetchType.LAZY) // Pode ser nulo, então optional = true (padrão)
-    @JoinColumn(name = "applied_product_coupon_id", nullable = true)
-    private CouponEntity appliedProductCoupon;
-
-    @Column(nullable = true)
+    @Column(name = "paid_product_at")
     private LocalDateTime paidProductAt;
 
-    @Column(nullable = true)
+    @Column(name = "arrived_at_warehouse_at")
     private LocalDateTime arrivedAtWarehouseAt;
 
-    @Column(nullable = true, columnDefinition = "TEXT") // Usar TEXT para notas potencialmente longas
+    @Size(max = 1000, message = "Warehouse notes must not exceed 1000 characters")
+    @Column(name = "warehouse_notes", length = 1000)
     private String warehouseNotes;
 
-    @PositiveOrZero(message = "Weight cannot be negative")
-    @Column(nullable = true)
-    private Double weight; // Peso em kg, por exemplo
+    @Column
+    private Double weight;
 
     @Size(max = 50, message = "Dimensions must not exceed 50 characters")
-    @Column(nullable = true, length = 50)
-    private String dimensions; // Formato "LxWxH" (ex: "10x20x5")
+    @Column(length = 50)
+    private String dimensions;
 
-    @Column(nullable = false)
-    private boolean requestedConsolidation = false; // Valor padrão
+    @Column(name = "requested_consolidation")
+    private boolean requestedConsolidation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shipment_id")
     private ShipmentEntity shipment;
 
-    // --- Callbacks de Ciclo de Vida JPA ---
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "warehouse_id")
+    private WarehouseEntity warehouse;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = updatedAt = LocalDateTime.now(); // Define data de criação e atualização iniciais
-        // Garante que o status inicial seja IN_CART se não for definido explicitamente
-        if (status == null) {
-            status = OrderItemStatusEnum.IN_CART;
-        }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now(); // Atualiza data de modificação
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OrderItemEntity that = (OrderItemEntity) o;
+        return id != null && Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        // Usa a classe e o ID para o hash. Se ID for nulo, usa o hash padrão do objeto.
-        return id != null ? Objects.hash(getClass(), id) : super.hashCode();
+        return Objects.hash(getClass(), id);
     }
 }
-

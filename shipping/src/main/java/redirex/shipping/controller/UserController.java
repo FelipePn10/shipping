@@ -15,7 +15,7 @@ import redirex.shipping.dto.ResetPasswordDTO;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.service.UserPasswordResetService;
-import redirex.shipping.service.UserService;
+import redirex.shipping.service.UserServiceImpl;
 import redirex.shipping.service.email.UserEmailService;
 
 import java.time.LocalDateTime;
@@ -30,7 +30,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserEmailService emailService;
     private final UserPasswordResetService passwordResetService;
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -38,13 +38,13 @@ public class UserController {
             UserRepository userRepository,
             UserEmailService emailService,
             UserPasswordResetService passwordResetService,
-            UserService userService,
+            UserServiceImpl userServiceImpl,
             PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordResetService = passwordResetService;
-        this.userService = userService;
+        this.userServiceImpl = userServiceImpl;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -52,7 +52,7 @@ public class UserController {
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
         try {
             logger.info("Recebida requisição para criar usuário: {}", registerUserDTO.getEmail());
-            UserEntity newUser = userService.registerNewUser(registerUserDTO);
+            UserEntity newUser = userServiceImpl.registerNewUser(registerUserDTO);
             logger.info("Usuário criado com sucesso: {}", newUser.getEmail());
             return new ResponseEntity<>(newUser, HttpStatus.CREATED);
         } catch (DataIntegrityViolationException e) {
@@ -119,7 +119,7 @@ public class UserController {
     public ResponseEntity<List<UserEntity>> getAllUsers() {
         try {
             logger.info("Recebida requisição para listar todos os usuários");
-            List<UserEntity> users = userService.getAllUsers();
+            List<UserEntity> users = userServiceImpl.getAllUsers();
             logger.info("Retornando {} usuários", users.size());
             return new ResponseEntity<>(users, HttpStatus.OK);
         } catch (Exception e) {
