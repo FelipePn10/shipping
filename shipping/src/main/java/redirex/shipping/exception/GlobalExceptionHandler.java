@@ -39,6 +39,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(EmailSendingException.class)
+    public ResponseEntity<Map<String, Object>> handleEmailSendingException(EmailSendingException ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send email");
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

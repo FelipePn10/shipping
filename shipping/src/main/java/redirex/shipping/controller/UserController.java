@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.controller.dto.response.UserResponse;
@@ -24,7 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/public/user")
 @RequiredArgsConstructor
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -34,7 +34,7 @@ public class UserController {
     private final UserPasswordResetService passwordResetService;
     private final PasswordEncoder passwordEncoder;
 
-    @PostMapping("/register")
+    @PostMapping("/public/user/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
         try {
             logger.info("Received request to register user: {}", registerUserDTO.getEmail());
@@ -50,7 +50,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/forgot-password")
+    @PostMapping("/public/user/forgot-password")
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO) {
         logger.info("Password reset request for email: {}", forgotPasswordDTO.getEmail());
         Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(forgotPasswordDTO.getEmail());
@@ -65,7 +65,7 @@ public class UserController {
         return ResponseEntity.ok(buildSuccessResponse("Password reset email sent successfully"));
     }
 
-    @PostMapping("/reset-password")
+    @PostMapping("/public/user/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
         logger.info("Password reset attempt for email: {}", resetPasswordDTO.getEmail());
         Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(resetPasswordDTO.getEmail());
@@ -95,7 +95,8 @@ public class UserController {
         return ResponseEntity.ok(buildSuccessResponse("Password reset successfully"));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/api/user/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             logger.info("Received request to get user by ID: {}", id);
@@ -107,7 +108,8 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{id}/profile")
+    @PutMapping("/api/user/{id}/profile")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @Valid @RequestBody RegisterUserDTO registerUserDTO) {
         try {
             logger.info("Received request to update profile for user ID: {}", id);
