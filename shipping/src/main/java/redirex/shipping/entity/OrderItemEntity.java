@@ -17,6 +17,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @Entity
+@Table(name = "order_items")
 public class OrderItemEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,9 +79,9 @@ public class OrderItemEntity implements Serializable {
     @Column(nullable = true) // Pode Ser Nulo
     private LocalDateTime paymentDeadline;
 
-    //@ManyToOne(fetch = FetchType.LAZY) // Pode ser nulo, então optional = true (padrão)
-    //@JoinColumn(name = "applied_product_coupon_id", nullable = true)
-    //private UserCoupon appliedProductCoupon;
+    @ManyToOne(fetch = FetchType.LAZY) // Pode ser nulo, então optional = true (padrão)
+    @JoinColumn(name = "applied_product_coupon_id", nullable = true)
+    private CouponEntity appliedProductCoupon;
 
     @Column(nullable = true)
     private LocalDateTime paidProductAt;
@@ -102,9 +103,9 @@ public class OrderItemEntity implements Serializable {
     @Column(nullable = false)
     private boolean requestedConsolidation = false; // Valor padrão
 
-    @ManyToOne(fetch = FetchType.LAZY) // Muitos OrderItems para um ShipmentEntity
-    @JoinColumn(name = "shipment_id", nullable = true) // Nome da FK na tabela order_items. 'nullable = true' pois um item pode não estar em um envio ainda.
-    private ShipmentEntity shipmentEntity; // Referência ao envio ao qual este item pertence
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipment_id")
+    private ShipmentEntity shipment;
 
     // --- Callbacks de Ciclo de Vida JPA ---
 

@@ -9,6 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -66,6 +68,14 @@ public class UserEntity implements Serializable {
 
     @Column
     private LocalDateTime passwordResetTokenExpiry;
+
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<AddressEntity> addresses = new ArrayList<>();
 
     public UserEntity(
             String fullname,

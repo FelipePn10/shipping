@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import redirex.shipping.controller.dto.response.AddressResponse;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.UserRepository;
@@ -42,12 +43,6 @@ public class UserService {
                     passwordEncoder.encode(dto.getPassword()),
                     dto.getCpf(),
                     dto.getPhone(),
-                    dto.getAddress(),
-                    dto.getComplement(),
-                    dto.getCity(),
-                    dto.getState(),
-                    dto.getZipcode(),
-                    dto.getCountry(),
                     dto.getOccupation(),
                     "ROLE_USER"
             );

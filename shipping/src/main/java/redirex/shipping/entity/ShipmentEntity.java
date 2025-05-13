@@ -38,11 +38,7 @@ public class ShipmentEntity implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @OneToMany(
-            mappedBy = "shipment",
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-            fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "shipment")
     private Set<OrderItemEntity> orderItems = new HashSet<>();
 
     @NotBlank(message = "Shipping method is required")
@@ -105,13 +101,13 @@ public class ShipmentEntity implements Serializable {
     // Método auxiliar para adicionar OrderItemEntity
     public void addOrderItem(OrderItemEntity orderItem) {
         orderItems.add(orderItem);
-        orderItem.setShipmentEntity(this);
+        orderItem.setShipment(this);
     }
 
     // Método auxiliar para remover OrderItemEntity
     public void removeOrderItem(OrderItemEntity orderItem) {
         orderItems.remove(orderItem);
-        orderItem.setShipmentEntity(null);
+        orderItem.setShipment(null);
     }
 
     /**
