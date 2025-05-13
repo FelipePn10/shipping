@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.controller.dto.response.UserResponse;
@@ -14,7 +15,9 @@ import redirex.shipping.dto.ForgotPasswordDTO;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.dto.ResetPasswordDTO;
 import redirex.shipping.entity.UserEntity;
+import redirex.shipping.exception.UnauthorizedAccessException;
 import redirex.shipping.exception.UserRegistrationException;
+import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.UserPasswordResetService;
 import redirex.shipping.service.UserServiceImpl;
 import redirex.shipping.service.email.UserEmailService;
@@ -33,6 +36,7 @@ public class UserController {
     private final UserEmailService emailService;
     private final UserPasswordResetService passwordResetService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/public/user/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
@@ -99,9 +103,13 @@ public class UserController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
+            validateUserAccess(id);
             logger.info("Received request to get user by ID: {}", id);
             UserResponse userResponse = userService.findUserById(id);
             return ResponseEntity.ok(userResponse);
+        } catch (UnauthorizedAccessException e) {
+            logger.error("Unauthorized access attempt for user ID {}: {}", id, e.getMessage());
+            return buildErrorResponse(HttpStatus.FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             logger.error("Error retrieving user with ID {}: {}", id, e.getMessage(), e);
             return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
@@ -112,12 +120,24 @@ public class UserController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @Valid @RequestBody RegisterUserDTO registerUserDTO) {
         try {
+            validateUserAccess(id);
             logger.info("Received request to update profile for user ID: {}", id);
             UserResponse userResponse = userService.updateUserProfile(id, registerUserDTO);
             return ResponseEntity.ok(userResponse);
+        } catch (UnauthorizedAccessException e) {
+            logger.error("Unauthorized access attempt for user ID {}: {}", id, e.getMessage());
+            return buildErrorResponse(HttpStatus.FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             logger.error("Error updating user profile for ID {}: {}", id, e.getMessage(), e);
             return buildErrorResponse(HttpStatus.BAD_REQUEST, "Error updating user profile");
+        }
+    }
+
+    private void validateUserAccess(Long requestedId) {
+        String token = ((String) SecurityContextHolder.getContext().getAuthentication().getCredentials()).substring(7); // Remove "Bearer "
+        Long userIdFromToken = jwtUtil.getUserIdFromToken(token);
+        if (!userIdFromToken.equals(requestedId)) {
+            throw new UnauthorizedAccessException("You are not authorized to access this user's data");
         }
     }
 

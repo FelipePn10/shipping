@@ -50,8 +50,8 @@ public class UserServiceImpl implements UserService {
                     .build();
             user = userRepository.save(user);
 
-            // Cria a carteira inicial (CNY, saldo zero)
-            userWalletService.createInitialWallet(user, CurrencyEnum.CNY);
+            // Cria a carteira inicial (BRL, saldo zero)
+            userWalletService.createInitialWallet(user, CurrencyEnum.BRL);
 
             // Cria e associa cupom de boas-vindas (2.5% de desconto no frete)
             UserCouponEntity welcomeCoupon = couponService.createWelcomeCoupon(user);
@@ -101,6 +101,15 @@ public class UserServiceImpl implements UserService {
         user = userRepository.save(user);
         logger.info("User profile updated successfully: {}", user.getEmail());
         return userMapper.toResponse(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long findUserIdByEmail(String email) {
+        logger.info("Finding user ID by email: {}", email);
+        return userRepository.findByEmail(email)
+                .map(UserEntity::getId)
+                .orElseThrow(() -> new ResourceNotFoundException("User with email " + email + " not found"));
     }
 
     private void validateUserNotExists(String email, String cpf) {

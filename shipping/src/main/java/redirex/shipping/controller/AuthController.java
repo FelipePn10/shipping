@@ -15,6 +15,7 @@ import redirex.shipping.dto.AuthRequestDTO;
 import redirex.shipping.dto.AuthResponseDTO;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.TokenBlacklistService;
+import redirex.shipping.service.UserServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserServiceImpl userService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequestDTO authRequest) {
@@ -41,7 +43,8 @@ public class AuthController {
                             authRequest.getPassword()
                     )
             );
-            String token = jwtUtil.generateToken(authRequest.getEmail());
+            Long userId = userService.findUserIdByEmail(authRequest.getEmail());
+            String token = jwtUtil.generateToken(authRequest.getEmail(), userId);
             AuthResponseDTO response = AuthResponseDTO.builder()
                     .token(token)
                     .build();
@@ -65,7 +68,8 @@ public class AuthController {
                             authRequest.getPassword()
                     )
             );
-            String token = jwtUtil.generateToken(authRequest.getEmail());
+            Long userId = userService.findUserIdByEmail(authRequest.getEmail());
+            String token = jwtUtil.generateToken(authRequest.getEmail(), userId);
             AuthResponseDTO response = AuthResponseDTO.builder()
                     .token(token)
                     .build();
