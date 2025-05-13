@@ -1,147 +1,138 @@
 package redirex.shipping.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import redirex.shipping.controller.dto.response.UserResponse;
 import redirex.shipping.dto.ForgotPasswordDTO;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.dto.ResetPasswordDTO;
 import redirex.shipping.entity.UserEntity;
-import redirex.shipping.repositories.UserRepository;
+import redirex.shipping.exception.UserRegistrationException;
 import redirex.shipping.service.UserPasswordResetService;
 import redirex.shipping.service.UserServiceImpl;
 import redirex.shipping.service.email.UserEmailService;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/public/user")
+@RequiredArgsConstructor
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    private final UserRepository userRepository;
+    private final UserServiceImpl userService;
     private final UserEmailService emailService;
     private final UserPasswordResetService passwordResetService;
-    private final UserServiceImpl userServiceImpl;
     private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    public UserController(
-            UserRepository userRepository,
-            UserEmailService emailService,
-            UserPasswordResetService passwordResetService,
-            UserServiceImpl userServiceImpl,
-            PasswordEncoder passwordEncoder
-    ) {
-        this.userRepository = userRepository;
-        this.emailService = emailService;
-        this.passwordResetService = passwordResetService;
-        this.userServiceImpl = userServiceImpl;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
         try {
-            logger.info("Recebida requisição para criar usuário: {}", registerUserDTO.getEmail());
-            UserEntity newUser = userServiceImpl.registerNewUser(registerUserDTO);
-            logger.info("Usuário criado com sucesso: {}", newUser.getEmail());
-            return new ResponseEntity<>(newUser, HttpStatus.CREATED);
-        } catch (DataIntegrityViolationException e) {
-            logger.error("Erro de integridade de dados: {}", e.getMessage(), e);
-            return new ResponseEntity<>(new ErrorResponse("Erro: Email, CPF ou outro campo único já existe"), HttpStatus.CONFLICT);
+            logger.info("Received request to register user: {}", registerUserDTO.getEmail());
+            UserResponse userResponse = userService.registerUser(registerUserDTO);
+            logger.info("User registered successfully: {}", userResponse.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
+        } catch (UserRegistrationException e) {
+            logger.error("Registration error: {}", e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            logger.error("Erro ao criar usuário: {}", e.getMessage(), e);
-            return new ResponseEntity<>(new ErrorResponse("Erro ao criar usuário: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+            logger.error("Unexpected error during registration: {}", e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error registering user");
         }
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO) {
         logger.info("Password reset request for email: {}", forgotPasswordDTO.getEmail());
-        Optional<UserEntity> userOptional = userRepository.findByEmail(forgotPasswordDTO.getEmail());
+        Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(forgotPasswordDTO.getEmail());
         if (userOptional.isEmpty()) {
             logger.warn("No user found with email: {}", forgotPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Usuário não encontrado"));
+            return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
         }
 
         UserEntity user = userOptional.get();
         passwordResetService.generateResetToken(user);
-        userRepository.save(user);
         emailService.sendPasswordResetEmail(user.getEmail(), user.getPasswordResetToken());
-        return ResponseEntity.ok(new SuccessResponse("Email de redefinição de senha enviado com sucesso"));
+        return ResponseEntity.ok(buildSuccessResponse("Password reset email sent successfully"));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
         logger.info("Password reset attempt for email: {}", resetPasswordDTO.getEmail());
-        Optional<UserEntity> userOptional = userRepository.findByEmail(resetPasswordDTO.getEmail());
+        Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(resetPasswordDTO.getEmail());
         if (userOptional.isEmpty()) {
             logger.warn("No user found with email: {}", resetPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Usuário não encontrado"));
+            return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
         }
 
         UserEntity user = userOptional.get();
         String resetToken = user.getPasswordResetToken();
         LocalDateTime tokenExpiry = user.getPasswordResetTokenExpiry();
 
-        if (resetToken == null || tokenExpiry == null) {
-            logger.warn("No valid reset token for email: {}", resetPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Token de redefinição inválido"));
-        }
-
-        if (!resetToken.equals(resetPasswordDTO.getToken())) {
-            logger.warn("Invalid token for email: {}", resetPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Token de redefinição inválido"));
+        if (resetToken == null || tokenExpiry == null || !resetToken.equals(resetPasswordDTO.getToken())) {
+            logger.warn("Invalid or missing reset token for email: {}", resetPasswordDTO.getEmail());
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid reset token");
         }
 
         if (tokenExpiry.isBefore(LocalDateTime.now())) {
             logger.warn("Expired token for email: {}", resetPasswordDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Token de redefinição expirado"));
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Reset token expired");
         }
 
         user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
         user.setPasswordResetToken(null);
         user.setPasswordResetTokenExpiry(null);
-        userRepository.save(user);
-        return ResponseEntity.ok(new SuccessResponse("Senha redefinida com sucesso"));
+        passwordResetService.saveUser(user);
+        return ResponseEntity.ok(buildSuccessResponse("Password reset successfully"));
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserEntity>> getAllUsers() {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
-            logger.info("Recebida requisição para listar todos os usuários");
-            List<UserEntity> users = userServiceImpl.getAllUsers();
-            logger.info("Retornando {} usuários", users.size());
-            return new ResponseEntity<>(users, HttpStatus.OK);
+            logger.info("Received request to get user by ID: {}", id);
+            UserResponse userResponse = userService.findUserById(id);
+            return ResponseEntity.ok(userResponse);
         } catch (Exception e) {
-            logger.error("Erro ao listar usuários: {}", e.getMessage(), e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error retrieving user with ID {}: {}", id, e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
         }
     }
 
-    // Classes auxiliares para respostas
-    static class ErrorResponse {
-        public String error;
-
-        public ErrorResponse(String error) {
-            this.error = error;
+    @PutMapping("/{id}/profile")
+    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @Valid @RequestBody RegisterUserDTO registerUserDTO) {
+        try {
+            logger.info("Received request to update profile for user ID: {}", id);
+            UserResponse userResponse = userService.updateUserProfile(id, registerUserDTO);
+            return ResponseEntity.ok(userResponse);
+        } catch (Exception e) {
+            logger.error("Error updating user profile for ID {}: {}", id, e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Error updating user profile");
         }
     }
 
-    private static class SuccessResponse {
-        public String message;
+    private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", status.value());
+        response.put("error", status.getReasonPhrase());
+        response.put("message", message);
+        return new ResponseEntity<>(response, status);
+    }
 
-        public SuccessResponse(String message) {
-            this.message = message;
-        }
+    private Map<String, Object> buildSuccessResponse(String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.OK.value());
+        response.put("message", message);
+        return response;
     }
 }

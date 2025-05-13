@@ -1,46 +1,40 @@
 package redirex.shipping.service;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserPasswordResetService {
-
     private static final Logger logger = LoggerFactory.getLogger(UserPasswordResetService.class);
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Value("${password.reset.token.timeout.minutes:15}")
-    private long passwordResetTimeout;
-
+    @Transactional
     public void generateResetToken(UserEntity user) {
-        logger.info("Generating password reset token for user: {}", user.getEmail());
         String token = UUID.randomUUID().toString();
         user.setPasswordResetToken(token);
-        user.setPasswordResetTokenExpiry(LocalDateTime.now().plusMinutes(passwordResetTimeout));
+        user.setPasswordResetTokenExpiry(LocalDateTime.now().plusHours(24));
         userRepository.save(user);
-        logger.info("Password reset token generated and saved for user: {}", user.getEmail());
+        logger.info("Generated password reset token for user: {}", user.getEmail());
     }
 
-    public void resetPassword(UserEntity user, String newPassword) {
-        logger.info("Resetting password for user: {}", user.getEmail());
-        user.setPassword(newPassword, passwordEncoder);
-        user.setPasswordResetToken(null);
-        user.setPasswordResetTokenExpiry(null);
+    @Transactional(readOnly = true)
+    public Optional<UserEntity> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Transactional
+    public void saveUser(UserEntity user) {
         userRepository.save(user);
-        logger.info("Password reset successfully for user: {}", user.getEmail());
     }
 }
