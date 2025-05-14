@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import redirex.shipping.enums.CouponTypeEnum;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,21 +18,12 @@ import java.util.Objects;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(
-        name = "coupons",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_coupon_code",
-                columnNames = {"code"}
-        ),
-        indexes = {
-                @Index(name = "idx_coupon_code", columnList = "code"),
-                @Index(name = "idx_coupon_is_active", columnList = "is_active")
-        }
-)
+@Table(name = "coupons")
 
 // Representando um cupom de desconto aplicável ao frete.
 public class CouponEntity implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -54,13 +46,16 @@ public class CouponEntity implements Serializable {
 
     @DecimalMin(value = "0.0", message = "Discount percentage cannot be negative")
     @DecimalMax(value = "100.0", message = "Discount percentage cannot exceed 100")
-    @Column
-    private Double discountPercentage;
+    @Column(precision = 5, scale = 2)
+    private BigDecimal discountPercentage;
 
     @DecimalMin(value = "0.0", message = "Max discount value cannot be negative")
     @Digits(integer = 15, fraction = 4, message = "Max discount value format is invalid")
     @Column(precision = 19, scale = 4)
     private BigDecimal maxDiscountValue;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
 
     @NotNull(message = "Valid from date is required")
     @Column(nullable = false)
@@ -79,10 +74,6 @@ public class CouponEntity implements Serializable {
     @Digits(integer = 15, fraction = 4, message = "Minimum purchase value format is invalid")
     @Column(precision = 19, scale = 4)
     private BigDecimal minPurchaseValue;
-
-    @NotNull(message = "Is active status is required")
-    @Column(nullable = false)
-    private Boolean isActive = true;
 
     @NotNull(message = "Is welcome coupon status is required")
     @Column(nullable = false)

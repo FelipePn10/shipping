@@ -3,9 +3,11 @@ package redirex.shipping.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import redirex.shipping.entity.CouponEntity;
 import redirex.shipping.entity.UserCouponEntity;
 import redirex.shipping.entity.UserEntity;
-import redirex.shipping.enums.CurrencyEnum;
+import redirex.shipping.enums.CouponTypeEnum;
+import redirex.shipping.repositories.CouponRepository;
 import redirex.shipping.util.CouponCodeGenerator;
 
 import java.math.BigDecimal;
@@ -16,32 +18,20 @@ import java.time.LocalDateTime;
 public class CouponService {
 
     private final CouponCodeGenerator couponCodeGenerator;
+    private final CouponRepository couponRepository;
 
-    @Transactional
-    public UserCouponEntity createWelcomeCoupon(UserEntity user) {
+    public CouponEntity createWelcomeCoupon() {
         String couponCode = couponCodeGenerator.generateCode(12);
-        return UserCouponEntity.builder()
-                .user(user)
-                .couponCode(couponCode)
+        CouponEntity coupon = CouponEntity.builder()
+                .code(couponCode)
+                .isActive(true)
+                .validFrom(LocalDateTime.now())
+                .validTo(LocalDateTime.now().plusDays(30))
+                .type(CouponTypeEnum.SHIPPING)
                 .discountPercentage(new BigDecimal("2.50"))
-                .currency(CurrencyEnum.BRL)
-                .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.now().plusDays(30))
-                .used(false)
+                .isWelcomeCoupon(true)
+                .isNewsletterCoupon(false)
                 .build();
-    }
-
-    @Transactional
-    public UserCouponEntity createCustomCoupon(UserEntity user, BigDecimal discountPercentage, CurrencyEnum currency, LocalDateTime expiresAt) {
-        String couponCode = couponCodeGenerator.generateCode(12);
-        return UserCouponEntity.builder()
-                .user(user)
-                .couponCode(couponCode)
-                .discountPercentage(discountPercentage)
-                .currency(currency)
-                .createdAt(LocalDateTime.now())
-                .expiresAt(expiresAt)
-                .used(false)
-                .build();
+        return couponRepository.save(coupon); //  Apenas cria e retorna o cupom
     }
 }

@@ -13,8 +13,6 @@ public class WarehouseMapper {
         }
         return WarehouseResponse.builder()
                 .id(warehouse.getId())
-                .name(warehouse.getName())
-                .location(warehouse.getLocation())
                 .build();
     }
 }

@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import redirex.shipping.enums.CouponTypeEnum;
 import redirex.shipping.enums.ShipmentStatuEnum;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -27,6 +28,7 @@ import java.util.Set;
 })
 public class ShipmentEntity implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -98,23 +100,16 @@ public class ShipmentEntity implements Serializable {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // Método auxiliar para adicionar OrderItemEntity
     public void addOrderItem(OrderItemEntity orderItem) {
         orderItems.add(orderItem);
         orderItem.setShipment(this);
     }
 
-    // Método auxiliar para remover OrderItemEntity
     public void removeOrderItem(OrderItemEntity orderItem) {
         orderItems.remove(orderItem);
         orderItem.setShipment(null);
     }
 
-    /**
-     * Aplica um cupom ao frete, validando as condições e atualizando totalShippingPaid.
-     * @param userCoupon O cupom a ser aplicado
-     * @throws IllegalArgumentException se o cupom for inválido ou não aplicável
-     */
     public void applyCoupon(UserCouponEntity userCoupon) {
         if (userCoupon == null) {
             throw new IllegalArgumentException("UserCoupon cannot be null");
@@ -123,35 +118,31 @@ public class ShipmentEntity implements Serializable {
         CouponEntity coupon = userCoupon.getCoupon();
         LocalDateTime now = LocalDateTime.now();
 
-        // Validação: Cupom não usado
-        if (userCoupon.getIsUsed()) {
+        if (userCoupon.isUsed()) {
             throw new IllegalArgumentException("Coupon has already been used");
         }
 
-        // Validação: Cupom ativo e dentro do período de validade
-        if (!coupon.getIsActive() || now.isBefore(coupon.getValidFrom()) || now.isAfter(coupon.getValidTo())) {
+        if (!coupon.isActive() || now.isBefore(coupon.getValidFrom()) || (coupon.getValidTo() != null && now.isAfter(coupon.getValidTo()))) {
             throw new IllegalArgumentException("Coupon is not active or outside validity period");
         }
 
-        // Validação: Tipo de cupom (apenas SHIPPING)
         if (coupon.getType() != CouponTypeEnum.SHIPPING) {
             throw new IllegalArgumentException("Coupon is not applicable to shipping");
         }
 
-        // Validação: Valor mínimo de compra (se definido)
         if (coupon.getMinPurchaseValue() != null &&
                 (totalShippingPaid == null || totalShippingPaid.compareTo(coupon.getMinPurchaseValue()) < 0)) {
             throw new IllegalArgumentException("Shipping cost does not meet minimum purchase value");
         }
 
-        // Cálculo do desconto
         BigDecimal discount = BigDecimal.ZERO;
         if (coupon.getDiscountAmount() != null) {
-            // Desconto fixo
             discount = coupon.getDiscountAmount();
         } else if (coupon.getDiscountPercentage() != null) {
-            // Desconto percentual
-            discount = totalShippingPaid.multiply(BigDecimal.valueOf(coupon.getDiscountPercentage() / 100.0));
+            BigDecimal discountPercentage = coupon.getDiscountPercentage();
+            discount = totalShippingPaid.multiply(
+                    discountPercentage.divide(new BigDecimal("100"), 4, BigDecimal.ROUND_HALF_UP)
+            );
             if (coupon.getMaxDiscountValue() != null && discount.compareTo(coupon.getMaxDiscountValue()) > 0) {
                 discount = coupon.getMaxDiscountValue();
             }
@@ -159,26 +150,20 @@ public class ShipmentEntity implements Serializable {
             throw new IllegalArgumentException("Coupon has no valid discount defined");
         }
 
-        // Aplica o desconto, garantindo que totalShippingPaid não seja negativo
         BigDecimal newTotal = totalShippingPaid.subtract(discount);
         if (newTotal.compareTo(BigDecimal.ZERO) < 0) {
             newTotal = BigDecimal.ZERO;
         }
         this.totalShippingPaid = newTotal;
 
-        // Associa o cupom e marca como usado
         this.appliedShippingCoupon = userCoupon;
-        userCoupon.setIsUsed(true);
+        userCoupon.setUsed(true);
         userCoupon.setUsedAt(now);
     }
 
-    /**
-     * Remove o cupom aplicado, restaurando o totalShippingPaid original.
-     * @param originalTotalShippingPaid O valor original antes do desconto
-     */
     public void removeCoupon(BigDecimal originalTotalShippingPaid) {
         if (appliedShippingCoupon != null) {
-            appliedShippingCoupon.setIsUsed(false);
+            appliedShippingCoupon.setUsed(false);
             appliedShippingCoupon.setUsedAt(null);
             this.appliedShippingCoupon = null;
         }

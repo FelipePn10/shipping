@@ -71,6 +71,10 @@ public class UserEntity implements Serializable {
     @JoinColumn(name = "warehouse_id")
     private WarehouseEntity warehouse;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id", nullable = false)
+    private CouponEntity coupon;
+
     @Column
     private String passwordResetToken;
 

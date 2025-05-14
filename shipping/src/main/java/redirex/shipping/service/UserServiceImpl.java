@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.controller.dto.response.UserResponse;
 import redirex.shipping.dto.RegisterUserDTO;
+import redirex.shipping.entity.CouponEntity;
 import redirex.shipping.entity.UserCouponEntity;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.entity.WarehouseEntity;
@@ -19,6 +20,7 @@ import redirex.shipping.mapper.UserMapper;
 import redirex.shipping.repositories.UserCouponRepository;
 import redirex.shipping.repositories.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -41,6 +43,10 @@ public class UserServiceImpl implements UserService {
         validateUserNotExists(dto.getEmail(), dto.getCpf());
 
         try {
+
+            // Criar cupom de boas-vindas
+            CouponEntity welcomeCoupon = couponService.createWelcomeCoupon();
+
             UserEntity user = UserEntity.builder()
                     .fullname(dto.getFullname())
                     .email(dto.getEmail())
@@ -49,6 +55,7 @@ public class UserServiceImpl implements UserService {
                     .phone(dto.getPhone())
                     .occupation(dto.getOccupation())
                     .role("ROLE_USER")
+                    .coupon(welcomeCoupon)
                     .build();
 
             // Criar warehouse padrão
@@ -60,9 +67,17 @@ public class UserServiceImpl implements UserService {
             // Criar carteira inicial (CNY, saldo zero)
             userWalletService.createInitialWallet(user, CurrencyEnum.CNY);
 
-            // Criar e associar cupom de boas-vindas (2.5% de desconto no frete)
-            UserCouponEntity welcomeCoupon = couponService.createWelcomeCoupon(user);
-            userCouponRepository.save(welcomeCoupon);
+            // Criar UserCouponEntity para rastreamento adicional
+            UserCouponEntity userCoupon = UserCouponEntity.builder()
+                    .user(user)
+                    .coupon(welcomeCoupon)
+                    .couponCode(welcomeCoupon.getCode())
+                    .discountPercentage(welcomeCoupon.getDiscountPercentage())
+                    .currency(CurrencyEnum.CNY)
+                    .used(false)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            userCouponRepository.save(userCoupon);
 
             logger.info("User registered successfully with email: {}", dto.getEmail());
             return userMapper.toResponse(user);

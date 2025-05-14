@@ -43,8 +43,15 @@ public class UserCouponEntity implements Serializable {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
+    @Column(name = "used_at")
+    private LocalDateTime usedAt;
+
     @Column(name = "is_used", nullable = false)
     private boolean used;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id", nullable = false)
+    private CouponEntity coupon;
 
     @Override
     public boolean equals(Object o) {
