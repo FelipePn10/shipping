@@ -11,6 +11,7 @@ import redirex.shipping.controller.dto.response.UserResponse;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.entity.UserCouponEntity;
 import redirex.shipping.entity.UserEntity;
+import redirex.shipping.entity.WarehouseEntity;
 import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.exception.ResourceNotFoundException;
 import redirex.shipping.exception.UserRegistrationException;
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final CouponService couponService;
     private final UserCouponRepository userCouponRepository;
     private final UserMapper userMapper;
+    private final WarehouseService warehouseService;
 
     @Override
     @Transactional
@@ -48,12 +50,17 @@ public class UserServiceImpl implements UserService {
                     .occupation(dto.getOccupation())
                     .role("ROLE_USER")
                     .build();
+
+            // Criar warehouse padrão
+            WarehouseEntity warehouse = warehouseService.createDefaultWarehouse(user);
+            user.setWarehouse(warehouse);
+
             user = userRepository.save(user);
 
-            // Cria a carteira inicial (BRL, saldo zero)
-            userWalletService.createInitialWallet(user, CurrencyEnum.BRL);
+            // Criar carteira inicial (CNY, saldo zero)
+            userWalletService.createInitialWallet(user, CurrencyEnum.CNY);
 
-            // Cria e associa cupom de boas-vindas (2.5% de desconto no frete)
+            // Criar e associar cupom de boas-vindas (2.5% de desconto no frete)
             UserCouponEntity welcomeCoupon = couponService.createWelcomeCoupon(user);
             userCouponRepository.save(welcomeCoupon);
 
@@ -81,7 +88,6 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));
 
-        // Verifica se o email ou CPF já estão em uso por outro usuário
         if (!dto.getEmail().equals(user.getEmail())) {
             validateEmailNotExists(dto.getEmail());
         }
@@ -89,7 +95,6 @@ public class UserServiceImpl implements UserService {
             validateCpfNotExists(dto.getCpf());
         }
 
-        // Atualiza os campos permitidos
         user.setFullname(dto.getFullname());
         user.setEmail(dto.getEmail());
         user.setPhone(dto.getPhone());

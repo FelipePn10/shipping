@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.controller.dto.response.WarehouseResponse;
 import redirex.shipping.entity.OrderItemEntity;
+import redirex.shipping.entity.UserEntity;
 import redirex.shipping.entity.WarehouseEntity;
 import redirex.shipping.exception.ResourceNotFoundException;
 import redirex.shipping.mapper.WarehouseMapper;
@@ -52,5 +53,12 @@ public class WarehouseService {
         WarehouseEntity warehouse = warehouseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse with ID " + id + " not found"));
         return warehouseMapper.toResponse(warehouse);
+    }
+
+    @Transactional
+    public WarehouseEntity createDefaultWarehouse(UserEntity user) {
+        WarehouseEntity warehouse = WarehouseEntity.builder()
+                .build();
+        return warehouseRepository.save(warehouse);
     }
 }

@@ -67,6 +67,10 @@ public class UserEntity implements Serializable {
     @Column(nullable = false)
     private String role;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "warehouse_id")
+    private WarehouseEntity warehouse;
+
     @Column
     private String passwordResetToken;
 

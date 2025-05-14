@@ -1,26 +1,20 @@
 package redirex.shipping.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import redirex.shipping.enums.CurrencyEnum;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
+@Table(name = "user_coupons")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@Table(
-        name = "user_coupons",
-        indexes = {
-                @Index(name = "idx_user_coupon_user_id", columnList = "user_id"),
-                @Index(name = "idx_user_coupon_coupon_id", columnList = "coupon_id")
-        }
-)
 public class UserCouponEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -29,38 +23,39 @@ public class UserCouponEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "User is required")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @NotNull(message = "Coupon is required")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "coupon_id", nullable = false)
-    private CouponEntity coupon;
+    @Column(name = "coupon_code", nullable = false, unique = true, length = 12)
+    private String couponCode;
 
-    @NotNull(message = "Is used status is required")
-    @Column(nullable = false)
-    private Boolean isUsed = false;
+    @Column(name = "discount_percentage", nullable = false, precision = 5, scale = 2)
+    private BigDecimal discountPercentage;
 
-    @Column
-    private LocalDateTime usedAt;
+    @Column(name = "currency", nullable = false, length = 3)
+    @Enumerated(EnumType.STRING)
+    private CurrencyEnum currency;
 
-    @NotNull(message = "Assigned at date is required")
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime assignedAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
+    @Column(name = "is_used", nullable = false)
+    private boolean used;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserCouponEntity that = (UserCouponEntity) o;
-        return id != null && Objects.equals(id, that.id);
+        if (!(o instanceof UserCouponEntity that)) return false;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(couponCode, that.couponCode);
     }
 
     @Override
     public int hashCode() {
-        return id != null ? Objects.hash(getClass(), id) : super.hashCode();
+        return Objects.hash(id, couponCode);
     }
 }

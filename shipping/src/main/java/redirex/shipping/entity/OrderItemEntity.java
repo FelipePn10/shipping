@@ -109,7 +109,7 @@ public class OrderItemEntity implements Serializable {
     private ShipmentEntity shipment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "warehouse_id")
+    @JoinColumn(name = "warehouse_id", nullable = false)
     private WarehouseEntity warehouse;
 
     @Override
