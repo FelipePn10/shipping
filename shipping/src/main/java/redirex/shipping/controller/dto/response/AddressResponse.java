@@ -3,6 +3,8 @@ package redirex.shipping.controller.dto.response;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class AddressResponse {
@@ -12,4 +14,7 @@ public class AddressResponse {
     private String state;
     private String postalCode;
     private String country;
+    private String recipientName;
+    private String phone;
+    private LocalDateTime createdAt;
 }

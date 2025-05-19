@@ -49,6 +49,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
+    @ExceptionHandler(AddressCreatedException.class)
+    public ResponseEntity<Map<String, Object>> handleAddressCreatedException(AddressCreatedException ex) {
+        return buildResponse(HttpStatus.CREATED, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

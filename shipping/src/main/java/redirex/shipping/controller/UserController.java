@@ -10,7 +10,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import redirex.shipping.controller.dto.request.CreateAddressRequest;
 import redirex.shipping.controller.dto.response.UserResponse;
+import redirex.shipping.dto.AddressDTO;
 import redirex.shipping.dto.ForgotPasswordDTO;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.dto.ResetPasswordDTO;
@@ -18,6 +20,7 @@ import redirex.shipping.entity.UserEntity;
 import redirex.shipping.exception.UnauthorizedAccessException;
 import redirex.shipping.exception.UserRegistrationException;
 import redirex.shipping.security.JwtUtil;
+import redirex.shipping.service.AddressService;
 import redirex.shipping.service.UserPasswordResetService;
 import redirex.shipping.service.UserServiceImpl;
 import redirex.shipping.service.email.UserEmailService;
@@ -37,6 +40,7 @@ public class UserController {
     private final UserPasswordResetService passwordResetService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final AddressService addressService;
 
     @PostMapping("/public/user/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
@@ -97,6 +101,15 @@ public class UserController {
         user.setPasswordResetTokenExpiry(null);
         passwordResetService.saveUser(user);
         return ResponseEntity.ok(buildSuccessResponse("Password reset successfully"));
+    }
+
+    @PostMapping("/public/user/created-address")
+    public ResponseEntity<?> createAddress(@Valid @RequestBody CreateAddressRequest request) {
+        try {
+
+        } catch (Exception e) {
+
+        }
     }
 
     @GetMapping("/api/user/{id}")
