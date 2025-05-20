@@ -114,7 +114,7 @@ public class SecurityConfig {
         props.put("mail.transport.protocol", mailTransportProtocol);
         props.put("mail.smtp.auth", mailSmtpAuth);
         props.put("mail.smtp.starttls.enable", mailSmtpStarttlsEnable);
-        props.put("mail.debug", "true"); // Habilitar debug para diagnóstico
+        props.put("mail.debug", "true");
 
         return mailSender;
     }
