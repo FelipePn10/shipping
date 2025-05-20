@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.controller.dto.request.CreateAddressRequest;
+import redirex.shipping.controller.dto.response.AddressResponse;
 import redirex.shipping.controller.dto.response.UserResponse;
 import redirex.shipping.dto.AddressDTO;
 import redirex.shipping.dto.ForgotPasswordDTO;
@@ -19,12 +20,14 @@ import redirex.shipping.dto.ResetPasswordDTO;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.exception.UnauthorizedAccessException;
 import redirex.shipping.exception.UserRegistrationException;
+import redirex.shipping.mapper.AddressMapper;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.AddressService;
 import redirex.shipping.service.UserPasswordResetService;
 import redirex.shipping.service.UserServiceImpl;
 import redirex.shipping.service.email.UserEmailService;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +44,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AddressService addressService;
+    private final AddressMapper addressMapper;
 
     @PostMapping("/public/user/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
@@ -106,9 +110,12 @@ public class UserController {
     @PostMapping("/public/user/created-address")
     public ResponseEntity<?> createAddress(@Valid @RequestBody CreateAddressRequest request) {
         try {
-
+            AddressDTO dto = addressMapper.toDTO(request);
+            AddressResponse response = addressService.createdAddress(dto);
+            return ResponseEntity.created(URI.create("/" + response.getId())).body(response);
         } catch (Exception e) {
-
+            logger.error(e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 

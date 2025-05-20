@@ -12,7 +12,7 @@ public class AddressResponse {
     private String street;
     private String city;
     private String state;
-    private String postalCode;
+    private String zipcode;
     private String country;
     private String recipientName;
     private String phone;

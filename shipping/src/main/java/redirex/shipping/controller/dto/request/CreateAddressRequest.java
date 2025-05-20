@@ -7,14 +7,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import redirex.shipping.entity.AddressEntity;
-import redirex.shipping.entity.UserEntity;
 
 @Data
 @Builder
 public class CreateAddressRequest {
-    public enum ResidenceType {
-        HOUSE, APARTMENT, COMMERCIAL, OTHER
-    }
 
     @NotBlank(message = "Recipient name is required")
     @Size(max = 255)
@@ -47,11 +43,10 @@ public class CreateAddressRequest {
     @Size(max = 100)
     private String phone;
 
+    @NotNull
+    private Long userId;
+
     @Enumerated(EnumType.STRING)
     @NotNull
     private AddressEntity.ResidenceType residenceType = AddressEntity.ResidenceType.HOUSE;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
 }

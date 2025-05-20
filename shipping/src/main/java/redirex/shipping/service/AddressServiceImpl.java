@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import redirex.shipping.controller.dto.response.AddressResponse;
 import redirex.shipping.dto.AddressDTO;
 import redirex.shipping.entity.AddressEntity;
+import redirex.shipping.entity.UserEntity;
 import redirex.shipping.exception.AddressCreatedException;
 import redirex.shipping.exception.ResourceNotFoundException;
 import redirex.shipping.mapper.AddressMapper;
 import redirex.shipping.repositories.AddressRepository;
+import redirex.shipping.repositories.UserRepository;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +25,7 @@ public class AddressServiceImpl implements AddressService {
 
     private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -30,26 +33,24 @@ public class AddressServiceImpl implements AddressService {
         logger.info("Create address request: {}", dto.getZipcode());
         validateAddressDoesNotExist(dto.getZipcode());
 
+        if (dto.getUserId() == null) {
+            logger.error("User ID is null in AddressDTO");
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+
         try {
-            AddressEntity address = AddressEntity.builder()
-                    .recipientName(dto.getRecipientName())
-                    .city(dto.getCity())
-                    .state(dto.getState())
-                    .street(dto.getStreet())
-                    .country(dto.getCountry())
-                    .phone(dto.getPhone())
-                    .zipcode(dto.getZipcode())
-                    .residenceType(dto.getResidenceType())
-                    .complement(dto.getComplement())
-                    .createdAt(LocalDateTime.now())
-                    .build();
+            UserEntity user = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User with ID " + dto.getUserId() + " not found"));
+            AddressEntity address = addressMapper.toEntity(dto);
+            address.setCreatedAt(LocalDateTime.now());
+            address.setUser(user);
             addressRepository.save(address);
 
             logger.info("Address successfully created");
             return addressMapper.toResponse(address);
         } catch (Exception e) {
-            logger.error("Address creation failed");
-            throw new AddressCreatedException("Failed to created address", e);
+            logger.error("Address creation failed: {}", e.getMessage());
+            throw new AddressCreatedException("Failed to create address", e);
         }
     }
 
