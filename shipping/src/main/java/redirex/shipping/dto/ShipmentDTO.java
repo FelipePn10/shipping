@@ -1,7 +1,7 @@
 package redirex.shipping.dto;
 
 import lombok.Data;
-import redirex.shipping.enums.ShipmentStatuEnum;
+import redirex.shipping.enums.ShipmentStatusEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,7 +19,7 @@ public class ShipmentDTO {
     private BigDecimal totalShippingPaid;
     private Long appliedShippingCouponId;
     private String trackingCode;
-    private ShipmentStatuEnum status;
+    private ShipmentStatusEnum status;
     private LocalDateTime paidShippingAt;
     private LocalDateTime shippedAt;
     private LocalDateTime deliveredAt;

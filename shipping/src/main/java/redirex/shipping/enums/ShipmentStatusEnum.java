@@ -1,6 +1,6 @@
 package redirex.shipping.enums;
 
-public enum ShipmentStatuEnum {
+public enum ShipmentStatusEnum {
     PENDING_PAYMENT, // Aguardando pagamento do frete
     PROCESSING,      // Pagamento recebido, processando (empacotando, etc.)
     SHIPPED,         // Enviado
