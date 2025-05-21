@@ -36,7 +36,7 @@ public class UserWalletEntity implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+    private UserEntity userId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 3)
@@ -50,12 +50,12 @@ public class UserWalletEntity implements Serializable {
         if (this == o) return true;
         if (!(o instanceof UserWalletEntity that)) return false;
         return Objects.equals(id, that.id) &&
-                Objects.equals(user.getId(), that.user.getId()) &&
+                Objects.equals(userId.getId(), that.userId.getId()) &&
                 currency == that.currency;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, user.getId(), currency);
+        return Objects.hash(id, userId.getId(), currency);
     }
 }

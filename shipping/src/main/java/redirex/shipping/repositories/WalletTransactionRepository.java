@@ -12,4 +12,5 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
     List<WalletTransactionEntity> findByType(WalletTransactionTypeEnum type);
     List<WalletTransactionEntity> findByRelatedOrderItemId(Long orderItemId);
     List<WalletTransactionEntity> findByRelatedShipmentId(Long shipmentId);
+    List<WalletTransactionEntity> findAllByUserId(Long userId);
 }

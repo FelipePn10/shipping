@@ -33,10 +33,21 @@ public class WalletTransactionEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity userId;
+
     @NotNull(message = "User wallet is required")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_wallet_id", nullable = false)
     private UserWalletEntity userWallet;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 3)
+    private CurrencyEnum currency;
+
+    @NotNull
+    private String description;
 
     @NotNull(message = "Transaction type is required")
     @Enumerated(EnumType.STRING)

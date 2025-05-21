@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserWalletService userWalletService;
+    private final UserWalletServiceImpl userWalletService;
     private final CouponService couponService;
     private final UserCouponRepository userCouponRepository;
     private final UserMapper userMapper;

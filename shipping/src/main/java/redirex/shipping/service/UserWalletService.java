@@ -1,36 +1,21 @@
 package redirex.shipping.service;
 
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import redirex.shipping.entity.UserEntity;
+import redirex.shipping.controller.dto.request.DepositRequestDto;
 import redirex.shipping.entity.UserWalletEntity;
+import redirex.shipping.entity.WalletTransactionEntity;
 import redirex.shipping.enums.CurrencyEnum;
-import redirex.shipping.repositories.UserWalletRepository;
+import redirex.shipping.exception.InsufficientBalanceException;
 
 import java.math.BigDecimal;
+import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class UserWalletService {
-    private static final Logger logger = LoggerFactory.getLogger(UserWalletService.class);
-
-    private final UserWalletRepository userWalletRepository;
-
-    @Transactional
-    public UserWalletEntity createInitialWallet(UserEntity user, CurrencyEnum currency) {
-        logger.info("Creating initial wallet for user: {} with currency: {}", user.getEmail(), currency);
-
-        UserWalletEntity wallet = UserWalletEntity.builder()
-                .user(user)
-                .currency(currency)
-                .balance(BigDecimal.ZERO)
-                .build();
-        wallet = userWalletRepository.save(wallet);
-
-        logger.info("Initial wallet created for user: {}", user.getEmail());
-        return wallet;
-    }
+public interface UserWalletService {
+    void createWalletsForUser(Long userId);
+    void depositToWallet(Long userId, DepositRequestDto depositRequestDto);
+    void debitFromWallet(Long userId, CurrencyEnum currency, BigDecimal amount, String transactionType,
+                         String description, Long orderItemId, Long shipmentId) throws InsufficientBalanceException;
+    void refundToWallet(Long userId, CurrencyEnum currency, BigDecimal amount, String description, Long orderItemId);
+    BigDecimal getUserWalletBalance(Long userId, CurrencyEnum currency);
+    List<UserWalletEntity> listUserWallets(Long userId);
+    List<WalletTransactionEntity> listWalletTransactions(Long userId, CurrencyEnum currency);
 }

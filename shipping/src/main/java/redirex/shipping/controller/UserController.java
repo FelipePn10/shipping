@@ -119,6 +119,8 @@ public class UserController {
         }
     }
 
+    // Criar o metodo para dar fazer update no endereço
+
     @GetMapping("/api/user/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
