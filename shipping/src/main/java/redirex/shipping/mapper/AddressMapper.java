@@ -1,8 +1,8 @@
 package redirex.shipping.mapper;
 
 import org.mapstruct.Mapper;
-import redirex.shipping.controller.dto.request.CreateAddressRequest;
-import redirex.shipping.controller.dto.response.AddressResponse;
+import redirex.shipping.dto.request.CreateAddressRequest;
+import redirex.shipping.dto.response.AddressResponse;
 import redirex.shipping.dto.AddressDTO;
 import redirex.shipping.entity.AddressEntity;
 

@@ -1,4 +1,4 @@
-package redirex.shipping.controller.dto.request;
+package redirex.shipping.dto.request;
 
 import lombok.Data;
 import redirex.shipping.enums.CurrencyEnum;

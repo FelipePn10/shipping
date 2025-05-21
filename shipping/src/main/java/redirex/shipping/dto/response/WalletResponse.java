@@ -1,4 +1,4 @@
-package redirex.shipping.controller.dto.response;
+package redirex.shipping.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

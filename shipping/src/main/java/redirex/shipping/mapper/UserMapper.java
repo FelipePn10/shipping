@@ -1,7 +1,7 @@
 package redirex.shipping.mapper;
 
 import org.springframework.stereotype.Component;
-import redirex.shipping.controller.dto.response.UserResponse;
+import redirex.shipping.dto.response.UserResponse;
 import redirex.shipping.entity.UserEntity;
 
 @Component

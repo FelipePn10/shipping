@@ -1,4 +1,4 @@
-package redirex.shipping.controller.dto.request;
+package redirex.shipping.dto.request;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

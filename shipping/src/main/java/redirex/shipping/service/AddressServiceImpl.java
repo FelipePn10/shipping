@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import redirex.shipping.controller.dto.response.AddressResponse;
+import redirex.shipping.dto.response.AddressResponse;
 import redirex.shipping.dto.AddressDTO;
 import redirex.shipping.entity.AddressEntity;
 import redirex.shipping.entity.UserEntity;

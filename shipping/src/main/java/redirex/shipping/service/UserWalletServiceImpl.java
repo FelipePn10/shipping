@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redirex.shipping.controller.dto.request.DepositRequestDto;
+import redirex.shipping.dto.request.DepositRequestDto;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.entity.UserWalletEntity;
 import redirex.shipping.entity.WalletTransactionEntity;
@@ -32,27 +32,6 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     private static final List<CurrencyEnum> SUPPORTED_CURRENCIES = List.of(CurrencyEnum.CNY);
     private static final BigDecimal TRANSACTION_FEE_PERCENTAGE = new BigDecimal("0.05");
-
-    @Override
-    @Transactional
-    public void createWalletsForUser(Long userId) {
-        logger.info("Creating wallets for userId: {}", userId);
-
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found for userId: " + userId));
-
-        for (CurrencyEnum currency : SUPPORTED_CURRENCIES) {
-            if (!userWalletRepository.existsByUserIdAndCurrency(user, currency)) {
-                UserWalletEntity wallet = UserWalletEntity.builder()
-                        .userId(user)
-                        .currency(currency)
-                        .balance(BigDecimal.ZERO)
-                        .build();
-                userWalletRepository.save(wallet);
-                logger.info("Wallet created for userId: {}, currency: {}", userId, currency);
-            }
-        }
-    }
 
     @Transactional
     public UserWalletEntity createInitialWallet(UserEntity user, CurrencyEnum currency) {
@@ -228,7 +207,7 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .userId(user)
                 .userWallet(wallet)
                 .currency(currency)
-                .amount(amount.negate()) // Valor negativo para débito
+                .amount(amount.negate())
                 .type(WalletTransactionTypeEnum.SHIPMENT_PAYMENT)
                 .description(description)
                 .relatedOrderItemId(orderItemId)

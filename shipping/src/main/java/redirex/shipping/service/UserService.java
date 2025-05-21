@@ -1,7 +1,7 @@
 package redirex.shipping.service;
 
 import jakarta.validation.Valid;
-import redirex.shipping.controller.dto.response.UserResponse;
+import redirex.shipping.dto.response.UserResponse;
 import redirex.shipping.dto.RegisterUserDTO;
 
 public interface UserService {

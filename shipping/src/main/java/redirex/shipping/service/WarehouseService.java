@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redirex.shipping.controller.dto.response.WarehouseResponse;
+import redirex.shipping.dto.response.WarehouseResponse;
 import redirex.shipping.entity.OrderItemEntity;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.entity.WarehouseEntity;

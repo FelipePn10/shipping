@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redirex.shipping.controller.dto.response.UserResponse;
+import redirex.shipping.dto.response.UserResponse;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.entity.CouponEntity;
 import redirex.shipping.entity.UserCouponEntity;
