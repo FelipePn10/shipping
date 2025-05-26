@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import redirex.shipping.dto.request.AddressUpdateRequest;
 import redirex.shipping.dto.request.CreateAddressRequest;
 import redirex.shipping.dto.response.AddressResponse;
 import redirex.shipping.dto.response.UserResponse;
@@ -17,7 +18,10 @@ import redirex.shipping.dto.AddressDTO;
 import redirex.shipping.dto.ForgotPasswordDTO;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.dto.ResetPasswordDTO;
+import redirex.shipping.entity.AddressEntity;
 import redirex.shipping.entity.UserEntity;
+import redirex.shipping.exception.AddressCreatedException;
+import redirex.shipping.exception.ResourceNotFoundException;
 import redirex.shipping.exception.UnauthorizedAccessException;
 import redirex.shipping.exception.UserRegistrationException;
 import redirex.shipping.mapper.AddressMapper;
@@ -119,7 +123,28 @@ public class UserController {
         }
     }
 
-    // Criar o metodo para dar fazer update no endereço
+    // methods to update/delete the user or related:
+
+    @PutMapping("/public/user/update-address/{zipcode}")
+    public ResponseEntity<?> updateAddress( @PathVariable String zipcode, @Valid @RequestBody AddressDTO requestDto) {
+        try {
+            logger.info("Received request to update address for zipcode: {}", zipcode);
+
+            AddressResponse updateResponse = addressService.updateAddress(zipcode, requestDto);
+            return ResponseEntity.ok(updateResponse);
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Address not found for update: {}", zipcode);
+            return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (AddressCreatedException e) { // No caso do novo CEP já existir
+            logger.warn("Update failed: {}", e.getMessage());
+            return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage()); // 409 Conflict
+        } catch (Exception e) {
+            logger.error("Unexpected error updating address for zipcode {}: {}", zipcode, e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update address due to an unexpected error.");
+        }
+    }
+
+    // criar metodo para deletar endereço depois
 
     @GetMapping("/api/user/{id}")
     @PreAuthorize("hasRole('USER')")
