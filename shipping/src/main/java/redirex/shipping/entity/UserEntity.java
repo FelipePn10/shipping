@@ -135,7 +135,7 @@ public class UserEntity implements Serializable {
     @Override
     public String toString() {
         return "UserEntity{" +
-                "id=" + id +
+                "walletId=" + id +
                 ", fullname='" + fullname + '\'' +
                 ", email='" + email + '\'' +
                 ", cpf='" + cpf + '\'' +

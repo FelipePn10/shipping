@@ -7,7 +7,7 @@ import redirex.shipping.entity.UserCouponEntity;
 
 @Mapper(componentModel = "spring", uses = {CouponMapper.class})
 public interface UserCouponMapper {
-    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.walletId", target = "userId")
     UserCouponDTO toDTO(UserCouponEntity entity);
 
     @Mapping(target = "user", ignore = true)

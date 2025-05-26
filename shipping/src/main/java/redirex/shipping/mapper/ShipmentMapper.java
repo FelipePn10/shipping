@@ -7,12 +7,12 @@ import redirex.shipping.entity.ShipmentEntity;
 
 @Mapper(componentModel = "spring")
 public interface ShipmentMapper {
-    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.walletId", target = "userId")
     @Mapping(
             target = "orderItemIds",
-            expression = "java(entity.getOrderItems().stream().map(item -> item.getId()).collect(java.util.stream.Collectors.toList()))" // Parêntese adicional aqui
+            expression = "java(entity.getOrderItems().stream().map(item -> item.getWalletId()).collect(java.util.stream.Collectors.toList()))" // Parêntese adicional aqui
     )
-    @Mapping(source = "appliedShippingCoupon.id", target = "appliedShippingCouponId")
+    @Mapping(source = "appliedShippingCoupon.walletId", target = "appliedShippingCouponId")
     ShipmentDTO toDTO(ShipmentEntity entity);
 
 

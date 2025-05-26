@@ -8,6 +8,6 @@ public interface AddressService {
     AddressResponse createdAddress(@Valid AddressDTO dto);
     AddressResponse updateAddress(String zipcode, @Valid AddressDTO dto);
     AddressResponse deleteAddress(Long id);
-//    AddressResponse getAddressById(Long id);
+//    AddressResponse getAddressById(Long walletId);
 //    List<AddressResponse> listAllAddresses();
 }

@@ -7,7 +7,7 @@ import redirex.shipping.entity.WalletTransactionEntity;
 
 @Mapper(componentModel = "spring")
 public interface WalletTransactionMapper {
-    @Mapping(source = "userWallet.id", target = "userWalletId")
+    @Mapping(source = "userWallet.walletId", target = "userWalletId")
     WalletTransactionDTO toDTO(WalletTransactionEntity entity);
 
     @Mapping(target = "userWallet", ignore = true)

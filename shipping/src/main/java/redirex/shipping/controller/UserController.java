@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.request.AddressUpdateRequest;
 import redirex.shipping.dto.request.CreateAddressRequest;
+import redirex.shipping.dto.request.DepositRequestDto;
 import redirex.shipping.dto.response.AddressResponse;
 import redirex.shipping.dto.response.UserResponse;
 import redirex.shipping.dto.AddressDTO;
@@ -117,6 +118,17 @@ public class UserController {
             AddressDTO dto = addressMapper.toDTO(request);
             AddressResponse response = addressService.createdAddress(dto);
             return ResponseEntity.created(URI.create("/" + response.getId())).body(response);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @PostMapping("/api/wallets/{walletId}/deposit")
+    public ResponseEntity<?> depositToWallet(@Valid @RequestBody DepositRequestDto depositRequestDto) {
+        try {
+
+
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());

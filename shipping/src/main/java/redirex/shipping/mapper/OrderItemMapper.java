@@ -8,8 +8,8 @@ import redirex.shipping.entity.OrderItemEntity;
 @Mapper(componentModel = "spring")
 public interface OrderItemMapper {
     @Mapping(source = "category.name", target = "categoryName")
-    @Mapping(source = "address.id", target = "addressId")
-    @Mapping(source = "shipment.id", target = "shipmentId")
+    @Mapping(source = "address.walletId", target = "addressId")
+    @Mapping(source = "shipment.walletId", target = "shipmentId")
     OrderItemDTO toDTO(OrderItemEntity entity);
 
     @Mapping(source = "categoryName", target = "category.name")

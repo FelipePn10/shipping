@@ -23,7 +23,7 @@ public class UserWalletEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long walletId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -49,13 +49,13 @@ public class UserWalletEntity implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof UserWalletEntity that)) return false;
-        return Objects.equals(id, that.id) &&
+        return Objects.equals(walletId, that.walletId) &&
                 Objects.equals(userId.getId(), that.userId.getId()) &&
                 currency == that.currency;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, userId.getId(), currency);
+        return Objects.hash(walletId, userId.getId(), currency);
     }
 }
