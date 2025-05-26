@@ -47,16 +47,6 @@ public class OrderItemEntity implements Serializable {
     @Column(name = "product_value", nullable = false, precision = 19, scale = 4)
     private BigDecimal productValue;
 
-    @NotNull(message = "Original currency is required")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "original_currency", nullable = false, length = 3)
-    private CurrencyEnum originalCurrency;
-
-    @NotBlank(message = "Origin country is required")
-    @Size(max = 100, message = "Origin country must not exceed 100 characters")
-    @Column(name = "origin_country", nullable = false)
-    private String originCountry;
-
     @NotNull(message = "Category is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
@@ -66,11 +56,6 @@ public class OrderItemEntity implements Serializable {
     @Size(max = 14, message = "Recipient CPF must not exceed 14 characters")
     @Column(name = "recipient_cpf", nullable = false)
     private String recipientCpf;
-
-    @NotNull(message = "Address is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = false)
-    private AddressEntity address;
 
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
@@ -93,9 +78,6 @@ public class OrderItemEntity implements Serializable {
     @Size(max = 1000, message = "Warehouse notes must not exceed 1000 characters")
     @Column(name = "warehouse_notes", length = 1000)
     private String warehouseNotes;
-
-    @Column
-    private Double weight;
 
     @Size(max = 50, message = "Dimensions must not exceed 50 characters")
     @Column(length = 50)
