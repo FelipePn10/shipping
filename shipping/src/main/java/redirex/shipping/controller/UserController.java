@@ -132,6 +132,8 @@ public class UserController {
 //        try {
 //
 //
+//        } catch(DepositWalletExecption e) {
+//
 //        } catch (Exception e) {
 //            logger.error(e.getMessage(), e);
 //            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -150,7 +152,7 @@ public class UserController {
         } catch (ResourceNotFoundException e) {
             logger.warn("Address not found for update: {}", zipcode);
             return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (AddressCreatedException e) { // No caso do novo CEP já existir
+        } catch (AddressCreatedException e) { // No caso do novo CEP (zipcode) já existir
             logger.warn("Update failed: {}", e.getMessage());
             return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage()); // 409 Conflict
         } catch (Exception e) {
