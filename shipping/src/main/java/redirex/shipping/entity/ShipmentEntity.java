@@ -40,6 +40,10 @@ public class ShipmentEntity implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "wallet_id", nullable = false)
+    private UserWalletEntity wallet;
+
     @OneToMany(mappedBy = "shipment")
     private Set<OrderItemEntity> orderItems = new HashSet<>();
 

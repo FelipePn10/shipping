@@ -5,7 +5,11 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class RegisterUserDTO {
 
     @NotBlank(message = "Full name is required")
@@ -33,23 +37,4 @@ public class RegisterUserDTO {
     @Size(max = 100, message = "Occupation must not exceed 100 characters")
     private String occupation;
 
-    // Getters e Setters
-    public String getFullname() { return fullname; }
-    public void setFullname(String fullname) { this.fullname = fullname; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
-    public String getCpf() { return cpf; }
-    public void setCpf(String cpf) { this.cpf = cpf; }
-
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-
-
-    public String getOccupation() { return occupation; }
-    public void setOccupation(String occupation) { this.occupation = occupation; }
 }

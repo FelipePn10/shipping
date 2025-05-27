@@ -43,7 +43,6 @@ public class UserServiceImpl implements UserService {
         validateUserNotExists(dto.getEmail(), dto.getCpf());
 
         try {
-
             // Criar cupom de boas-vindas
             CouponEntity welcomeCoupon = couponService.createWelcomeCoupon();
 
@@ -88,15 +87,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public UserResponse findUserById(Long id) {
-        logger.info("Finding user by ID: {}", id);
-        UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));
-        return userMapper.toResponse(user);
-    }
-
-    @Override
     @Transactional
     public UserResponse updateUserProfile(Long id, @Valid RegisterUserDTO dto) {
         logger.info("Updating user profile for ID: {}", id);
@@ -120,6 +110,15 @@ public class UserServiceImpl implements UserService {
 
         user = userRepository.save(user);
         logger.info("User profile updated successfully: {}", user.getEmail());
+        return userMapper.toResponse(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse findUserById(Long id) {
+        logger.info("Finding user by ID: {}", id);
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));
         return userMapper.toResponse(user);
     }
 

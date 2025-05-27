@@ -7,8 +7,10 @@ import redirex.shipping.entity.NotificationEntity;
 
 @Mapper(componentModel = "spring")
 public interface NotificationMapper {
-    @Mapping(source = "user.walletId", target = "userId")
-    @Mapping(source = "admin.walletId", target = "adminId")
+    // Mapeia o ID da carteira do usuário (UserWalletEntity.walletId) para userId no DTO
+    @Mapping(source = "user.wallet.walletId", target = "userId")
+    // Mapeia o ID da carteira do admin (UserWalletEntity.walletId) para adminId no DTO
+    @Mapping(source = "admin.wallet.walletId", target = "adminId")
     NotificationDTO toDTO(NotificationEntity entity);
 
     @Mapping(target = "user", ignore = true)

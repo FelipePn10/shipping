@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class UserWalletDTO {
     private Long id;
     private Long userId;
+    private Long walletId;
     private CurrencyEnum currency;
     private BigDecimal balance;
     private LocalDateTime createdAt;

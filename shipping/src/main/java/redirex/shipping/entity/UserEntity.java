@@ -17,7 +17,8 @@ import java.util.Objects;
         @Index(name = "idx_user_email", columnList = "email"),
         @Index(name = "idx_user_cpf", columnList = "cpf")
 })
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,10 +38,6 @@ public class UserEntity implements Serializable {
     @Size(max = 255, message = "Email must not exceed 255 characters")
     @Column(nullable = false)
     private String email;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
@@ -72,8 +69,17 @@ public class UserEntity implements Serializable {
     private WarehouseEntity warehouse;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id", nullable = false)
+    @JoinColumn(name = "coupon_id")
     private CouponEntity coupon;
+
+    @OneToOne
+    @JoinColumn(name = "wallet_id")
+    private UserWalletEntity wallet;
+
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     @Column
     private String passwordResetToken;
@@ -129,7 +135,7 @@ public class UserEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, cpf);
+        return Objects.hash(id, email, cpf, password);
     }
 
     @Override

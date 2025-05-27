@@ -7,7 +7,8 @@ import redirex.shipping.entity.UserCouponEntity;
 
 @Mapper(componentModel = "spring", uses = {CouponMapper.class})
 public interface UserCouponMapper {
-    @Mapping(source = "user.walletId", target = "userId")
+    // Mapeia o ID da carteira do usuário (UserWalletEntity.walletId) para userId no DTO
+    @Mapping(source = "user.wallet.walletId", target = "userId")
     UserCouponDTO toDTO(UserCouponEntity entity);
 
     @Mapping(target = "user", ignore = true)

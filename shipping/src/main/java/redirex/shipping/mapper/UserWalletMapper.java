@@ -7,9 +7,10 @@ import redirex.shipping.entity.UserWalletEntity;
 
 @Mapper(componentModel = "spring")
 public interface UserWalletMapper {
-    @Mapping(source = "user.walletId", target = "userId")
-    UserWalletDTO toDTO(UserWalletEntity entity);
 
-    @Mapping(target = "user", ignore = true)
-    UserWalletEntity toEntity(UserWalletDTO dto);
+    // Mapeia o ID do usuário (UserEntity.id) para um campo no DTO
+    @Mapping(source = "userId.id", target = "userId")
+    // Mapeia o ID da carteira (UserWalletEntity.walletId)
+    @Mapping(source = "walletId", target = "walletId")
+    UserWalletDTO toDTO(UserWalletEntity entity);
 }

@@ -118,22 +118,25 @@ public class UserController {
             AddressDTO dto = addressMapper.toDTO(request);
             AddressResponse response = addressService.createdAddress(dto);
             return ResponseEntity.created(URI.create("/" + response.getId())).body(response);
+        } catch (AddressCreatedException e) {
+            logger.error("Address created error: {}", e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
-    @PostMapping("/api/wallets/{walletId}/deposit")
-    public ResponseEntity<?> depositToWallet(@Valid @RequestBody DepositRequestDto depositRequestDto) {
-        try {
-
-
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
+//    @PostMapping("/api/wallets/{walletId}/deposit")
+//    public ResponseEntity<?> depositToWallet(@Valid @RequestBody DepositRequestDto depositRequestDto) {
+//        try {
+//
+//
+//        } catch (Exception e) {
+//            logger.error(e.getMessage(), e);
+//            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+//        }
+//    }
 
     // methods to update/delete the user or related:
 

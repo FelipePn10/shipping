@@ -35,10 +35,10 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     private static final List<CurrencyEnum> SUPPORTED_CURRENCIES = List.of(CurrencyEnum.CNY);
     private static final BigDecimal TRANSACTION_FEE_PERCENTAGE = new BigDecimal("0.05");
-    private static final int BRL_SCALE = 2; // Escala para valores em BRL
+    private static final int BRL_SCALE = 2;
 
     @Transactional
-    public UserWalletEntity createInitialWallet(UserEntity user) {
+    public UserWalletEntity createInitialWallet(UserEntity user, CurrencyEnum cny) {
         CurrencyEnum currency = CurrencyEnum.CNY;
         logger.info("Creating initial CNY wallet for user: {}", user.getEmail());
 
@@ -67,7 +67,7 @@ public class UserWalletServiceImpl implements UserWalletService {
     public void depositToWallet(Long userId, DepositRequestDto depositRequestDto) {
         logger.info("Attempting deposit for userId: {} with target CNY amount: {}", userId, depositRequestDto.getAmount());
 
-        if (depositRequestDto.getAmount() == null || depositRequestDto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (depositRequestDto.getAmount() == null || depositRequestDto.getAmount().compareTo(BigDecimal.valueOf(50)) <= 0) {
             throw new IllegalArgumentException("Target deposit amount (CNY) must be greater than zero.");
         }
         if (depositRequestDto.getPaymentMethodId() == null || depositRequestDto.getPaymentMethodId().isBlank()) {
@@ -86,7 +86,7 @@ public class UserWalletServiceImpl implements UserWalletService {
         UserWalletEntity wallet = userWalletRepository.findByUserIdAndCurrency(user, walletCurrency)
                 .orElseGet(() -> {
                     logger.info("CNY wallet not found for user {}, creating one.", user.getEmail());
-                    return createInitialWallet(user);
+                    return createInitialWallet(user, CurrencyEnum.CNY);
                 });
 
         // Obter taxa de câmbio BRL para CNY
