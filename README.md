@@ -1,290 +1,209 @@
----
+```markdown
+# 🚢 Shipping System - Secure Authentication & Logistics Backend
 
+[![Java Version](https://img.shields.io/badge/Java-17%2B-blue?logo=openjdk)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.1.0-brightgreen?logo=spring)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-blue?logo=postgresql)](https://www.postgresql.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# 🔒 Shipping - Sistema de Autenticação e Gerenciamento de Usuários
+A production-ready backend system for secure authentication and logistics management built with Spring Boot. Features JWT authentication, role-based access control, shipment tracking, and financial operations with comprehensive security measures.
 
-![Java](https://img.shields.io/badge/Java-17%2B-007396?logo=java)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.0-6DB33F?logo=spring)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-4169E1?logo=postgresql)
-![Docker](https://img.shields.io/badge/Docker-20.10%2B-2496ED?logo=docker)
-![License](https://img.shields.io/badge/License-MIT-blue)
+## ✨ Key Features
+- **🔒 Secure Authentication**: JWT-based auth with token invalidation
+- **👥 User Management**: Registration, profile updates, password reset
+- **🏢 Enterprise Support**: Dedicated enterprise endpoints
+- **📍 Address Management**: Validated address operations
+- **💰 Wallet System**: Balance tracking and transactions
+- **📦 Shipment Tracking**: Full lifecycle management
+- **✉️ Email Notifications**: Password resets and alerts
+- **📊 Comprehensive Logging**: SLF4J with configurable levels
+- **🐳 Containerized**: Docker support for PostgreSQL and app
 
-Um sistema robusto para autenticação e gerenciamento de usuários, implementado com Spring Boot, Spring Security, JSON Web Tokens (JWT) e PostgreSQL. O projeto utiliza Docker para containerização do banco de dados, facilitando a implantação e testes.
+## 🧩 Technology Stack
+| Component           | Technology               |
+|---------------------|--------------------------|
+| Backend Framework   | Spring Boot 3.x          |
+| Security            | Spring Security 6.x      |
+| Database            | PostgreSQL 15+           |
+| ORM                 | Spring Data JPA          |
+| API Documentation   | OpenAPI 3.0              |
+| Containerization    | Docker + Docker Compose  |
+| Mapping             | MapStruct                |
+| Testing             | JUnit 5, Mockito         |
+| Build Tool          | Maven                    |
 
-## 📑 Índice
-
-- [Recursos Principais](#-recursos-principais)
-- [Pré-requisitos](#-pré-requisitos)
-- [Instalação](#-instalação)
-- [Configuração de Ambiente](#⚙️-configuração-de-ambiente)
-- [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Endpoints da API](#-endpoints-da-api)
-- [Fluxo de Segurança](#%EF%B8%8F-fluxo-de-segurança)
-- [Melhores Práticas Implementadas](#-melhores-práticas-implementadas)
-- [Executando Testes](#-executando-testes)
-- [Contribuição](#-contribuição)
-- [Licença](#-licença)
-- [Contato](#-contato)
-
-## 🚀 Recursos Principais
-
-- ✅ Autenticação segura com JWT (JSON Web Tokens)
-- ✅ Registro de usuários com validação de campos obrigatórios
-- ✅ Listagem de todos os usuários cadastrados
-- ✅ Armazenamento seguro de senhas com BCrypt
-- ✅ Configuração de PostgreSQL containerizado com Docker
-- ✅ Endpoints públicos para registro e autenticação
-- ✅ Logs detalhados para debugging
-- ✅ Configuração de CORS para integração com frontends
-
-## 📋 Pré-requisitos
-
-- Java JDK 17+
-- Apache Maven 3.8+
-- Docker 20.10+
-- Docker Compose 2.12+
-- PostgreSQL 15+
-- IDE de sua preferência (IntelliJ IDEA, VS Code, etc.)
-- Postman para testes de API
-
-## 🛠 Instalação
-
+## 🚀 Quick Start
 ```bash
-# 1. Clone o repositório
-git clone https://github.com/seu-usuario/shipping-system.git
+# Clone repository
+git clone https://github.com/your-username/shipping-system.git
 cd shipping-system
 
-# 2. Configure as variáveis de ambiente
-# Crie um arquivo application.properties em shipping/src/main/resources/
-cp shipping/src/main/resources/application.properties.example shipping/src/main/resources/application.properties
+# Copy configuration
+cp shipping/src/main/resources/application.properties.example \
+   shipping/src/main/resources/application.properties
 
-# 3. Inicie o container do PostgreSQL
-cd infrastructure/docker
-docker-compose up -d
+# Start services
+docker-compose -f infrastructure/docker/docker-compose.yml up -d
 
-# 4. Construa e execute a aplicação
-mvn clean install
+# Build and run
+cd shipping
 mvn spring-boot:run
 ```
+Access API at: `http://localhost:8080`
 
-## ⚙️ Configuração de Ambiente
+## ⚙️ Configuration
+Configure environment variables in `application.properties`:
 
-As configurações são definidas no arquivo `shipping/src/main/resources/application.properties`. Exemplo:
+| Key                     | Description                          | Default Value                     |
+|-------------------------|--------------------------------------|-----------------------------------|
+| `spring.datasource.url` | PostgreSQL connection URL            | `jdbc:postgresql://localhost:5432/shipping_db` |
+| `jwt.secret`            | JWT signing key                      | **REQUIRED** (min 256-bit)        |
+| `jwt.expiration`        | Token validity in ms                 | `86400000` (24 hours)             |
+| `spring.mail.username`  | Email service account                | Your SMTP credentials             |
+| `stripe.api.key`        | Payment processing key               | Your Stripe API key               |
 
-```properties
-# Banco de dados
-spring.datasource.url=jdbc:postgresql://localhost:5432/shipping_db
-spring.datasource.username=authuser
-spring.datasource.password=securepassword
-spring.jpa.hibernate.ddl-auto=update
-
-# JWT
-jwt.secret=SuperSegredoJWT12345!MuitoLongaESegura
-jwt.expiration=86400000
-
-# Logs
-logging.level.org.springframework.security=DEBUG
-logging.level.redirex.shipping=DEBUG
-```
-
-| Variável               | Descrição                              | Valor Padrão          |
-|------------------------|----------------------------------------|-----------------------|
-| `spring.datasource.url`| URL de conexão do PostgreSQL           | jdbc:postgresql://localhost:5432/shipping_db |
-| `spring.datasource.username` | Usuário do banco de dados        | authuser              |
-| `spring.datasource.password` | Senha do banco de dados          | securepassword        |
-| `jwt.secret`           | Chave secreta para assinatura JWT      | (obrigatório)         |
-| `jwt.expiration`       | Tempo de expiração do token (ms)       | 86400000 (24h)        |
-
-## 🛠 Tecnologias Utilizadas
-
-### Backend
-- **Spring Boot 3.1** - Framework principal
-- **Spring Security 6** - Autenticação e autorização
-- **JJWT** - Geração e validação de tokens JWT
-- **Spring Data JPA** - ORM para acesso ao banco
-- **Lombok** - Redução de código boilerplate
-- **PostgreSQL Driver** - Conexão com banco
-
-### Banco de Dados
-- **PostgreSQL 15** - Banco de dados relacional
-- **Docker** - Containerização do banco
-
-### Ferramentas
-- **Postman** - Teste de endpoints
-- **Maven** - Gerenciamento de dependências
-- **pgAdmin/DBeaver** - Gerenciamento do banco de dados
-
-## 🏗 Estrutura do Projeto
-
-```plaintext
-├── infrastructure/
-│   └── docker/
-│       └── docker-compose.yml       # Configuração do PostgreSQL
-├── shipping/
-│   ├── src/main/java/redirex/shipping/
-│   │   ├── config/                 # Configurações do Spring
-│   │   │   └── SecurityConfig.java # Configuração do Spring Security
-│   │   ├── controllers/            # Controladores REST
-│   │   │   ├── AuthController.java # Endpoints de autenticação
-│   │   │   └── UserController.java # Endpoints de gerenciamento de usuários
-│   │   ├── dto/                    # Objetos de transferência
-│   │   │   └── RegisterUserDTO.java
-│   │   ├── entity/                 # Entidades JPA
-│   │   │   └── User.java
-│   │   ├── repositories/           # Repositórios JPA
-│   │   │   └── UserRepository.java
-│   │   ├── security/               # Lógica de segurança
-│   │   │   ├── JwtUtil.java
-│   │   │   ├── JwtAuthenticationFilter.java
-│   │   │   └── CustomUserDetailsService.java
-│   │   └── service/                # Serviços de negócio
-│   │       └── UserService.java
-│   ├── src/main/resources/
-│   │   └── application.properties  # Configurações de ambiente
-└── pom.xml                         # Dependências Maven
-```
-
-## 🌐 Endpoints da API
-
-### Autenticação
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "senha": "SenhaSegura123!"
-}
-
-# Resposta
-HTTP/1.1 200 OK
-{
-  "accessToken": "eyJhbGciOiJIUzUxMiJ9..."
-}
-```
-
-### Registro de Usuário
-```http
-POST /usuarios
-Content-Type: application/json
-
-{
-  "fullname": "Novo Usuário",
-  "email": "novo@example.com",
-  "password": "SenhaForte456@",
-  "cpf": "12345678901",
-  "phone": "11987654321",
-  "address": "Rua Exemplo, 123",
-  "complement": "Apto 45",
-  "city": "São Paulo",
-  "state": "SP",
-  "zipcode": "12345678",
-  "country": "Brasil",
-  "occupation": "Desenvolvedor"
-}
-
-# Resposta
-HTTP/1.1 201 Created
-{
-  "id": 1,
-  "fullname": "Novo Usuário",
-  "email": "novo@example.com",
-  "password": "$2a$10$...",
-  "cpf": "12345678901",
-  "phone": "11987654321",
-  "address": "Rua Exemplo, 123",
-  "complement": "Apto 45",
-  "city": "São Paulo",
-  "state": "SP",
-  "zipcode": "12345678",
-  "country": "Brasil",
-  "occupation": "Desenvolvedor",
-  "role": "ROLE_USER"
-}
-```
-
-### Listagem de Usuários
-```http
-GET /usuarios
-Content-Type: application/json
-
-# Resposta
-HTTP/1.1 200 OK
-[
-  {
-    "id": 1,
-    "fullname": "Novo Usuário",
-    "email": "novo@example.com",
-    "password": "$2a$10$...",
-    "cpf": "12345678901",
-    "phone": "11987654321",
-    "address": "Rua Exemplo, 123",
-    "complement": "Apto 45",
-    "city": "São Paulo",
-    "state": "SP",
-    "zipcode": "12345678",
-    "country": "Brasil",
-    "occupation": "Desenvolvedor",
-    "role": "ROLE_USER"
-  }
-]
-```
-
-## 🛡️ Fluxo de Segurança
-
-1. **Registro**: Cria um usuário com senha criptografada (BCrypt) e atribui o papel `ROLE_USER`.
-2. **Login**: Valida as credenciais e retorna um token JWT.
-3. **Acesso protegido**: Requisições a endpoints protegidos exigem um token JWT válido no cabeçalho `Authorization: Bearer <token>`.
-4. **Autorização**: O Spring Security verifica o token e os papéis do usuário no `SecurityContext`.
-
-## 🔐 Melhores Práticas Implementadas
-
-- **Senhas seguras**: Uso de `BCryptPasswordEncoder` para criptografia de senhas.
-- **JWT**: 
-  - Chave secreta longa e segura.
-  - Tokens com expiração de 24 horas.
-  - Validação de assinatura no `JwtAuthenticationFilter`.
-- **Segurança stateless**: Configuração de `SessionCreationPolicy.STATELESS` para APIs REST.
-- **Logs detalhados**: Níveis `DEBUG` para `org.springframework.security` e `redirex.shipping`.
-- **Validação de dados**: Campos obrigatórios validados na entidade `User`.
-
-## 🧪 Executando Testes
-
-Atualmente, o projeto não inclui testes unitários ou de integração configurados. Para testar os endpoints, use o Postman:
-
+## 📂 Project Structure
 ```bash
-# Testar criação de usuário
-POST http://localhost:8080/usuarios
-Content-Type: application/json
-
-# Testar listagem de usuários
-GET http://localhost:8080/usuarios
-Content-Type: application/json
+shipping-system/
+├── infrastructure/
+│   └── docker/              # Container definitions
+│       ├── docker-compose.yml
+│       └── Dockerfile
+└── shipping/
+    ├── src/
+    │   ├── main/java/redirex/shipping/
+    │   │   ├── config/      # App configurations
+    │   │   ├── controller/  # REST endpoints
+    │   │   ├── dto/         # Data transfer objects
+    │   │   ├── entity/      # JPA entities
+    │   │   ├── security/    # Auth/JWT implementation
+    │   │   ├── service/     # Business logic
+    │   │   └── util/        # Helper classes
+    │   └── resources/       # Properties files
+    └── test/                # Test cases
 ```
 
-Para adicionar testes unitários, use JUnit e Mockito:
+## 🔐 Security Flow
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant Database
+    
+    Client->>Server: POST /public/auth/login (Credentials)
+    Server->>Database: Validate credentials
+    Database-->>Server: User details
+    Server->>Server: Generate JWT
+    Server-->>Client: Return JWT
+    
+    Client->>Server: API Request (With JWT)
+    Server->>Server: Verify JWT & Check Blacklist
+    Server->>Database: Check permissions
+    Server-->>Client: Return secured data
+```
 
+## 🛡️ Security Best Practices
+- **Password Handling**: BCrypt hashing with salt
+- **Token Security**: 
+  - 256-bit minimum secret keys
+  - Short expiration times (24h)
+  - Server-side token blacklisting
+- **Access Control**: 
+  ```java
+  @PreAuthorize("hasRole('ENTERPRISE_ADMIN')")
+  public void updateEnterpriseDetails() { ... }
+  ```
+- **Input Validation**: Jakarta Bean Validation on all DTOs
+- **Transport Security**: HTTPS enforced in production
+
+## 🌐 API Endpoints
+### Authentication
+| Method | Endpoint                    | Description                  |
+|--------|-----------------------------|------------------------------|
+| POST   | `/public/auth/login`        | User authentication          |
+| POST   | `/public/auth/login/enterprise` | Enterprise authentication |
+| POST   | `/public/auth/logout`       | Token invalidation           |
+
+### User Management
+| Method | Endpoint                      | Description              |
+|--------|-------------------------------|--------------------------|
+| POST   | `/public/user/register`       | New user registration    |
+| PUT    | `/api/user/{id}/profile`      | Update user profile      |
+| POST   | `/public/user/forgot-password`| Initiate password reset  |
+
+**Sample Request:**
+```http
+POST /public/user/register
+Content-Type: application/json
+
+{
+  "fullname": "Jane Doe",
+  "email": "jane.doe@example.com",
+  "password": "SecurePass123!",
+  "cpf": "10987654321",
+  "phone": "11999998888",
+  "address": "456 Oak Ave",
+  "zipcode": "98765432"
+}
+```
+
+## 🧪 Testing
+Run unit and integration tests:
 ```bash
 mvn test
 ```
 
-## 🤝 Contribuição
+Test specific features:
+```bash
+# Run security tests only
+mvn test -Dtest="*SecurityTest*"
 
-1. Faça um fork do projeto.
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`).
-3. Commit suas alterações (`git commit -m 'Adiciona nova funcionalidade'`).
-4. Push para a branch (`git push origin feature/nova-funcionalidade`).
-5. Abra um Pull Request.
+# Generate test coverage report
+mvn jacoco:report
+```
 
-## 📄 Licença
+## 🚀 Deployment
+### Docker Deployment
+```bash
+# Build image
+docker build -t shipping-system:1.0.0 -f infrastructure/docker/Dockerfile .
 
-Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
+# Run container
+docker run -d -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://db-host:5432/prod_db \
+  -e JWT_SECRET=your_production_secret \
+  shipping-system:1.0.0
+```
 
-## ✉️ Contato
+### Cloud Deployment
+1. Build Docker image with production profile
+2. Push to container registry (Docker Hub, ECR, GCR)
+3. Deploy to cloud platform (AWS ECS, Google Cloud Run, Azure Container Apps)
+4. Configure environment variables in deployment
+5. Set up database connection pooling
 
-**Desenvolvedor:** [Felipe Panosso]  
-**Email:** [panossodev@gmail.com]  
-**LinkedIn:** [linkedin.com/in/felipe-panosso]
+## 🤝 Contributing
+We welcome contributions! Please follow our workflow:
 
----
+1. Fork the repository
+2. Create feature branch (`git checkout -b feat/new-endpoint`)
+3. Commit changes (`git commit -m 'Add shipment tracking endpoint'`)
+4. Push to branch (`git push origin feat/new-endpoint`)
+5. Open pull request with detailed description
+
+**Coding Standards:**
+- Follow Google Java Style Guide
+- Maintain 80%+ test coverage
+- Include Javadoc for public methods
+- Update OpenAPI documentation for new endpoints
+
+## 📄 License
+Distributed under the MIT License. See `LICENSE` for details.
+
+## ✉️ Contact
+**Felipe Panosso** - Project Maintainer  
+[![Email](https://img.shields.io/badge/Email-panossodev%40gmail.com-blue?logo=gmail)](mailto:panossodev@gmail.com) 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-felipe--panosso-blue?logo=linkedin)](https://linkedin.com/in/felipe-panosso)
+
+**Project Repository**: [https://github.com/your-username/shipping-system](https://github.com/your-username/shipping-system)
+```
