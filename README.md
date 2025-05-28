@@ -321,6 +321,5 @@ Distributed under the MIT License. See `LICENSE` for details.
 **Maintainer**: Felipe Panosso  
 **Email**: panossodev@gmail.com  
 **LinkedIn**: [linkedin.com/in/felipe-panosso](https://linkedin.com/in/felipe-panosso)  
-**GitHub**: [github.com/your-username](https://github.com/your-username)
 
 ---
