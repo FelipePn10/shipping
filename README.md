@@ -1,325 +1,415 @@
+
 ---
 
-# 🔒 Shipping System - Backend for Authentication and Logistics Management
+
+# 🔒 Sistema de Logística e Autenticação - Backend
 
 ![Java](https://img.shields.io/badge/Java-17%2B-007396?logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.0-6DB33F?logo=spring)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-4169E1?logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-20.10%2B-2496ED?logo=docker)
-![License](https://img.shields.io/badge/License-MIT-blue)
+![Maven](https://img.shields.io/badge/Maven-3.8%2B-EF3B24?logo=apache-maven)
+![License](https://img.shields.io/badge/Licença-MIT-blue)
 
-A robust, scalable backend system built with **Spring Boot** and **Spring Security**, designed for secure user authentication, enterprise management, and logistics operations. The system leverages **JWT** for authentication, **PostgreSQL** for data persistence, and **Docker** for containerized deployments. It supports user management, address handling, wallet transactions, shipment tracking, and more, with a focus on modularity, security, and performance.
+Um backend robusto, escalável e seguro, construído com **Spring Boot** e **Spring Security**, projetado para gerenciar autenticação de usuários, operações logísticas, carteiras digitais, notificações e integrações empresariais. O sistema utiliza **JWT** para autenticação, **PostgreSQL** para persistência de dados e **Docker** para implantação containerizada. Ele suporta funcionalidades como gerenciamento de usuários, endereços, remessas, cupons, notificações por e-mail e integração com serviços de pagamento (Stripe).
 
-## 📑 Table of Contents
+---- O sistema está em desenvolvimento, pode ocorrer mudanças na estrutura/projeto e haver bugs! ----
 
-- [Features](#-features)
-- [Architecture](#-architecture)
-- [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
-- [Environment Configuration](#⚙️-environment-configuration)
-- [Project Structure](#-project-structure)
-- [API Endpoints](#-api-endpoints)
-- [Security Flow](#🛡️-security-flow)
-- [Best Practices](#-best-practices)
-- [Running Tests](#-running-tests)
-- [Deployment](#-deployment)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Contact](#-contact)
+## 📑 Índice
 
-## 🚀 Features
+- [Visão Geral](#-visão-geral)
+- [Funcionalidades](#-funcionalidades)
+- [Arquitetura](#-arquitetura)
+- [Pré-requisitos](#-pré-requisitos)
+- [Instalação](#-instalação)
+- [Configuração de Ambiente](#⚙️-configuração-de-ambiente)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Endpoints da API](#-endpoints-da-api)
+- [Fluxo de Segurança](#🛡️-fluxo-de-segurança)
+- [Melhores Práticas](#-melhores-práticas)
+- [Monitoramento e Logging](#-monitoramento-e-logging)
+- [Testes](#-testes)
+- [Implantação](#-implantação)
+- [Integrações Externas](#-integrações-externas)
+- [Exemplos de Uso](#-exemplos-de-uso)
+- [Contribuição](#-contribuição)
+- [FAQ](#-perguntas-frequentes-faq)
+- [Licença](#-licença)
+- [Contato](#-contato)
 
-- **Authentication & Authorization**: Secure user and enterprise login with JWT-based authentication.
-- **User Management**: Register, update, and retrieve user profiles with role-based access control.
-- **Address Management**: Create, update, and manage user addresses with validation.
-- **Wallet Operations**: Support for deposits and balance management with error handling.
-- **Shipment Tracking**: Manage shipments with status tracking and order item integration.
-- **Notifications**: Send email notifications for password resets and other events.
-- **Enterprise Support**: Dedicated endpoints for enterprise registration and authentication.
-- **Error Handling**: Comprehensive exception handling with meaningful error responses.
-- **Containerization**: Dockerized PostgreSQL and application setup for consistent deployments.
-- **Logging**: Detailed logging with SLF4J for debugging and monitoring.
-- **Scalability**: Modular architecture with service, repository, and DTO layers.
+## 🌟 Visão Geral
 
-## 🏛 Architecture
+O **Sistema de Logística e Autenticação** é uma solução backend projetada para suportar aplicações de e-commerce e logística, com foco em segurança, escalabilidade e facilidade de integração. Ele oferece uma API RESTful para autenticação de usuários e empresas, gerenciamento de endereços, carteiras digitais, remessas, cupons e notificações. A arquitetura modular, combinada com práticas modernas de desenvolvimento, garante robustez e manutenção simplificada.
 
-The system follows a **layered architecture** with clear separation of concerns:
+## 🚀 Funcionalidades
 
-- **Controllers**: Handle HTTP requests and responses, delegating to services.
-- **Services**: Contain business logic, interacting with repositories and external services.
-- **Repositories**: Manage data access using Spring Data JPA.
-- **Entities**: Represent database tables with JPA annotations.
-- **DTOs**: Facilitate data transfer between layers, ensuring encapsulation.
-- **Security**: Implements JWT-based authentication with Spring Security.
-- **Mappers**: Convert between entities and DTOs using MapStruct.
-- **Configuration**: Centralized configuration for caching, security, and external integrations (e.g., Stripe, WebClient).
+- **Autenticação Segura**: Suporte a login de usuários e empresas com JWT, incluindo logout com blacklist de tokens.
+- **Gerenciamento de Usuários**: Registro, atualização e consulta de perfis com controle de acesso baseado em papéis (ROLE_USER, ROLE_ADMIN).
+- **Gerenciamento de Endereços**: Criação, atualização e validação de endereços com suporte a CEP.
+- **Carteira Digital**: Depósitos e gerenciamento de saldo com validação de transações.
+- **Remessas**: Criação e rastreamento de remessas com status (e.g., PENDING, SHIPPED, DELIVERED).
+- **Notificações**: Envio de e-mails para recuperação de senha e comunicações personalizadas.
+- **Cupons**: Geração e validação de cupons promocionais com tipos configuráveis.
+- **Integração com Pagamentos**: Suporte a pagamentos via Stripe para transações seguras.
+- **Gerenciamento Empresarial**: Endpoints dedicados para registro e autenticação de empresas.
+- **Logs Detalhados**: Logging estruturado com SLF4J para monitoramento e depuração.
+- **Containerização**: Implantação facilitada com Docker e Docker Compose.
+- **Cache**: Configuração de cache para otimizar desempenho em consultas frequentes.
 
-The project uses **Docker Compose** for orchestrating the PostgreSQL database and application container.
+## 🏛 Arquitetura
 
-## 📋 Prerequisites
+O sistema segue uma **arquitetura em camadas**, garantindo separação de responsabilidades e escalabilidade:
+
+- **Controllers**: Gerenciam requisições HTTP, delegando lógica para serviços.
+- **Services**: Contêm a lógica de negócios, interagindo com repositórios e serviços externos.
+- **Repositories**: Abstraem o acesso a dados com Spring Data JPA.
+- **Entities**: Mapeiam tabelas do banco de dados com anotações JPA.
+- **DTOs**: Objetos de transferência de dados para encapsulamento e validação.
+- **Mappers**: Conversão entre entidades e DTOs usando MapStruct.
+- **Security**: Autenticação e autorização baseadas em JWT com Spring Security.
+- **Configuration**: Configurações centralizadas para cache, segurança e integrações externas (Stripe, WebClient).
+- **Utilities**: Funções auxiliares, como geração de códigos de cupom e formatação de e-mails.
+
+O projeto utiliza **Docker Compose** para orquestrar o banco de dados PostgreSQL e o contêiner da aplicação, garantindo consistência entre ambientes.
+
+## 📋 Pré-requisitos
 
 - **Java JDK 17+**
 - **Apache Maven 3.8+**
 - **Docker 20.10+**
 - **Docker Compose 2.12+**
 - **PostgreSQL 15+**
-- **IDE**: IntelliJ IDEA, VS Code, or equivalent
-- **API Testing Tool**: Postman or curl
-- **Optional**: pgAdmin or DBeaver for database management
+- **IDE**: IntelliJ IDEA, VS Code ou equivalente
+- **Ferramentas de Teste**: Postman, curl ou Insomnia
+- **Opcional**: pgAdmin ou DBeaver para gerenciamento do banco de dados
 
-## 🛠 Installation
+## 🛠 Instalação
 
-1. **Clone the Repository**:
+1. **Clonar o Repositório**:
    ```bash
-   git clone https://github.com/your-username/shipping-system.git
+   git clone https://github.com/seu-usuario/shipping-system.git
    cd shipping-system
    ```
 
-2. **Set Up Environment Variables**:
-   Copy the example configuration file and update it with your settings:
+2. **Configurar Variáveis de Ambiente**:
+   Copie o arquivo de exemplo e edite conforme necessário:
    ```bash
    cp shipping/src/main/resources/application.properties.example shipping/src/main/resources/application.properties
    ```
 
-3. **Start PostgreSQL with Docker**:
+3. **Iniciar o Banco de Dados com Docker**:
    ```bash
    cd infrastructure/docker
    docker-compose up -d
    ```
 
-4. **Build and Run the Application**:
+4. **Construir e Executar a Aplicação**:
    ```bash
    cd ../../shipping
    mvn clean install
    mvn spring-boot:run
    ```
 
-The application will be available at `http://localhost:8080`.
+A aplicação estará disponível em `http://localhost:8080`.
 
-## ⚙️ Environment Configuration
+## ⚙️ Configuração de Ambiente
 
-Configure the application in `shipping/src/main/resources/application.properties`:
+As configurações são definidas em `shipping/src/main/resources/application.properties`. Exemplo:
 
 ```properties
-# Database
+# Banco de Dados
 spring.datasource.url=jdbc:postgresql://localhost:5432/shipping_db
 spring.datasource.username=authuser
 spring.datasource.password=securepassword
 spring.jpa.hibernate.ddl-auto=update
 
 # JWT
-jwt.secret=SuperSegredoJWT12345!MuitoLongaESegura
+jwt.secret=SuaChaveSecretaMuitoLongaESegura12345!
 jwt.expiration=86400000
 
-# Email Service
+# E-mail
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
-spring.mail.username=your-email@gmail.com
-spring.mail.password=your-app-password
+spring.mail.username=seu-email@gmail.com
+spring.mail.password=sua-senha-de-aplicativo
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
 
-# Stripe (Payment Integration)
-stripe.api.key=your-stripe-api-key
+# Stripe
+stripe.api.key=sua-chave-stripe
+
+# Cache
+spring.cache.type=redis
+spring.redis.host=localhost
+spring.redis.port=6379
 
 # Logging
 logging.level.org.springframework.security=DEBUG
 logging.level.redirex.shipping=DEBUG
 ```
 
-| Variable                    | Description                              | Default Value                          |
-|-----------------------------|------------------------------------------|----------------------------------------|
-| `spring.datasource.url`     | PostgreSQL connection URL                | `jdbc:postgresql://localhost:5432/shipping_db` |
-| `spring.datasource.username`| Database username                         | `authuser`                             |
-| `spring.datasource.password`| Database password                         | `securepassword`                       |
-| `jwt.secret`                | JWT signing key                          | (Required, must be secure)             |
-| `jwt.expiration`            | JWT expiration time (ms)                 | `86400000` (24 hours)                  |
-| `spring.mail.*`             | Email server configuration               | (SMTP settings, e.g., Gmail)           |
-| `stripe.api.key`            | Stripe API key for payments              | (Required for payment features)         |
+| Variável                          | Descrição                                  | Valor Padrão                          |
+|-----------------------------------|--------------------------------------------|---------------------------------------|
+| `spring.datasource.url`           | URL de conexão com o PostgreSQL            | `jdbc:postgresql://localhost:5432/shipping_db` |
+| `spring.datasource.username`      | Usuário do banco de dados                  | `authuser`                            |
+| `spring.datasource.password`      | Senha do banco de dados                    | `securepassword`                      |
+| `jwt.secret`                      | Chave secreta para assinatura JWT          | (Obrigatório, deve ser seguro)        |
+| `jwt.expiration`                  | Tempo de expiração do token (ms)           | `86400000` (24 horas)                 |
+| `spring.mail.*`                   | Configurações do servidor de e-mail        | (Configurações SMTP, e.g., Gmail)     |
+| `stripe.api.key`                  | Chave da API Stripe para pagamentos        | (Obrigatório para funcionalidades de pagamento) |
+| `spring.cache.*`                  | Configurações do Redis para cache          | `localhost:6379`                      |
 
-## 🏗 Project Structure
+## 🏗 Estrutura do Projeto
 
 ```plaintext
 ├── infrastructure/
 │   └── docker/
-│       ├── docker-compose.yml       # PostgreSQL and app container setup
-│       ├── docker-compose.override.yml
-│       └── Dockerfile              # Application container definition
+│       ├── docker-compose.yml       # Configuração do PostgreSQL e aplicação
+│       ├── docker-compose.override.yml # Sobrescrita de configurações locais
+│       └── Dockerfile              # Definição do contêiner da aplicação
 ├── shipping/
-│   ├── mvnw                        # Maven wrapper
-│   ├── pom.xml                     # Maven dependencies
+│   ├── mvnw                        # Wrapper do Maven
+│   ├── mvnw.cmd                    # Wrapper do Maven para Windows
+│   ├── pom.xml                     # Dependências do Maven
 │   ├── src/
 │   │   ├── main/
 │   │   │   ├── java/redirex/shipping/
-│   │   │   │   ├── config/         # Application configurations (e.g., Security, Cache)
-│   │   │   │   ├── controller/     # REST controllers (Auth, User, Enterprise, Email)
-│   │   │   │   ├── dto/            # Data Transfer Objects for API communication
-│   │   │   │   ├── entity/         # JPA entities for database mapping
-│   │   │   │   ├── enums/          # Enum definitions (e.g., CouponType, ShipmentStatus)
-│   │   │   │   ├── exception/      # Custom exception handling
-│   │   │   │   ├── mapper/         # Entity-DTO mapping with MapStruct
-│   │   │   │   ├── repositories/   # JPA repositories for data access
-│   │   │   │   ├── security/       # JWT and Spring Security configurations
-│   │   │   │   ├── service/        # Business logic services
-│   │   │   │   └── util/           # Utility classes (e.g., CouponCodeGenerator)
+│   │   │   │   ├── config/         # Configurações (Segurança, Cache, WebClient)
+│   │   │   │   ├── controller/     # Controladores REST (Auth, User, Enterprise, Email)
+│   │   │   │   ├── dto/            # Objetos de transferência de dados
+│   │   │   │   │   ├── request/    # DTOs para requisições
+│   │   │   │   │   └── response/   # DTOs para respostas
+│   │   │   │   ├── entity/         # Entidades JPA
+│   │   │   │   ├── enums/          # Enums (e.g., CouponType, ShipmentStatus)
+│   │   │   │   ├── exception/      # Exceções personalizadas
+│   │   │   │   ├── mapper/         # Mapeadores MapStruct
+│   │   │   │   ├── repositories/   # Repositórios JPA
+│   │   │   │   ├── security/       # Configurações de segurança (JWT, Spring Security)
+│   │   │   │   ├── service/        # Lógica de negócios
+│   │   │   │   │   └── email/      # Serviços de e-mail
+│   │   │   │   └── util/           # Utilitários (e.g., CouponCodeGenerator)
 │   │   │   └── resources/
-│   │   │       ├── application.properties  # Application settings
+│   │   │       ├── application.properties  # Configurações da aplicação
 │   │   │       └── META-INF/
-│   │   └── test/                   # Unit and integration tests
-│   └── target/                     # Compiled classes and generated sources
-└── LICENSE                         # MIT License file
+│   │   │           └── spring.factories    # Configurações do Spring
+│   │   └── test/                   # Testes unitários e de integração
+│   └── target/                     # Classes compiladas e fontes geradas
+└── LICENSE                         # Arquivo de licença MIT
 ```
 
-## 🌐 API Endpoints
+## 🌐 Endpoints da API
 
-### Authentication (`/public/auth`)
-| Method | Endpoint                | Description                       | Request Body                     | Response                     |
-|--------|-------------------------|-----------------------------------|----------------------------------|------------------------------|
-| `POST` | `/public/auth/login`    | Authenticate a user               | `AuthRequestDTO`                 | `AuthResponseDTO` (JWT token) |
-| `POST` | `/public/auth/login/enterprise` | Authenticate an enterprise | `AuthRequestDTO`                 | `AuthResponseDTO` (JWT token) |
-| `POST` | `/public/auth/logout`   | Invalidate JWT token              | None (Authorization header)      | Success message              |
+### Autenticação (`/public/auth`)
+| Método | Endpoint                    | Descrição                           | Corpo da Requisição              | Resposta                        |
+|--------|-----------------------------|-------------------------------------|----------------------------------|---------------------------------|
+| `POST` | `/public/auth/login`        | Autentica um usuário                | `AuthRequestDTO`                 | `AuthResponseDTO` (token JWT)   |
+| `POST` | `/public/auth/login/enterprise` | Autentica uma empresa           | `AuthRequestDTO`                 | `AuthResponseDTO` (token JWT)   |
+| `POST` | `/public/auth/logout`       | Invalida o token JWT                | Nenhum (cabeçalho Authorization) | Mensagem de sucesso             |
 
-### User Management (`/public/user` and `/api/user`)
-| Method | Endpoint                       | Description                          | Request Body                     | Response                     |
-|--------|--------------------------------|--------------------------------------|----------------------------------|------------------------------|
-| `POST` | `/public/user/register`        | Register a new user                  | `RegisterUserDTO`                | `UserResponse`               |
-| `POST` | `/public/user/forgot-password` | Request password reset               | `ForgotPasswordDTO`              | Success message              |
-| `POST` | `/public/user/reset-password`  | Reset user password                  | `ResetPasswordDTO`               | Success message              |
-| `POST` | `/public/user/created-address` | Create a new address                 | `CreateAddressRequest`           | `AddressResponse`            |
-| `PUT`  | `/public/user/update-address/{zipcode}` | Update an address           | `AddressDTO`                     | `AddressResponse`            |
-| `GET`  | `/api/user/{id}`              | Retrieve user by ID (authenticated)  | None                             | `UserResponse`               |
-| `PUT`  | `/api/user/{id}/profile`      | Update user profile (authenticated)  | `RegisterUserDTO`                | `UserResponse`               |
+### Gerenciamento de Usuários (`/public/user` e `/api/user`)
+| Método | Endpoint                              | Descrição                           | Corpo da Requisição              | Resposta                        |
+|--------|---------------------------------------|-------------------------------------|----------------------------------|---------------------------------|
+| `POST` | `/public/user/register`               | Registra um novo usuário            | `RegisterUserDTO`                | `UserResponse`                  |
+| `POST` | `/public/user/forgot-password`        | Solicita redefinição de senha       | `ForgotPasswordDTO`              | Mensagem de sucesso             |
+| `POST` | `/public/user/reset-password`         | Redefine a senha do usuário         | `ResetPasswordDTO`               | Mensagem de sucesso             |
+| `POST` | `/public/user/created-address`        | Cria um novo endereço               | `CreateAddressRequest`           | `AddressResponse`               |
+| `PUT`  | `/public/user/update-address/{zipcode}` | Atualiza um endereço              | `AddressDTO`                     | `AddressResponse`               |
+| `GET`  | `/api/user/{id}`                     | Consulta usuário por ID             | Nenhum                           | `UserResponse`                   |
+| `PUT`  | `/api/user/{id}/profile`             | Atualiza perfil do usuário          | `RegisterUserDTO`                | `UserResponse`                   |
 
-### Email Notifications (`/email`)
-| Method | Endpoint         | Description                     | Request Body                     | Response                     |
-|--------|------------------|---------------------------------|----------------------------------|------------------------------|
-| `POST` | `/email/send`    | Send an email notification       | `UserEmailDetailsUtil`           | Success or error message     |
+### Notificações por E-mail (`/email`)
+| Método | Endpoint         | Descrição                           | Corpo da Requisição              | Resposta                        |
+|--------|------------------|-------------------------------------|----------------------------------|---------------------------------|
+| `POST` | `/email/send`    | Envia notificação por e-mail        | `UserEmailDetailsUtil`           | Mensagem de sucesso ou erro     |
 
-### Example Request (User Registration)
+### Exemplo de Requisição (Registro de Usuário)
 ```http
 POST /public/user/register
 Content-Type: application/json
 
 {
-  "fullname": "John Doe",
-  "email": "john.doe@example.com",
-  "password": "SecurePass123!",
+  "fullname": "João Silva",
+  "email": "joao.silva@exemplo.com",
+  "password": "SenhaSegura123!",
   "cpf": "12345678901",
   "phone": "11987654321",
-  "address": "123 Main St",
-  "complement": "Apt 4B",
+  "address": "Rua Principal, 123",
+  "complement": "Apto 4B",
   "city": "São Paulo",
   "state": "SP",
   "zipcode": "12345678",
-  "country": "Brazil",
-  "occupation": "Developer"
+  "country": "Brasil",
+  "occupation": "Desenvolvedor"
 }
 
-# Response
+# Resposta
 HTTP/1.1 201 Created
 {
   "id": 1,
-  "fullname": "John Doe",
-  "email": "john.doe@example.com",
+  "fullname": "João Silva",
+  "email": "joao.silva@exemplo.com",
   "cpf": "12345678901",
   "phone": "11987654321",
-  "address": "123 Main St",
-  "complement": "Apt 4B",
+  "address": "Rua Principal, 123",
+  "complement": "Apto 4B",
   "city": "São Paulo",
   "state": "SP",
   "zipcode": "12345678",
-  "country": "Brazil",
-  "occupation": "Developer",
+  "country": "Brasil",
+  "occupation": "Desenvolvedor",
   "role": "ROLE_USER"
 }
 ```
 
-## 🛡️ Security Flow
+## 🛡️ Fluxo de Segurança
 
-1. **Registration**: Users register with validated inputs, storing encrypted passwords (BCrypt).
-2. **Authentication**: Users or enterprises log in, receiving a JWT token upon successful credential validation.
-3. **Authorization**: Protected endpoints require a valid JWT in the `Authorization: Bearer <token>` header. The `JwtAuthenticationFilter` validates tokens, and Spring Security enforces role-based access.
-4. **Logout**: Tokens are blacklisted using the `TokenBlacklistService` to prevent reuse.
-5. **Password Reset**: Users request a reset token via email, which must be validated within a time window to update the password.
+1. **Registro**: Usuários ou empresas registram-se com validação de campos e senhas criptografadas (BCrypt).
+2. **Autenticação**: Credenciais são validadas, gerando um token JWT com expiração configurável.
+3. **Autorização**: Endpoints protegidos exigem um token JWT válido no cabeçalho `Authorization: Bearer <token>`. O `JwtAuthenticationFilter` verifica a validade do token.
+4. **Logout**: Tokens são adicionados a uma blacklist (via `TokenBlacklistService`) para impedir reutilização.
+5. **Redefinição de Senha**: Usuários recebem um token de redefinição por e-mail, válido por um período limitado.
 
-## 🔐 Best Practices
+## 🔐 Melhores Práticas
 
-- **Security**:
-  - Passwords encrypted with `BCryptPasswordEncoder`.
-  - JWT tokens with secure signing and configurable expiration.
-  - Stateless session management (`SessionCreationPolicy.STATELESS`).
-  - Role-based access control with `@PreAuthorize`.
-- **Code Quality**:
-  - Modular design with clear separation of concerns.
-  - Use of DTOs and MapStruct for data mapping.
-  - Comprehensive exception handling with custom exceptions.
-- **Performance**:
-  - Caching configured via `CacheConfig`.
-  - Efficient database queries with Spring Data JPA.
-- **Logging**:
-  - Detailed SLF4J logs for debugging and monitoring.
-  - Configurable log levels in `application.properties`.
-- **Validation**:
-  - Input validation using Jakarta Bean Validation.
-  - Custom error responses with timestamps and status codes.
+- **Segurança**:
+  - Senhas criptografadas com `BCryptPasswordEncoder`.
+  - Tokens JWT assinados com chave segura e expiração configurável.
+  - Sessões stateless com `SessionCreationPolicy.STATELESS`.
+  - Controle de acesso baseado em papéis com `@PreAuthorize`.
+- **Qualidade de Código**:
+  - Arquitetura modular com separação de responsabilidades.
+  - Uso de DTOs e MapStruct para mapeamento de dados.
+  - Exceções personalizadas com respostas HTTP detalhadas.
+- **Desempenho**:
+  - Cache configurado com Redis para consultas frequentes.
+  - Consultas otimizadas com Spring Data JPA.
+- **Validação**:
+  - Validação de entrada com Jakarta Bean Validation.
+  - Respostas de erro estruturadas com timestamp e códigos de status.
+- **Documentação**:
+  - Endpoints documentados com exemplos claros.
+  - README detalhado com instruções completas.
 
-## 🧪 Running Tests
+## 📊 Monitoramento e Logging
 
-The project includes basic test setup in `GlobalApplicationTests.java`. To run tests:
+- **Logging**: O sistema usa SLF4J com logs detalhados em nível `DEBUG` para `org.springframework.security` e `redirex.shipping`. Logs incluem:
+  - Tentativas de login (sucesso e falha).
+  - Erros de validação e exceções personalizadas.
+  - Operações de banco de dados e chamadas externas (e.g., Stripe, e-mail).
+- **Monitoramento**: Integração recomendada com ferramentas como **Prometheus** e **Grafana** para métricas de desempenho e saúde da API.
+- **Configuração de Logs**:
+  ```properties
+  logging.level.org.springframework.security=DEBUG
+  logging.level.redirex.shipping=DEBUG
+  logging.file.name=logs/shipping-system.log
+  ```
+
+## 🧪 Testes
+
+O projeto inclui testes iniciais em `GlobalApplicationTests.java`. Para executar:
 
 ```bash
 mvn test
 ```
 
-For manual API testing, use Postman or curl:
+Para testes manuais de API, use Postman ou curl:
 
 ```bash
-# Test user registration
+# Testar registro de usuário
 curl -X POST http://localhost:8080/public/user/register \
   -H "Content-Type: application/json" \
-  -d '{"fullname":"John Doe","email":"john.doe@example.com","password":"SecurePass123!","cpf":"12345678901","phone":"11987654321","address":"123 Main St","complement":"Apt 4B","city":"São Paulo","state":"SP","zipcode":"12345678","country":"Brazil","occupation":"Developer"}'
+  -d '{"fullname":"João Silva","email":"joao.silva@exemplo.com","password":"SenhaSegura123!","cpf":"12345678901","phone":"11987654321","address":"Rua Principal, 123","complement":"Apto 4B","city":"São Paulo","state":"SP","zipcode":"12345678","country":"Brasil","occupation":"Desenvolvedor"}'
 
-# Test user login
+# Testar login
 curl -X POST http://localhost:8080/public/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"john.doe@example.com","password":"SecurePass123!"}'
+  -d '{"email":"joao.silva@exemplo.com","password":"SenhaSegura123!"}'
 ```
 
-## 🚀 Deployment
+Para testes automatizados, recomenda-se expandir com **JUnit**, **Mockito** e **Testcontainers** para simular o banco de dados.
 
-1. **Build the Docker Image**:
+## 🚀 Implantação
+
+1. **Construir a Imagem Docker**:
    ```bash
    cd shipping
    docker build -t shipping-system:latest .
    ```
 
-2. **Run with Docker Compose**:
+2. **Executar com Docker Compose**:
    ```bash
    cd infrastructure/docker
    docker-compose up -d
    ```
 
-3. **Verify Deployment**:
-   Ensure the application is running at `http://localhost:8080` and the database is accessible.
+3. **Verificar Implantação**:
+   Confirme que a aplicação está rodando em `http://localhost:8080` e que o banco de dados está acessível.
 
-## 🤝 Contributing
+4. **Implantação em Produção**:
+   - Configure um servidor de CI/CD (e.g., Jenkins, GitHub Actions) para builds automatizadas.
+   - Use um orquestrador como **Kubernetes** para escalabilidade.
+   - Monitore com ferramentas como **Prometheus** e **Grafana**.
 
-We welcome contributions! Follow these steps:
+## 🔗 Integrações Externas
 
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/your-feature`).
-3. Commit changes (`git commit -m 'Add your feature'`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a Pull Request with a detailed description.
+- **Stripe**: Integração para pagamentos via `StripeService`, configurado com `stripe.api.key`.
+- **E-mail**: Suporte a envio de e-mails via SMTP (e.g., Gmail) para notificações e redefinição de senha.
+- **Redis**: Cache configurado para melhorar o desempenho de consultas frequentes.
+- **WebClient**: Configurado em `WebClientConfig` para chamadas a APIs externas.
 
-Please adhere to the [Code of Conduct](CODE_OF_CONDUCT.md) and ensure tests pass before submitting.
+## 📚 Exemplos de Uso
 
-## 📄 License
+### Registrar um Usuário
+```bash
+curl -X POST http://localhost:8080/public/user/register \
+  -H "Content-Type: application/json" \
+  -d '{"fullname":"Maria Oliveira","email":"maria.oliveira@exemplo.com","password":"SenhaSegura456!","cpf":"98765432100","phone":"11912345678","address":"Avenida Central, 456","complement":"Casa 2","city":"Rio de Janeiro","state":"RJ","zipcode":"87654321","country":"Brasil","occupation":"Gerente"}'
+```
 
-Distributed under the MIT License. See `LICENSE` for details.
+### Autenticar e Obter Token
+```bash
+curl -X POST http://localhost:8080/public/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"maria.oliveira@exemplo.com","password":"SenhaSegura456!"}'
+```
 
-## ✉️ Contact
+### Criar Endereço
+```bash
+curl -X POST http://localhost:8080/public/user/created-address \
+  -H "Content-Type: application/json" \
+  -d '{"street":"Rua Nova, 789","complement":"Bloco B","city":"Curitiba","state":"PR","zipcode":"54321098","country":"Brasil"}'
+```
 
-**Maintainer**: Felipe Panosso  
-**Email**: panossodev@gmail.com  
+## 🤝 Contribuição
+
+1. Faça um fork do repositório.
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`).
+3. Commit suas alterações (`git commit -m 'Adiciona nova funcionalidade'`).
+4. Push para a branch (`git push origin feature/nova-funcionalidade`).
+5. Abra um Pull Request com uma descrição detalhada.
+
+## ❓ Perguntas (FAQ)
+
+**P: Como configurar o envio de e-mails?**  
+R: Configure as propriedades `spring.mail.*` em `application.properties` com as credenciais do seu provedor SMTP (e.g., Gmail). Use uma senha de aplicativo para serviços como Gmail.
+
+**P: Como lidar com erros de autenticação?**  
+R: Verifique os logs em `logs/shipping-system.log` e as respostas HTTP, que incluem detalhes como `timestamp`, `status` e `message`.
+
+**P: Posso usar outro banco de dados?**  
+R: Sim, mas será necessário ajustar o `spring.datasource.url` e o driver correspondente no `pom.xml`.
+
+**P: Como testar endpoints protegidos?**  
+R: Obtenha um token JWT via `/public/auth/login` e inclua-o no cabeçalho `Authorization: Bearer <token>`.
+
+## 📄 Licença
+
+Distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## ✉️ Contato
+
+**Mantenedor**: Felipe Panosso  
+**E-mail**: panossodev@gmail.com  
 **LinkedIn**: [linkedin.com/in/felipe-panosso](https://linkedin.com/in/felipe-panosso)  
 
 ---
