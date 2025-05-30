@@ -32,7 +32,7 @@ public class AdminEntity implements Serializable {
     @NotBlank(message = "Name is required")
     @Size(max = 100, message = "Name must not exceed 100 characters")
     @Column(nullable = false, length = 100)
-    private String name;
+    private String fullname;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
@@ -44,6 +44,15 @@ public class AdminEntity implements Serializable {
     @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters")
     @Column(nullable = false, length = 255)
     private String password;
+
+    @NotBlank(message = "CPF is required")
+    @Pattern(regexp = "\\d{11}", message = "CPF must be 11 digits")
+    @Column(unique = true, nullable = false)
+    private String cpf;
+
+    @NotBlank
+    @Size(min = 3, max = 12, message = "Your admin login code is required to log in. If you have forgotten it, please contact HR to request a change as soon as possible. Thank you.")
+    private String administratorLoginCode;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
