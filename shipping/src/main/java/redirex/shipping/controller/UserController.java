@@ -17,11 +17,9 @@ import redirex.shipping.dto.AddressDTO;
 import redirex.shipping.dto.ForgotPasswordDTO;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.dto.ResetPasswordDTO;
+import redirex.shipping.entity.AddressEntity;
 import redirex.shipping.entity.UserEntity;
-import redirex.shipping.exception.AddressCreatedException;
-import redirex.shipping.exception.ResourceNotFoundException;
-import redirex.shipping.exception.UnauthorizedAccessException;
-import redirex.shipping.exception.UserRegistrationException;
+import redirex.shipping.exception.*;
 import redirex.shipping.mapper.AddressMapper;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.AddressService;
@@ -140,11 +138,11 @@ public class UserController {
     // methods to update/delete the user or related:
 
     @PutMapping("/public/user/update-address/{zipcode}")
-    public ResponseEntity<?> updateAddress( @PathVariable String zipcode, @Valid @RequestBody AddressDTO requestDto) {
+    public ResponseEntity<?> updateAddress( @PathVariable String zipcode, @Valid @RequestBody AddressDTO dto) {
         try {
             logger.info("Received request to update address for zipcode: {}", zipcode);
 
-            AddressResponse updateResponse = addressService.updateAddress(zipcode, requestDto);
+            AddressResponse updateResponse = addressService.updateAddress(zipcode, dto);
             return ResponseEntity.ok(updateResponse);
         } catch (ResourceNotFoundException e) {
             logger.warn("Address not found for update: {}", zipcode);
@@ -155,6 +153,25 @@ public class UserController {
         } catch (Exception e) {
             logger.error("Unexpected error updating address for zipcode {}: {}", zipcode, e.getMessage(), e);
             return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update address due to an unexpected error.");
+        }
+    }
+
+    @DeleteMapping("/public/user/delete-address/{zipcode}")
+    public ResponseEntity<?> deleteAddress(@PathVariable String zipcode) {
+        try {
+            logger.info("Received request to delete address for zipcode: {}", zipcode);
+
+            AddressResponse deleteResponse = addressService.deleteAddress(zipcode);
+            return ResponseEntity.ok(deleteResponse);
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Address not found for update: {}", zipcode);
+            return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (AddressDeleteException e) {
+            logger.warn("Delete failed: {}", e.getMessage());
+            return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage());
+        }  catch (Exception e) {
+            logger.error("Unexpected error deleting address for zipcode {}: {}", zipcode, e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 

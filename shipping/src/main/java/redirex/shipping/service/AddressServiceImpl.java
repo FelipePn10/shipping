@@ -79,8 +79,8 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public AddressResponse deleteAddress(Long id) {
-        AddressEntity address = addressRepository.findById(id)
+    public AddressResponse deleteAddress(String zipcode) {
+        AddressEntity address = addressRepository.findByZipcode(zipcode)
                 .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
         addressRepository.delete(address);
         return addressMapper.toResponse(address);
