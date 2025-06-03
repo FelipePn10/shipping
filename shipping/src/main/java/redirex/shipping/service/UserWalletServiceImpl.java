@@ -144,6 +144,7 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .originalAmountDeposited(targetCNYAmount) // Valor bruto intencionado em CNY
                 .originalCurrencyDeposited(walletCurrency) // Moeda do valor bruto intencionado
                 .createdAt(LocalDateTime.now())
+                // campos para registrar o valor cobrado em BRL
                 .chargedAmount(String.valueOf(amountToChargeInBRL))
                 .chargedCurrency(String.valueOf(CurrencyEnum.BRL))
                 .build();

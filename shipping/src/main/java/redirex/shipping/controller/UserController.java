@@ -137,6 +137,7 @@ public class UserController {
 
     // methods to update/delete the user or related:
 
+    // Endpoint com erro 500 ao tentar modificar o endereço. Fazer a correção
     @PutMapping("/public/user/update-address/{zipcode}")
     public ResponseEntity<?> updateAddress( @PathVariable String zipcode, @Valid @RequestBody AddressDTO dto) {
         try {

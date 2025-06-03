@@ -4,23 +4,28 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.dto.RegisterAdminDTO;
 import redirex.shipping.dto.response.AdminResponse;
 import redirex.shipping.entity.AdminEntity;
-import redirex.shipping.entity.UserEntity;
+import redirex.shipping.exception.AdminRegistrationException;
+import redirex.shipping.exception.ResourceNotFoundException;
 import redirex.shipping.exception.UserRegistrationException;
+import redirex.shipping.mapper.AdminMapper;
 import redirex.shipping.repositories.AdminRepository;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class AdminServiceImpl {
-    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+public class AdminServiceImpl implements AdminService {
+    private static final Logger logger = LoggerFactory.getLogger(AdminServiceImpl.class);
 
     private final AdminRepository adminRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AdminMapper adminMapper;
 
     @Override
     @Transactional
@@ -29,13 +34,47 @@ public class AdminServiceImpl {
         validateAdminNotExists(dto.getEmail(), dto.getAdministratorLoginCode());
 
         try {
+            AdminEntity admin = AdminEntity.builder()
+                    .fullname(dto.getFullname())
+                    .email(dto.getEmail())
+                    .password(passwordEncoder.encode(dto.getPassword()))
+                    .cpf(dto.getCpf())
+                    .role("ROLE_ADMIN")
+                    .build();
+            logger.info("Creating admin with email: {}", dto.getEmail());
+
+            adminRepository.save(admin);
+            return adminMapper.toResponse(admin);
 
         } catch (Exception e) {
             logger.error(e.getMessage());
+            throw new AdminRegistrationException(e.getMessage());
         }
     }
 
+    @Override
+    @Transactional
+    public AdminResponse updateAdmin(Long id, @Valid RegisterAdminDTO dto) {
+        logger.info("Updating user with email: {}", id);
+        AdminEntity admin = adminRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin with ID " + id + " not found"));
 
+        if (!dto.getEmail().equals(admin.getEmail())) {
+            validateEmailNotExists(dto.getEmail());
+        }
+        if (!dto.getAdministratorLoginCode().equals(admin.getAdministratorLoginCode())) {
+            validateAdminLoginCode(dto.getAdministratorLoginCode());
+        }
+
+        admin.setFullname(dto.getFullname());
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            admin.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        admin = adminRepository.save(admin);
+        logger.info("Updating user with email: {}", admin.getEmail());
+        return adminMapper.toResponse(admin);
+    }
 
     private void validateAdminNotExists(String email, String AdministratorLoginCode) {
         validateEmailNotExists(email);
@@ -52,7 +91,7 @@ public class AdminServiceImpl {
     }
 
     private void validateAdminLoginCode(String AdministratorLoginCode) {
-        Optional<UserEntity> existsByAdministratorLoginCode = adminRepository.findByAdministratorLoginCode(AdministratorLoginCode);
+        Optional<AdminEntity> existsByAdministratorLoginCode = adminRepository.findByAdministratorLoginCode(AdministratorLoginCode);
         if (existsByAdministratorLoginCode.isPresent()) {
             logger.warn("Attempt to use duplicate AdministratorLoginCode: {}", AdministratorLoginCode);
             throw new UserRegistrationException("AdministratorLoginCode already registered");

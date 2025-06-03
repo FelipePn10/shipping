@@ -54,6 +54,12 @@ public class AdminEntity implements Serializable {
     @Size(min = 3, max = 12, message = "Your admin login code is required to log in. If you have forgotten it, please contact HR to request a change as soon as possible. Thank you.")
     private String administratorLoginCode;
 
+    @NotBlank(message = "Role is required")
+    @Size(max = 50, message = "Role must not exceed 50 characters")
+    @Column(nullable = false)
+    private String role;
+
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
