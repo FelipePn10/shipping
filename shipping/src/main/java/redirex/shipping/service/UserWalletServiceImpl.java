@@ -139,14 +139,13 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .currency(walletCurrency) // Moeda da carteira e da transação principal
                 .amount(netAmountInCNY) // Valor líquido creditado na carteira em CNY
                 .type(WalletTransactionTypeEnum.DEPOSIT)
-                .description(transactionDescription)
+
                 .transactionFee(feeInCNY) // Taxa em CNY
                 .originalAmountDeposited(targetCNYAmount) // Valor bruto intencionado em CNY
                 .originalCurrencyDeposited(walletCurrency) // Moeda do valor bruto intencionado
                 .createdAt(LocalDateTime.now())
-                // adicionar campos para registrar o valor cobrado em BRL ( futuro )
-                // .chargedAmount(amountToChargeInBRL)
-                // .chargedCurrency(CurrencyEnum.BRL)
+                .chargedAmount(String.valueOf(amountToChargeInBRL))
+                .chargedCurrency(String.valueOf(CurrencyEnum.BRL))
                 .build();
         walletTransactionRepository.save(transaction);
 
@@ -206,7 +205,6 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .currency(currency)
                 .amount(amount.negate())
                 .type(WalletTransactionTypeEnum.ORDER_PAYMENT)
-                .description(description)
                 .relatedOrderItemId(orderItemId)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -248,7 +246,6 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .currency(currency)
                 .amount(amount.negate())
                 .type(WalletTransactionTypeEnum.SHIPMENT_PAYMENT)
-                .description(description)
                 .relatedOrderItemId(orderItemId)
                 .relatedShipmentId(shipmentId)
                 .createdAt(LocalDateTime.now())
@@ -283,7 +280,6 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .currency(currency)
                 .amount(amount)
                 .type(WalletTransactionTypeEnum.REFUND)
-                .description(description)
                 .relatedOrderItemId(orderItemId)
                 .createdAt(LocalDateTime.now())
                 .build();

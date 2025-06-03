@@ -45,9 +45,11 @@ public class WalletTransactionEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 3)
     private CurrencyEnum currency;
+    @NotNull
+    private String chargedAmount;
 
     @NotNull
-    private String description;
+    private String chargedCurrency;
 
     @NotNull(message = "Transaction type is required")
     @Enumerated(EnumType.STRING)
