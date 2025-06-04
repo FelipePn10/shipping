@@ -15,6 +15,7 @@ import redirex.shipping.entity.UserEntity;
 import redirex.shipping.entity.WarehouseEntity;
 import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.exception.ResourceNotFoundException;
+import redirex.shipping.exception.SendeEmailWelcomeException;
 import redirex.shipping.exception.UserRegistrationException;
 import redirex.shipping.mapper.UserMapper;
 import redirex.shipping.repositories.UserCouponRepository;
@@ -81,12 +82,14 @@ public class UserServiceImpl implements UserService {
             userCouponRepository.save(userCoupon);
 
             logger.info("User registered successfully with email: {}", dto.getEmail());
-            // Enviar o email de boas vindas
 
+            // Enviar o email de boas vindas
             try {
                 logger.info("Email sent successfully: {}", dto.getEmail());
                 userEmailService.sendWelcomeEmail(dto.getEmail(), dto.getFullname());
-             } catch (Exception e) {
+             } catch (SendeEmailWelcomeException e) {
+                logger.error("Error sending email, error reported to server.",e.getMessage());
+            } catch (Exception e) {
                 logger.error(e.getMessage());
              }
 
