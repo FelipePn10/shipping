@@ -1,11 +1,16 @@
 package redirex.shipping.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -32,4 +37,12 @@ public class RegisterAdminDTO {
     @Size(min = 3, max = 12, message = "Your admin login code is required to log in. If you have forgotten it, please contact HR to request a change as soon as possible. Thank you.")
     private String administratorLoginCode;
 
+    @NotBlank(message = "Role is required")
+    @Size(max = 50, message = "Role must not exceed 50 characters")
+    @Column(nullable = false)
+    private String role;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 }
