@@ -1,5 +1,6 @@
 package redirex.shipping.service.email;
 
+import org.springframework.mail.MailException;
 import redirex.shipping.util.email.UserEmailDetailsUtil;
 
 
@@ -19,4 +20,13 @@ public interface UserEmailService {
      * @return Mensagem indicando o resultado do envio
      */
     String sendSimpleMail(UserEmailDetailsUtil details);
+
+    /**
+     * Sends a welcome email to a new user.
+     *
+     * @param to The recipient's email address.
+     * @param userName The user's name for personalization.
+     * @throws MailException if there is an error sending the email.
+     */
+    void sendWelcomeEmail(String to, String userName) throws MailException;
 }

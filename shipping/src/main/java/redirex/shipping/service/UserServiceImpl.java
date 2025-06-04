@@ -19,6 +19,7 @@ import redirex.shipping.exception.UserRegistrationException;
 import redirex.shipping.mapper.UserMapper;
 import redirex.shipping.repositories.UserCouponRepository;
 import redirex.shipping.repositories.UserRepository;
+import redirex.shipping.service.email.UserEmailService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -35,6 +36,7 @@ public class UserServiceImpl implements UserService {
     private final UserCouponRepository userCouponRepository;
     private final UserMapper userMapper;
     private final WarehouseService warehouseService;
+    private final UserEmailService userEmailService;
 
     @Override
     @Transactional
@@ -79,6 +81,15 @@ public class UserServiceImpl implements UserService {
             userCouponRepository.save(userCoupon);
 
             logger.info("User registered successfully with email: {}", dto.getEmail());
+            // Enviar o email de boas vindas
+
+            try {
+                logger.info("Email sent successfully: {}", dto.getEmail());
+                userEmailService.sendWelcomeEmail(dto.getEmail(), dto.getFullname());
+             } catch (Exception e) {
+                logger.error(e.getMessage());
+             }
+
             return userMapper.toResponse(user);
         } catch (Exception e) {
             logger.error("Failed to register user with email: {}", dto.getEmail(), e);
