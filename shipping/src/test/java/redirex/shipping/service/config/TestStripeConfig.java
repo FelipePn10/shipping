@@ -1,16 +1,16 @@
-package redirex.shipping.config;
+package redirex.shipping.service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import redirex.shipping.service.StripeService;
-import redirex.shipping.service.StripeServiceImpl;
+import redirex.shipping.service.MockStripeServiceTest;
 
 @Configuration
-public class StripeConfig {
+@Profile("test")
+public class TestStripeConfig {
     @Bean
-    @Profile("!test")
-    public StripeService realStripeService() {
-        return new StripeServiceImpl();
+    public StripeService mockStripeService() {
+        return new MockStripeServiceTest();
     }
 }
