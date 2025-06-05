@@ -45,20 +45,25 @@ public class StripeServiceImpl implements StripeService {
 
             logger.info("PaymentIntent created with ID: {} and status: {}", paymentIntent.getId(), paymentIntent.getStatus());
 
-            if ("succeeded".equals(paymentIntent.getStatus())) {
-                logger.info("Payment successful for PaymentIntent ID: {}", paymentIntent.getId());
-                return true;
-            } else if ("requires_payment_method".equals(paymentIntent.getStatus())) {
-                logger.warn("Payment failed for PaymentIntent ID: {}. Status: {}. Reason: Payment method declined or invalid.",
-                        paymentIntent.getId(), paymentIntent.getStatus());
-                throw new StripePaymentException("Payment failed: " + paymentIntent.getLastPaymentError().getMessage());
-            } else if ("requires_action".equals(paymentIntent.getStatus())) {
-                logger.warn("Payment requires action for PaymentIntent ID: {}. Status: {}", paymentIntent.getId(), paymentIntent.getStatus());
-                throw new StripePaymentException("Payment requires further action (e.g., 3D Secure). This flow is not fully handled on the backend alone.");
-            } else {
-                logger.error("PaymentIntent ID: {} has unhandled status: {}. Full object: {}",
-                        paymentIntent.getId(), paymentIntent.getStatus(), paymentIntent.toJson());
-                throw new StripePaymentException("Payment processing failed with status: " + paymentIntent.getStatus());
+            switch (paymentIntent.getStatus()) {
+                case "succeeded" -> {
+                    logger.info("Payment successful for PaymentIntent ID: {}", paymentIntent.getId());
+                    return true;
+                }
+                case "requires_payment_method" -> {
+                    logger.warn("Payment failed for PaymentIntent ID: {}. Status: {}. Reason: Payment method declined or invalid.",
+                            paymentIntent.getId(), paymentIntent.getStatus());
+                    throw new StripePaymentException("Payment failed: " + paymentIntent.getLastPaymentError().getMessage());
+                }
+                case "requires_action" -> {
+                    logger.warn("Payment requires action for PaymentIntent ID: {}. Status: {}", paymentIntent.getId(), paymentIntent.getStatus());
+                    throw new StripePaymentException("Payment requires further action (e.g., 3D Secure). This flow is not fully handled on the backend alone.");
+                }
+                case null, default -> {
+                    logger.error("PaymentIntent ID: {} has unhandled status: {}. Full object: {}",
+                            paymentIntent.getId(), paymentIntent.getStatus(), paymentIntent.toJson());
+                    throw new StripePaymentException("Payment processing failed with status: " + paymentIntent.getStatus());
+                }
             }
 
         } catch (StripeException e) {
