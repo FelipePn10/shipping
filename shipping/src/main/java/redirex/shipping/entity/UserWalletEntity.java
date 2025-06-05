@@ -13,7 +13,8 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "user_wallets")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

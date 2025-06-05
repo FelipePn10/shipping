@@ -22,4 +22,7 @@ public class DepositRequestDto {
 
     @NotBlank(message = "O ID do PaymentMethod do Stripe é obrigatório para o depósito.")
     private String paymentMethodId;
+
+    public DepositRequestDto(BigDecimal bigDecimal, String pmTest) {
+    }
 }
