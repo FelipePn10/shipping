@@ -121,20 +121,6 @@ public class UserController {
             return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
-
-//    @PostMapping("/api/wallets/{walletId}/deposit")
-//    public ResponseEntity<?> depositToWallet(@Valid @RequestBody DepositRequestDto depositRequestDto) {
-//        try {
-//
-//
-//        } catch(DepositWalletExecption e) {
-//
-//        } catch (Exception e) {
-//            logger.error(e.getMessage(), e);
-//            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-//        }
-//    }
-
     // methods to update/delete the user or related:
 
     // Endpoint com erro 500 ao tentar modificar o endereço. Fazer a correção

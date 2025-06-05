@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.dto.request.DepositRequestDto;
+import redirex.shipping.dto.response.WalletTransactionResponse;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.entity.UserWalletEntity;
 import redirex.shipping.entity.WalletTransactionEntity;
@@ -64,7 +65,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Override
     @Transactional
-    public void depositToWallet(Long userId, DepositRequestDto depositRequestDto) {
+    public WalletTransactionResponse depositToWallet(Long userId, DepositRequestDto depositRequestDto) {
         logger.info("Attempting deposit for userId: {} with target CNY amount: {}", userId, depositRequestDto.getAmount());
 
         if (depositRequestDto.getAmount() == null || depositRequestDto.getAmount().compareTo(BigDecimal.valueOf(50)) <= 0) {
@@ -152,6 +153,18 @@ public class UserWalletServiceImpl implements UserWalletService {
 
         logger.info("Deposit completed for userId: {}. Net amount credited: {} {}, Fee: {} {}. Charged in BRL: {}",
                 userId, netAmountInCNY, walletCurrency, feeInCNY, walletCurrency, amountToChargeInBRL);
+
+        return WalletTransactionResponse.builder()
+                .status("success")
+                .userId(userId)
+                .amount(netAmountInCNY)
+                .fee(String.valueOf(feeInCNY))
+                .currency(walletCurrency.toString())
+                .chargedAmount(String.valueOf(amountToChargeInBRL))
+                // .chargedCurrency(CurrencyEnum.BRL))
+                .transactionDescription(transactionDescription)
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 
     @Override
