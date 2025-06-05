@@ -14,6 +14,6 @@ public interface WalletTransactionMapper {
     @Mapping(target = "userWallet", ignore = true)
     WalletTransactionEntity toEntity(WalletTransactionDTO dto);
 
-    @Mapping(source = "userWallet.walletId", target = "userWalletId")
+    @Mapping(source = "userWalletId", target = "userWalletId")
     WalletTransactionDTO toResponse(WalletTransactionResponse response);
 }
