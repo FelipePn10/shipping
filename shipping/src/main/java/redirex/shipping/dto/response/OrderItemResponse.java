@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class OrderItemResponse {
-    private Long id;
     private String productUrl;
     private BigDecimal productValue;
     private CurrencyEnum originalCurrency;
@@ -24,9 +23,6 @@ public class OrderItemResponse {
     private LocalDateTime paymentDeadline;
     private LocalDateTime paidProductAt;
     private LocalDateTime arrivedAtWarehouseAt;
-    private String warehouseNotes;
-    private Double weight;
-    private String dimensions;
     private boolean requestedConsolidation;
     private Long shipmentId;
 }

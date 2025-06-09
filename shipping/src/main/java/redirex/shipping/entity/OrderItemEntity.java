@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.validator.constraints.URL;
 import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.OrderItemStatusEnum;
 
@@ -11,6 +12,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -35,12 +37,21 @@ public class OrderItemEntity implements Serializable {
     @NotNull(message = "User is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+    private UserEntity userId;
 
     @NotBlank(message = "Product URL is required")
+    @URL(message = "Product URL must be valid")
     @Size(max = 255, message = "Product URL must not exceed 255 characters")
     @Column(name = "product_url", nullable = false)
     private String productUrl;
+
+    @NotBlank(message = "Description is required")
+    @Size(max = 255, message = "Description must not exceed 255 characters")
+    @Column(name = "description", nullable = false)
+    private String description;
+
+    @Column(name = "size")
+    private Float size;
 
     @NotNull(message = "Product value is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Product value must be positive")
@@ -57,7 +68,6 @@ public class OrderItemEntity implements Serializable {
     @Column(name = "recipient_cpf", nullable = false)
     private String recipientCpf;
 
-    @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderItemStatusEnum status;
@@ -75,24 +85,13 @@ public class OrderItemEntity implements Serializable {
     @Column(name = "arrived_at_warehouse_at")
     private LocalDateTime arrivedAtWarehouseAt;
 
-    @Size(max = 1000, message = "Warehouse notes must not exceed 1000 characters")
-    @Column(name = "warehouse_notes", length = 1000)
-    private String warehouseNotes;
-
-    @Size(max = 50, message = "Dimensions must not exceed 50 characters")
-    @Column(length = 50)
-    private String dimensions;
-
-    @Column(name = "requested_consolidation")
-    private boolean requestedConsolidation;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shipment_id")
-    private ShipmentEntity shipment;
+    private ShipmentEntity shipmentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id", nullable = false)
-    private WarehouseEntity warehouse;
+    private WarehouseEntity warehouseId;
 
     @Override
     public boolean equals(Object o) {
