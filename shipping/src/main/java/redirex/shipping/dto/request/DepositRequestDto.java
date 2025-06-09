@@ -1,6 +1,7 @@
 package redirex.shipping.dto.request;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import redirex.shipping.enums.CurrencyEnum;
 
 import jakarta.validation.constraints.DecimalMin;
@@ -10,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 @Data
+@NoArgsConstructor
 public class DepositRequestDto {
 
     @NotNull(message = "O valor do depósito não pode ser nulo.")
@@ -22,7 +24,4 @@ public class DepositRequestDto {
 
     @NotBlank(message = "O ID do PaymentMethod do Stripe é obrigatório para o depósito.")
     private String paymentMethodId;
-
-    public DepositRequestDto(BigDecimal bigDecimal, String pmTest) {
-    }
 }

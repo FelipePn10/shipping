@@ -7,6 +7,7 @@ import com.stripe.param.PaymentIntentCreateParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.exception.StripePaymentException;
@@ -14,6 +15,7 @@ import redirex.shipping.exception.StripePaymentException;
 import jakarta.annotation.PostConstruct;
 
 @Service
+@Profile("!test")
 public class StripeServiceImpl implements StripeService {
 
     private static final Logger logger = LoggerFactory.getLogger(StripeServiceImpl.class);
@@ -38,7 +40,7 @@ public class StripeServiceImpl implements StripeService {
                             .setCurrency(currency.name().toLowerCase())
                             .setPaymentMethod(paymentMethodId)
                             .setConfirmationMethod(PaymentIntentCreateParams.ConfirmationMethod.MANUAL)
-                            .setConfirm(true) // Confirma o PaymentIntent imediatamente
+                            .setConfirm(true)
                             .build();
 
             PaymentIntent paymentIntent = PaymentIntent.create(params);

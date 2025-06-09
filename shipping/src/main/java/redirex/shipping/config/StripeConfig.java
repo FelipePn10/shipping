@@ -1,16 +1,9 @@
 package redirex.shipping.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import redirex.shipping.service.StripeService;
-import redirex.shipping.service.StripeServiceImpl;
 
 @Configuration
 public class StripeConfig {
-    @Bean
-    @Profile("!test")
-    public StripeService realStripeService() {
-        return new StripeServiceImpl();
-    }
+    // Nenhuma configuração adicional necessária, já que o bean StripeServiceImpl
+    // é gerenciado pela anotação @Service com @Profile("!test") a partir de agora
 }
