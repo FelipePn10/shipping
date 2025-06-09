@@ -5,9 +5,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import redirex.shipping.dto.response.AddressResponse;
 import redirex.shipping.dto.AddressDTO;
+import redirex.shipping.dto.response.AddressResponse;
 import redirex.shipping.entity.AddressEntity;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.exception.AddressCreatedException;
@@ -60,7 +61,9 @@ public class AddressServiceImpl implements AddressService {
         logger.info("Update address request: {}", zipcode);
         AddressEntity address = addressRepository.findByZipcode(zipcode)
                 .orElseThrow(() -> new ResourceNotFoundException("Address with zipcode " + zipcode + " not found"));
-        if (!dto.getZipcode().equals(address.getZipcode())) {
+
+        // Verifica se o novo CEP é diferente e já existe
+        if (!dto.getZipcode().equals(zipcode)) {
             validateAddressDoesNotExist(dto.getZipcode());
         }
 
@@ -70,12 +73,21 @@ public class AddressServiceImpl implements AddressService {
         address.setStreet(dto.getStreet());
         address.setCountry(dto.getCountry());
         address.setPhone(dto.getPhone());
-        address.setZipcode(dto.getZipcode());
         address.setResidenceType(dto.getResidenceType());
         address.setComplement(dto.getComplement());
 
-        logger.info("Address successfully updated");
-        return addressMapper.toResponse(addressRepository.save(address));
+        // Atualiza ZIPCODE separadamente com tratamento de concorrência
+        if (!dto.getZipcode().equals(zipcode)) {
+            address.setZipcode(dto.getZipcode());
+        }
+
+        try {
+            AddressEntity updatedAddress = addressRepository.save(address);
+            logger.info("Address successfully updated");
+            return addressMapper.toResponse(updatedAddress);
+        } catch (DataIntegrityViolationException e) {
+            throw new AddressCreatedException("Zipcode " + dto.getZipcode() + " already exists");
+        }
     }
 
     @Override
@@ -86,11 +98,9 @@ public class AddressServiceImpl implements AddressService {
         return addressMapper.toResponse(address);
     }
 
-
     private void validateAddressDoesNotExist(String zipcode) {
         if (addressRepository.findByZipcode(zipcode).isPresent()) {
             throw new AddressCreatedException("Zipcode " + zipcode + " already exists");
         }
     }
 }
-

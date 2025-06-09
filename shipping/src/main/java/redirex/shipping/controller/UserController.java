@@ -43,8 +43,6 @@ public class UserController {
     private final UserPasswordResetService passwordResetService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final AddressService addressService;
-    private final AddressMapper addressMapper;
 
     @PostMapping("/public/user/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
@@ -106,63 +104,6 @@ public class UserController {
         passwordResetService.saveUser(user);
         return ResponseEntity.ok(buildSuccessResponse("Password reset successfully"));
     }
-
-    @PostMapping("/public/user/created-address")
-    public ResponseEntity<?> createAddress(@Valid @RequestBody CreateAddressRequest request) {
-        try {
-            AddressDTO dto = addressMapper.toDTO(request);
-            AddressResponse response = addressService.createdAddress(dto);
-            return ResponseEntity.created(URI.create("/" + response.getId())).body(response);
-        } catch (AddressCreatedException e) {
-            logger.error("Address created error: {}", e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
-    // methods to update/delete the user or related:
-
-    // Endpoint com erro 500 ao tentar modificar o endereço. Fazer a correção
-    @PutMapping("/public/user/update-address/{zipcode}")
-    public ResponseEntity<?> updateAddress( @PathVariable String zipcode, @Valid @RequestBody AddressDTO dto) {
-        try {
-            logger.info("Received request to update address for zipcode: {}", zipcode);
-
-            AddressResponse updateResponse = addressService.updateAddress(zipcode, dto);
-            return ResponseEntity.ok(updateResponse);
-        } catch (ResourceNotFoundException e) {
-            logger.warn("Address not found for update: {}", zipcode);
-            return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (AddressCreatedException e) { // No caso do novo CEP (zipcode) já existir
-            logger.warn("Update failed: {}", e.getMessage());
-            return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage()); // 409 Conflict
-        } catch (Exception e) {
-            logger.error("Unexpected error updating address for zipcode {}: {}", zipcode, e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update address due to an unexpected error.");
-        }
-    }
-
-    @DeleteMapping("/public/user/delete-address/{zipcode}")
-    public ResponseEntity<?> deleteAddress(@PathVariable String zipcode) {
-        try {
-            logger.info("Received request to delete address for zipcode: {}", zipcode);
-
-            AddressResponse deleteResponse = addressService.deleteAddress(zipcode);
-            return ResponseEntity.ok(deleteResponse);
-        } catch (ResourceNotFoundException e) {
-            logger.warn("Address not found for update: {}", zipcode);
-            return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (AddressDeleteException e) {
-            logger.warn("Delete failed: {}", e.getMessage());
-            return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage());
-        }  catch (Exception e) {
-            logger.error("Unexpected error deleting address for zipcode {}: {}", zipcode, e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
-
-    // criar metodo para deletar endereço depois
 
     @GetMapping("/api/user/{id}")
     @PreAuthorize("hasRole('USER')")
