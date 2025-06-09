@@ -1,4 +1,4 @@
-package redirex.shipping.controller;
+package redirex.shipping.controller.User;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

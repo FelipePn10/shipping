@@ -1,4 +1,4 @@
-package redirex.shipping.controller;
+package redirex.shipping.controller.User;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,24 +10,17 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import redirex.shipping.dto.request.CreateAddressRequest;
-import redirex.shipping.dto.response.AddressResponse;
 import redirex.shipping.dto.response.UserResponse;
-import redirex.shipping.dto.AddressDTO;
 import redirex.shipping.dto.ForgotPasswordDTO;
 import redirex.shipping.dto.RegisterUserDTO;
 import redirex.shipping.dto.ResetPasswordDTO;
-import redirex.shipping.entity.AddressEntity;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.exception.*;
-import redirex.shipping.mapper.AddressMapper;
 import redirex.shipping.security.JwtUtil;
-import redirex.shipping.service.AddressService;
 import redirex.shipping.service.UserPasswordResetService;
 import redirex.shipping.service.UserServiceImpl;
 import redirex.shipping.service.email.UserEmailService;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
