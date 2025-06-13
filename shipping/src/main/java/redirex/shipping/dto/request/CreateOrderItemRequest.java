@@ -1,12 +1,18 @@
 package redirex.shipping.dto.request;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
+import redirex.shipping.entity.ProductCategoryEntity;
+import redirex.shipping.entity.UserEntity;
+import redirex.shipping.entity.WarehouseEntity;
 import redirex.shipping.enums.CurrencyEnum;
 
 import java.math.BigDecimal;
@@ -16,6 +22,24 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 public class CreateOrderItemRequest {
+    @NotNull(message = "User is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity userId;
+
+    @NotNull(message = "User is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private WarehouseEntity warehouseId;
+
+    @NotBlank
+    private BigDecimal recipientCpf;
+
+    @NotNull(message = "User is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private ProductCategoryEntity productCategoryId;
+
     @NotBlank(message = "Product URL is required")
     @URL(message = "Product URL must be valid")
     @Size(max = 255, message = "Product URL must not exceed 255 characters")
@@ -42,5 +66,4 @@ public class CreateOrderItemRequest {
     private LocalDateTime createdAt;
 
     private LocalDateTime paidProductAt;
-
 }
