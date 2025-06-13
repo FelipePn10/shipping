@@ -10,5 +10,7 @@ public enum OrderItemStatusEnum {
         PROCESSING_IN_WAREHOUSE,    // Em processamento no armazém (empacotamento, etc.)
         SHIPPED,                    // Enviado
         DELIVERED,                  // Entregue
-        CANCELLED                   // Cancelado
+        CANCELLED,
+        PAID,
+        PAYMENT_FAILED
     }

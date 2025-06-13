@@ -5,14 +5,12 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.validator.constraints.URL;
-import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.OrderItemStatusEnum;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
 @Data
 @NoArgsConstructor
