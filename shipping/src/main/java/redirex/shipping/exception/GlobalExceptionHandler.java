@@ -24,6 +24,16 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(IllegalStatusTransitionException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalStatusTransitionException(IllegalStatusTransitionException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+//    @ExceptionHandler(AddressCreatedException.class)
+//    public ResponseEntity<Map<String, Object>> handleAddressCreatedException(AddressCreatedException ex) {
+//        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+//    }
+
     @ExceptionHandler(InvalidCouponException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidCouponException(InvalidCouponException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
