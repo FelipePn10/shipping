@@ -10,6 +10,8 @@ import redirex.shipping.enums.OrderItemStatusEnum;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -96,6 +98,14 @@ public class OrderItemEntity implements Serializable {
         this.warehouseId = warehouse;
         warehouse.getOrderItems().add(this); // Atualiza o lado inverso
     }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_assigned_id")
+    private AdminEntity adminAssigned;
+
+    // Lista de fotos do pedido
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItemPhotoEntity> photos = new ArrayList<>();
+
 
     @Override
     public boolean equals(Object o) {

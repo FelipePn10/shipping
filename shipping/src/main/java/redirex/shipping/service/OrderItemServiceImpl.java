@@ -19,6 +19,7 @@ import redirex.shipping.repositories.OrderItemRepository;
 import redirex.shipping.repositories.ProductCategoryRepository;
 import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.repositories.WarehouseRepository;
+import redirex.shipping.service.admin.OrderDistributionService;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class OrderItemServiceImpl implements OrderItemService {
     private final UserRepository userRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final WarehouseRepository warehouseRepository;
+    private final OrderDistributionService orderDistributionService;
     private static final int MAX_RETRY_ATTEMPTS = 3;
 
     @Override
@@ -59,10 +61,14 @@ public class OrderItemServiceImpl implements OrderItemService {
 
             // Atualizar status para PAGO se tudo ocorrer bem
             orderItem.setStatus(OrderItemStatusEnum.PAID);
-            orderItem = orderItemRepository.save(orderItem);
+
+            AdminEntity assignedAdmin = orderDistributionService.assignRandomAdmin();
+            orderItem.setAdminAssigned(assignedAdmin);
 
             warehouse.getOrderItems().add(orderItem); // Adiciona o item a warehouse
             warehouseRepository.save(warehouse); // Atualiza a warehouse
+
+            orderItem = orderItemRepository.save(orderItem);
             logger.info("Payment processed for order: {}", orderItem.getId());
 
         } catch (InsufficientBalanceException ex) {
