@@ -60,6 +60,9 @@ public class OrderItemServiceImpl implements OrderItemService {
             // Atualizar status para PAGO se tudo ocorrer bem
             orderItem.setStatus(OrderItemStatusEnum.PAID);
             orderItem = orderItemRepository.save(orderItem);
+
+            warehouse.getOrderItems().add(orderItem); // Adiciona o item a warehouse
+            warehouseRepository.save(warehouse); // Atualiza a warehouse
             logger.info("Payment processed for order: {}", orderItem.getId());
 
         } catch (InsufficientBalanceException ex) {
@@ -95,7 +98,7 @@ public class OrderItemServiceImpl implements OrderItemService {
                     "ORDER_PAYMENT",
                     "Payment of the order: " + orderItem.getId(),
                     orderItem.getId(),
-                    null   // shipmentId (não aplicável)
+                    null
             );
         } catch (InsufficientBalanceException ex) {
             // Repassa exceção para tratamento específico
@@ -119,7 +122,7 @@ public class OrderItemServiceImpl implements OrderItemService {
                                                UserEntity user,
                                                ProductCategoryEntity category,
                                                WarehouseEntity warehouse) {
-        return OrderItemEntity.builder()
+        OrderItemEntity orderItem = OrderItemEntity.builder()
                 .userId(user)
                 .productUrl(request.getProductUrl())
                 .description(request.getDescription())
@@ -130,6 +133,9 @@ public class OrderItemServiceImpl implements OrderItemService {
                 .status(OrderItemStatusEnum.CREATING_ORDER) // Status inicial
                 .warehouseId(warehouse)
                 .build();
+
+        orderItem.setWarehouse(warehouse);
+        return orderItem;
     }
 
     // Mapeamento entity -> response

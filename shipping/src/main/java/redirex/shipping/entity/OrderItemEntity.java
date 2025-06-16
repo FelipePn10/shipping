@@ -12,7 +12,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -90,6 +91,11 @@ public class OrderItemEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id", nullable = false)
     private WarehouseEntity warehouseId;
+
+    public void setWarehouse(WarehouseEntity warehouse) {
+        this.warehouseId = warehouse;
+        warehouse.getOrderItems().add(this); // Atualiza o lado inverso
+    }
 
     @Override
     public boolean equals(Object o) {
