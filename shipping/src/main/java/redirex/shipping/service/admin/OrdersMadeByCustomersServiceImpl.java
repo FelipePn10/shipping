@@ -49,8 +49,6 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
         }
         order.setStatus(newStatus);
         orderItemRepository.save(order);
-
-
     }
 
     @Transactional
