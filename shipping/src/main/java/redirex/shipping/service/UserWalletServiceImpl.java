@@ -65,6 +65,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Override
     @Transactional
+    // Adicionar funcionalidade de cashback no futuro!
     public WalletTransactionResponse depositToWallet(Long userId, DepositRequestDto depositRequestDto) {
         logger.info("Attempting deposit for userId: {} with target CNY amount: {}", userId, depositRequestDto.getAmount());
 

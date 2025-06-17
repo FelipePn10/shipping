@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserWalletServiceImpl userWalletService;
-    private final CouponService couponService;
+    private final WelcomeCouponService welcomeCouponService;
     private final UserCouponRepository userCouponRepository;
     private final UserMapper userMapper;
     private final WarehouseService warehouseService;
@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
         try {
             // Criar cupom de boas-vindas
-            CouponEntity welcomeCoupon = couponService.createWelcomeCoupon();
+            CouponEntity welcomeCoupon = welcomeCouponService.createWelcomeCoupon();
 
             UserEntity user = UserEntity.builder()
                     .fullname(dto.getFullname())
@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
                     .build();
 
             // Criar warehouse padrão
-            WarehouseEntity warehouse = warehouseService.createDefaultWarehouse(user);
+            WarehouseEntity warehouse = warehouseService.createWarehouseForUser(user);
             user.setWarehouse(warehouse);
 
             user = userRepository.save(user);

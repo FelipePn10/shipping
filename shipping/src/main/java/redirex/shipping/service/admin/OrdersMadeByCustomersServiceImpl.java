@@ -134,9 +134,9 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
                 status == OrderItemStatusEnum.AWAITING_WAREHOUSE_ARRIVAL;
     }
 
-    // Método auxiliar para notificação (implementação fictícia por enquanto)
+    // Metodo auxiliar para notificação (implementação fictícia por enquanto)
     private void notifyCustomerAboutShipment(OrderItemEntity order) {
-        // Lógica para enviar email/notificação ao cliente
+        // Lógica para enviar e-mail/notificação ao cliente
         System.out.println("Notificando cliente sobre envio do pedido: " + order.getId());
     }
 }

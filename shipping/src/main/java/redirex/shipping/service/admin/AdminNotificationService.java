@@ -1,4 +1,4 @@
-package redirex.shipping.service;
+package redirex.shipping.service.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,7 +13,7 @@ import redirex.shipping.repositories.NotificationRepository;
 import redirex.shipping.repositories.UserRepository;
 
 @Service
-public class NotificationService {
+public class AdminNotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
     @Autowired

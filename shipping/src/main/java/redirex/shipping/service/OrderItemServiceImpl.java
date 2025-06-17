@@ -27,6 +27,7 @@ public class OrderItemServiceImpl implements OrderItemService {
     private static final Logger logger = LoggerFactory.getLogger(OrderItemServiceImpl.class);
 
     private final OrderItemRepository orderItemRepository;
+    private final WarehouseService warehouseService;
     private final UserWalletService userWalletService;
     private final UserRepository userRepository;
     private final ProductCategoryRepository productCategoryRepository;
@@ -65,8 +66,10 @@ public class OrderItemServiceImpl implements OrderItemService {
             AdminEntity assignedAdmin = orderDistributionService.assignToLeastBusyAdmin();
             orderItem.setAdminAssigned(assignedAdmin);
 
-            warehouse.getOrderItems().add(orderItem); // Adiciona o item a warehouse
-            warehouseRepository.save(warehouse); // Atualiza a warehouse
+            warehouseService.addOrderItemToWarehouse(
+                    orderItem.getId(),
+                    warehouse.getId()
+            );
 
             orderItem = orderItemRepository.save(orderItem);
             logger.info("Payment processed for order: {}", orderItem.getId());

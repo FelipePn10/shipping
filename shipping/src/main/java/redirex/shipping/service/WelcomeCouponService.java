@@ -2,10 +2,7 @@ package redirex.shipping.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.entity.CouponEntity;
-import redirex.shipping.entity.UserCouponEntity;
-import redirex.shipping.entity.UserEntity;
 import redirex.shipping.enums.CouponTypeEnum;
 import redirex.shipping.repositories.CouponRepository;
 import redirex.shipping.util.CouponCodeGenerator;
@@ -15,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class CouponService {
+public class WelcomeCouponService {
 
     private final CouponCodeGenerator couponCodeGenerator;
     private final CouponRepository couponRepository;
