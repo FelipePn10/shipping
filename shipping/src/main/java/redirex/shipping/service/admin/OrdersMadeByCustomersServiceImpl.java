@@ -39,20 +39,6 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
 
     @Transactional
     @Override
-    public void updateOrderStatus(Long orderId, OrderItemStatusEnum newStatus, AdminEntity admin) {
-        OrderItemEntity order = orderItemRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-
-        // Validação de permissão
-        if (!order.getAdminAssigned().getId().equals(admin.getId())) {
-            throw new SecurityException("Admin not assigned to this order");
-        }
-        order.setStatus(newStatus);
-        orderItemRepository.save(order);
-    }
-
-    @Transactional
-    @Override
     public void updateOrderStatus(Long orderId, OrderItemStatusEnum newStatus, AdminEntity admin, String notes) {
         OrderItemEntity order = orderItemRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
@@ -140,6 +126,7 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
 
         //photoRepository.save(photo);
     }
+
     private boolean canAddPhotos(OrderItemStatusEnum status) {
         // Só permite adicionar fotos em estados específicos
         return status == OrderItemStatusEnum.PROCESSING_IN_WAREHOUSE ||

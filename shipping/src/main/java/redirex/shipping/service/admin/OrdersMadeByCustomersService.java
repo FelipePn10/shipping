@@ -10,7 +10,6 @@ import redirex.shipping.enums.OrderItemStatusEnum;
 
 public interface OrdersMadeByCustomersService {
     Page<OrderItemEntity> getRecentOrders(Pageable pageable);
-    void updateOrderStatus(Long orderId, OrderItemStatusEnum newStatus, AdminEntity admin);
 
     @Transactional
     void updateOrderStatus(Long orderId, OrderItemStatusEnum newStatus, AdminEntity admin, String notes);

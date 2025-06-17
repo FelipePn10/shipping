@@ -62,7 +62,7 @@ public class OrderItemServiceImpl implements OrderItemService {
             // Atualizar status para PAGO se tudo ocorrer bem
             orderItem.setStatus(OrderItemStatusEnum.PAID);
 
-            AdminEntity assignedAdmin = orderDistributionService.assignRandomAdmin();
+            AdminEntity assignedAdmin = orderDistributionService.assignToLeastBusyAdmin();
             orderItem.setAdminAssigned(assignedAdmin);
 
             warehouse.getOrderItems().add(orderItem); // Adiciona o item a warehouse
