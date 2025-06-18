@@ -18,7 +18,7 @@ public class DepositRequestDto {
     @DecimalMin(value = "0.01", message = "O valor do depósito deve ser maior que zero.")
     private BigDecimal amount;
     @NotNull(message = "A moeda alvo do depósito não pode ser nula.")
-    private CurrencyEnum currency; // Representa a moeda alvo (CNY no seu serviço)
+    private CurrencyEnum currency; // Representa a moeda alvo (CNY do serviço)
 
     private String sourceCurrency; // Representa a moeda original da transação, se diferente da moeda alvo
 

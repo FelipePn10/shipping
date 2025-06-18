@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redirex.shipping.dto.response.OrderItemSummaryResponse;
 import redirex.shipping.dto.response.WarehouseResponse;
 import redirex.shipping.entity.OrderItemEntity;
 import redirex.shipping.entity.UserEntity;
@@ -15,9 +14,7 @@ import redirex.shipping.exception.ResourceNotFoundException;
 import redirex.shipping.mapper.WarehouseMapper;
 import redirex.shipping.repositories.OrderItemRepository;
 import redirex.shipping.repositories.WarehouseRepository;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

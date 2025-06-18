@@ -77,7 +77,7 @@ public class UserWalletServiceImpl implements UserWalletService {
         }
 
         CurrencyEnum walletCurrency = CurrencyEnum.CNY;
-        BigDecimal targetCNYAmount = depositRequestDto.getAmount().setScale(2, RoundingMode.HALF_UP); // Valor que o usuário quer na carteira CNY
+        BigDecimal targetCNYAmount = depositRequestDto.getAmount().setScale(2, RoundingMode.HALF_UP); // Valor que o usuário quer na carteira -> CNY
 
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -162,7 +162,7 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .fee(String.valueOf(feeInCNY))
                 .currency(walletCurrency.toString())
                 .chargedAmount(String.valueOf(amountToChargeInBRL))
-                // .chargedCurrency(CurrencyEnum.BRL))
+                //.chargedCurrency(CurrencyEnum.BRL))
                 .transactionDescription(transactionDescription)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -181,7 +181,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
         if (orderItemId != null && shipmentId == null) {
             debitForOrder(userId, currency, amount, description, orderItemId);
-        } else if (shipmentId != null) {
+        } else if (shipmentId != null && orderItemId == null) {
             debitForShipment(userId, currency, amount, description, orderItemId, shipmentId);
         } else {
             throw new IllegalArgumentException("Either orderItemId or shipmentId must be provided for debit.");
