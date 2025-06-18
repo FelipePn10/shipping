@@ -5,6 +5,5 @@ public enum ShipmentStatusEnum {
     PROCESSING,      // Pagamento recebido, processando (empacotando, etc.)
     SHIPPED,         // Enviado
     IN_TRANSIT,      // Em trânsito
-    DELIVERED,       // Entregue
-    CANCELLED        // Cancelado
+    DELIVERED        // Entregue
 }
