@@ -41,55 +41,76 @@ public class OrderItemServiceImpl implements OrderItemService {
         logger.info("Creating order: {}", request.getProductUrl());
 
         UserEntity user = userRepository.findById(request.getUserId().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
         ProductCategoryEntity category = productCategoryRepository.findById(request.getProductCategoryId().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Category not found."));
 
         WarehouseEntity warehouse = warehouseRepository.findById(request.getWarehouseId().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Armazém não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Warehouse not found."));
 
-        // Mapeia request -> entity
+        // Map request to entity
         OrderItemEntity orderItem = mapRequestToEntity(request, user, category, warehouse);
 
-        // E Salva o pedido (status inicial = CREATED)
+        // Save order with initial status CREATING_ORDER
         orderItem = orderItemRepository.save(orderItem);
         logger.info("Order created - ID: {}", orderItem.getId());
 
+        return mapEntityToResponse(orderItem);
+    }
+
+    @Override
+    @Transactional
+    public OrderItemResponse processOrderPayment(Long orderItemId) {
+        OrderItemEntity orderItem = orderItemRepository.findById(orderItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found."));
+
+        if (orderItem.getStatus() != OrderItemStatusEnum.CREATING_ORDER) {
+            logger.warn("Order {} is not in CREATING_ORDER status, current status: {}",
+                    orderItemId, orderItem.getStatus());
+            throw new IllegalStateException("Order is not in a payable state.");
+        }
+
+        UserEntity user = orderItem.getUserId();
+        if (user == null) {
+            logger.error("User not associated with order: {}", orderItemId);
+            throw new IllegalStateException("User not associated with order.");
+        }
+
         try {
-            // Processa pagamento com retentativas
+            // Process payment with retry
             processPaymentWithRetry(user, orderItem);
 
-            // Atualizar status para PAGO se tudo ocorrer bem
+            // Update status to PAID
             orderItem.setStatus(OrderItemStatusEnum.PAID);
 
+            // Assign to the least busy admin
             AdminEntity assignedAdmin = orderDistributionService.assignToLeastBusyAdmin();
             orderItem.setAdminAssigned(assignedAdmin);
 
+            // Add order to warehouse
             warehouseService.addOrderItemToWarehouse(
                     orderItem.getId(),
-                    warehouse.getId()
+                    orderItem.getWarehouseId().getId()
             );
 
+            // Save updated order
             orderItem = orderItemRepository.save(orderItem);
             logger.info("Payment processed for order: {}", orderItem.getId());
 
         } catch (InsufficientBalanceException ex) {
-            // Tratar falha de pagamento por saldo insuficiente
+            // Handle payment failure due to insufficient balance
             handlePaymentFailure(orderItem, "Insufficient balance");
             throw ex;
         } catch (Exception ex) {
-            // Tratar outras falhas (após retentativas)
+            // Handle other payment failures (after retries)
             handlePaymentFailure(orderItem, "Payment processing failed");
             throw new PaymentProcessingException("Redirect to deposit screen", ex);
         }
 
-        // resposta detalhada
         return mapEntityToResponse(orderItem);
     }
 
-
-     // Tenta até 3 vezes com backoff exponencial
     @Retryable(
             value = {Exception.class},
             exclude = {InsufficientBalanceException.class},
@@ -98,7 +119,6 @@ public class OrderItemServiceImpl implements OrderItemService {
     )
     private void processPaymentWithRetry(UserEntity user, OrderItemEntity orderItem)
             throws InsufficientBalanceException {
-
         try {
             userWalletService.debitFromWallet(
                     user.getId(),
@@ -110,12 +130,12 @@ public class OrderItemServiceImpl implements OrderItemService {
                     null
             );
         } catch (InsufficientBalanceException ex) {
-            // Repassa exceção para tratamento específico
+            // Repass exception for specific handling
             throw ex;
         } catch (Exception ex) {
             logger.warn("Payment attempt failed for order: {}. Trying again, please wait!",
                     orderItem.getId(), ex);
-            throw ex; // Relança para o mecanismo de retry
+            throw ex; // Rethrow for retry mechanism
         }
     }
 
@@ -126,7 +146,6 @@ public class OrderItemServiceImpl implements OrderItemService {
                 orderItem.getId(), reason);
     }
 
-    // Mapeamento request -> entity
     private OrderItemEntity mapRequestToEntity(CreateOrderItemRequest request,
                                                UserEntity user,
                                                ProductCategoryEntity category,
@@ -139,7 +158,7 @@ public class OrderItemServiceImpl implements OrderItemService {
                 .productValue(request.getProductValue())
                 .category(category)
                 .recipientCpf(String.valueOf(request.getRecipientCpf()))
-                .status(OrderItemStatusEnum.CREATING_ORDER) // Status inicial
+                .status(OrderItemStatusEnum.CREATING_ORDER)
                 .warehouseId(warehouse)
                 .build();
 
@@ -147,7 +166,6 @@ public class OrderItemServiceImpl implements OrderItemService {
         return orderItem;
     }
 
-    // Mapeamento entity -> response
     private OrderItemResponse mapEntityToResponse(OrderItemEntity entity) {
         return OrderItemResponse.builder()
                 .id(entity.getId())
