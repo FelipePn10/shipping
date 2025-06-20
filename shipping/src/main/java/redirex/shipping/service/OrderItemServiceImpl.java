@@ -37,7 +37,7 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Override
     @Transactional
-    public OrderItemResponse createOrderItem(@Valid CreateOrderItemRequest request) {
+    public OrderItemResponse createOrderItem(Long userId, @Valid CreateOrderItemRequest request) {
         logger.info("Creating order: {}", request.getProductUrl());
 
         UserEntity user = userRepository.findById(request.getUserId().getId())

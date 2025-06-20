@@ -9,6 +9,6 @@ import redirex.shipping.entity.OrderItemEntity;
 import java.util.List;
 
 public interface OrderItemService {
-    OrderItemResponse createOrderItem(@Valid CreateOrderItemRequest dto);
+    OrderItemResponse createOrderItem(Long userId, @Valid CreateOrderItemRequest dto);
     OrderItemResponse processOrderPayment(Long orderItemId);
 }
