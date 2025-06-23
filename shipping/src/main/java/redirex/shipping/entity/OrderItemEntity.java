@@ -99,16 +99,22 @@ public class OrderItemEntity implements Serializable {
 
     public void setWarehouse(WarehouseEntity warehouse) {
         this.warehouseId = warehouse;
-        warehouse.getOrderItems().add(this); // Atualiza o lado inverso
+        warehouse.getOrderItems().add(this);
     }
+
+    public void setShipment(ShipmentEntity shipment) {
+        this.shipmentId = shipment;
+        if (shipment != null) {
+            shipment.getOrderItems().add(this);
+        }
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_assigned_id")
     private AdminEntity adminAssigned;
 
-    // Lista de fotos do pedido
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemPhotoEntity> photos = new ArrayList<>();
-
 
     @Override
     public boolean equals(Object o) {
