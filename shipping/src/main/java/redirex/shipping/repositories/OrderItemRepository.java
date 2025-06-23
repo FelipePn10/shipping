@@ -24,9 +24,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
             Pageable pageable
     );
 
-    // Busca histórico de um pedido
-    List<OrderItemStatusHistoryEntity> findStatusHistoryByOrderItemId(Long orderItemId);
-
     // Metodo para contar pedidos ativos por admin
     long countByAdminAssignedAndStatusIn(AdminEntity admin, List<OrderItemStatusEnum> statuses);
 }

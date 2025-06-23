@@ -12,11 +12,9 @@ import java.util.List;
 public interface OrderItemStatusHistoryRepository
         extends JpaRepository<OrderItemStatusHistoryEntity, Long> {
 
-    // Busca histórico por ID do pedido
-    List<OrderItemStatusHistoryEntity> findByOrderItemIdOrderByChangedAtDesc(Long orderItemId);
+    List<OrderItemStatusHistoryEntity> findByOrderItem_IdOrderByChangedAtDesc(Long orderItemId);
 
-    // Busca histórico paginado por ID do pedido
-    Page<OrderItemStatusHistoryEntity> findByOrderItemIdOrderByChangedAtDesc(
+    Page<OrderItemStatusHistoryEntity> findByOrderItem_IdOrderByChangedAtDesc(
             Long orderItemId,
             Pageable pageable
     );

@@ -94,6 +94,9 @@ public class OrderItemEntity implements Serializable {
     @JoinColumn(name = "warehouse_id", nullable = false)
     private WarehouseEntity warehouseId;
 
+    @OneToMany(mappedBy = "orderItem")
+    private List<OrderItemStatusHistoryEntity> statusHistory;
+
     @Column
     private LocalDateTime deliveredAt;
 
