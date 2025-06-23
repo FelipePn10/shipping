@@ -1,19 +1,10 @@
 package redirex.shipping.dto.request;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
-import redirex.shipping.entity.ProductCategoryEntity;
-import redirex.shipping.entity.UserEntity;
-import redirex.shipping.entity.WarehouseEntity;
-import redirex.shipping.enums.CurrencyEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,23 +13,18 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 public class CreateOrderItemRequest {
-    @NotNull(message = "User is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity userId;
+    @NotNull(message = "User ID is required")
+    private Long userId;
 
-    @NotNull(message = "User is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private WarehouseEntity warehouseId;
+    @NotNull(message = "Warehouse ID is required")
+    private Long warehouseId;
 
-    @NotBlank
-    private BigDecimal recipientCpf;
+    @NotBlank(message = "Recipient CPF is required")
+    @Size(max = 14, message = "Recipient CPF must not exceed 14 characters")
+    private String recipientCpf;
 
-    @NotNull(message = "User is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private ProductCategoryEntity productCategoryId;
+    @NotNull(message = "Product category ID is required")
+    private Long productCategoryId;
 
     @NotBlank(message = "Product URL is required")
     @URL(message = "Product URL must be valid")
@@ -51,7 +37,7 @@ public class CreateOrderItemRequest {
 
     private Float size;
 
-    @NotBlank(message = "Quantity is required")
+    @NotNull(message = "Quantity is required")
     private Integer quantity;
 
     @NotNull(message = "Product value is required")

@@ -17,6 +17,8 @@ public class OrderItemResponse {
     private Long id;
     private String description;
     private Float size;
+    private Integer quantity;
+    private CurrencyEnum currency;
     private String productUrl;
     private BigDecimal productValue;
     private CurrencyEnum originalCurrency;

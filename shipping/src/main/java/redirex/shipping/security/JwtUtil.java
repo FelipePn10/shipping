@@ -75,13 +75,10 @@ public class JwtUtil {
                 .getBody();
     }
 
-
-
     public String extractUsername(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(secretKey.getBytes())
-                    .build()
+            return Jwts.parser()
+                    .setSigningKey(secretKey)
                     .parseClaimsJws(token)
                     .getBody()
                     .getSubject();

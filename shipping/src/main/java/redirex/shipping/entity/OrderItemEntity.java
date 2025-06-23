@@ -54,6 +54,11 @@ public class OrderItemEntity implements Serializable {
     @Column(name = "size")
     private Float size;
 
+    @NotNull(message = "Quantity is required")
+    @Min(value = 1, message = "Quantity must be at least 1")
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity;
+
     @NotNull(message = "Product value is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Product value must be positive")
     @Column(name = "product_value", nullable = false, precision = 19, scale = 4)
@@ -90,6 +95,7 @@ public class OrderItemEntity implements Serializable {
     @JoinColumn(name = "shipment_id")
     private ShipmentEntity shipmentId;
 
+    @NotNull(message = "Warehouse is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id", nullable = false)
     private WarehouseEntity warehouseId;
@@ -97,12 +103,21 @@ public class OrderItemEntity implements Serializable {
     @OneToMany(mappedBy = "orderItem")
     private List<OrderItemStatusHistoryEntity> statusHistory;
 
-    @Column
+    @Column(name = "delivered_at")
     private LocalDateTime deliveredAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_assigned_id")
+    private AdminEntity adminAssigned;
+
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItemPhotoEntity> photos = new ArrayList<>();
 
     public void setWarehouse(WarehouseEntity warehouse) {
         this.warehouseId = warehouse;
-        warehouse.getOrderItems().add(this);
+        if (warehouse != null) {
+            warehouse.getOrderItems().add(this);
+        }
     }
 
     public void setShipment(ShipmentEntity shipment) {
@@ -111,13 +126,6 @@ public class OrderItemEntity implements Serializable {
             shipment.getOrderItems().add(this);
         }
     }
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_assigned_id")
-    private AdminEntity adminAssigned;
-
-    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItemPhotoEntity> photos = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

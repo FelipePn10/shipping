@@ -15,11 +15,9 @@ import redirex.shipping.entity.*;
 import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.OrderItemStatusEnum;
 import redirex.shipping.exception.InsufficientBalanceException;
+import redirex.shipping.exception.OrderCreationFailedException;
 import redirex.shipping.exception.PaymentProcessingException;
 import redirex.shipping.repositories.OrderItemRepository;
-import redirex.shipping.repositories.ProductCategoryRepository;
-import redirex.shipping.repositories.UserRepository;
-import redirex.shipping.repositories.WarehouseRepository;
 import redirex.shipping.service.admin.OrderDistributionService;
 
 @Service
@@ -30,32 +28,25 @@ public class OrderItemServiceImpl implements OrderItemService {
     private final OrderItemRepository orderItemRepository;
     private final WarehouseService warehouseService;
     private final UserWalletService userWalletService;
-    private final UserRepository userRepository;
-    private final ProductCategoryRepository productCategoryRepository;
-    private final WarehouseRepository warehouseRepository;
     private final OrderDistributionService orderDistributionService;
     private static final int MAX_RETRY_ATTEMPTS = 3;
 
     @Override
     @Transactional
-    public OrderItemResponse createOrderItem(Long userId, @Valid CreateOrderItemRequest request) {
-        logger.info("Creating order: {}", request.getProductUrl());
-
-        UserEntity user = userRepository.findById(request.getUserId().getId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found."));
-
-        ProductCategoryEntity category = productCategoryRepository.findById(request.getProductCategoryId().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found."));
-
-        WarehouseEntity warehouse = warehouseRepository.findById(request.getWarehouseId().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Warehouse not found."));
+    public OrderItemResponse createOrderItem(Long userId, @Valid CreateOrderItemRequest request, UserEntity user, ProductCategoryEntity category, WarehouseEntity warehouse) {
+        logger.info("Creating order for userId: {}, productUrl: {}", userId, request.getProductUrl());
 
         // Map request to entity
         OrderItemEntity orderItem = mapRequestToEntity(request, user, category, warehouse);
 
         // Save order with initial status CREATING_ORDER
-        orderItem = orderItemRepository.save(orderItem);
-        logger.info("Order created - ID: {}", orderItem.getId());
+        try {
+            orderItem = orderItemRepository.save(orderItem);
+            logger.info("Order created - ID: {}", orderItem.getId());
+        } catch (Exception ex) {
+            logger.error("Failed to save order item: {}", ex.getMessage(), ex);
+            throw new OrderCreationFailedException("Failed to save order item: " + ex.getMessage(), ex);
+        }
 
         return mapEntityToResponse(orderItem);
     }
@@ -64,22 +55,22 @@ public class OrderItemServiceImpl implements OrderItemService {
     @Transactional
     public OrderItemResponse processOrderPayment(Long orderItemId, Long userId) {
         OrderItemEntity orderItem = orderItemRepository.findById(orderItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found."));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderItemId));
 
         if (!orderItem.getUserId().getId().equals(userId)) {
+            logger.warn("Order {} does not belong to user {}", orderItemId, userId);
             throw new AccessDeniedException("Order does not belong to user");
         }
 
         if (orderItem.getStatus() != OrderItemStatusEnum.CREATING_ORDER) {
-            logger.warn("Order {} is not in CREATING_ORDER status, current status: {}",
-                    orderItemId, orderItem.getStatus());
-            throw new IllegalStateException("Order is not in a payable state.");
+            logger.warn("Order {} is not in CREATING_ORDER status, current status: {}", orderItemId, orderItem.getStatus());
+            throw new IllegalStateException("Order is not in a payable state");
         }
 
         UserEntity user = orderItem.getUserId();
         if (user == null) {
             logger.error("User not associated with order: {}", orderItemId);
-            throw new IllegalStateException("User not associated with order.");
+            throw new IllegalStateException("User not associated with order");
         }
 
         try {
@@ -94,21 +85,16 @@ public class OrderItemServiceImpl implements OrderItemService {
             orderItem.setAdminAssigned(assignedAdmin);
 
             // Add order to warehouse
-            warehouseService.addOrderItemToWarehouse(
-                    orderItem.getId(),
-                    orderItem.getWarehouseId().getId()
-            );
+            warehouseService.addOrderItemToWarehouse(orderItem.getId(), orderItem.getWarehouseId().getId());
 
             // Save updated order
             orderItem = orderItemRepository.save(orderItem);
             logger.info("Payment processed for order: {}", orderItem.getId());
 
         } catch (InsufficientBalanceException ex) {
-            // Handle payment failure due to insufficient balance
             handlePaymentFailure(orderItem, "Insufficient balance");
             throw ex;
         } catch (Exception ex) {
-            // Handle other payment failures (after retries)
             handlePaymentFailure(orderItem, "Payment processing failed");
             throw new PaymentProcessingException("Redirect to deposit screen", ex);
         }
@@ -122,8 +108,7 @@ public class OrderItemServiceImpl implements OrderItemService {
             maxAttempts = MAX_RETRY_ATTEMPTS,
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
-    private void processPaymentWithRetry(UserEntity user, OrderItemEntity orderItem)
-            throws InsufficientBalanceException {
+    private void processPaymentWithRetry(UserEntity user, OrderItemEntity orderItem) throws InsufficientBalanceException {
         try {
             userWalletService.debitFromWallet(
                     user.getId(),
@@ -135,40 +120,32 @@ public class OrderItemServiceImpl implements OrderItemService {
                     null
             );
         } catch (InsufficientBalanceException ex) {
-            // Repass exception for specific handling
             throw ex;
         } catch (Exception ex) {
-            logger.warn("Payment attempt failed for order: {}. Trying again, please wait!",
-                    orderItem.getId(), ex);
-            throw ex; // Rethrow for retry mechanism
+            logger.warn("Payment attempt failed for order: {}. Retrying...", orderItem.getId(), ex);
+            throw ex;
         }
     }
 
     private void handlePaymentFailure(OrderItemEntity orderItem, String reason) {
         orderItem.setStatus(OrderItemStatusEnum.PAYMENT_FAILED);
         orderItemRepository.save(orderItem);
-        logger.error("Payment failed for order: {}. Reason: {}",
-                orderItem.getId(), reason);
+        logger.error("Payment failed for order: {}. Reason: {}", orderItem.getId(), reason);
     }
 
-    private OrderItemEntity mapRequestToEntity(CreateOrderItemRequest request,
-                                               UserEntity user,
-                                               ProductCategoryEntity category,
-                                               WarehouseEntity warehouse) {
-        OrderItemEntity orderItem = OrderItemEntity.builder()
+    private OrderItemEntity mapRequestToEntity(CreateOrderItemRequest request, UserEntity user, ProductCategoryEntity category, WarehouseEntity warehouse) {
+        return OrderItemEntity.builder()
                 .userId(user)
                 .productUrl(request.getProductUrl())
                 .description(request.getDescription())
                 .size(request.getSize())
+                .quantity(request.getQuantity())
                 .productValue(request.getProductValue())
                 .category(category)
-                .recipientCpf(String.valueOf(request.getRecipientCpf()))
+                .recipientCpf(request.getRecipientCpf())
                 .status(OrderItemStatusEnum.CREATING_ORDER)
                 .warehouseId(warehouse)
                 .build();
-
-        orderItem.setWarehouse(warehouse);
-        return orderItem;
     }
 
     private OrderItemResponse mapEntityToResponse(OrderItemEntity entity) {
@@ -177,9 +154,16 @@ public class OrderItemServiceImpl implements OrderItemService {
                 .productUrl(entity.getProductUrl())
                 .description(entity.getDescription())
                 .size(entity.getSize())
+                .quantity(entity.getQuantity())
                 .productValue(entity.getProductValue())
+                .categoryName(entity.getCategory().getName()) // Assumindo que ProductCategoryEntity tem um campo name
+                .recipientCpf(entity.getRecipientCpf())
                 .status(entity.getStatus())
                 .createdAt(entity.getCreatedAt())
+                .paymentDeadline(entity.getPaymentDeadline())
+                .paidProductAt(entity.getPaidProductAt())
+                .arrivedAtWarehouseAt(entity.getArrivedAtWarehouseAt())
+                .shipmentId(entity.getShipmentId() != null ? entity.getShipmentId().getId() : null)
                 .build();
     }
 }
