@@ -10,5 +10,5 @@ import java.util.List;
 
 public interface OrderItemService {
     OrderItemResponse createOrderItem(Long userId, @Valid CreateOrderItemRequest dto);
-    OrderItemResponse processOrderPayment(Long orderItemId);
+    OrderItemResponse processOrderPayment(Long orderItemId, Long userId);
 }

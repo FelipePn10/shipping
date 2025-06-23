@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.dto.request.CreateOrderItemRequest;
@@ -61,9 +62,13 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Override
     @Transactional
-    public OrderItemResponse processOrderPayment(Long orderItemId) {
+    public OrderItemResponse processOrderPayment(Long orderItemId, Long userId) {
         OrderItemEntity orderItem = orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found."));
+
+        if (!orderItem.getUserId().getId().equals(userId)) {
+            throw new AccessDeniedException("Order does not belong to user");
+        }
 
         if (orderItem.getStatus() != OrderItemStatusEnum.CREATING_ORDER) {
             logger.warn("Order {} is not in CREATING_ORDER status, current status: {}",
