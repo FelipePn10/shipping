@@ -60,10 +60,14 @@ public class UserServiceImpl implements UserService {
                     .coupon(welcomeCoupon)
                     .build();
 
+            // Salvar o UserEntity primeiro
+            user = userRepository.save(user);
+
             // Criar warehouse padrão
             WarehouseEntity warehouse = warehouseService.createWarehouseForUser(user);
             user.setWarehouse(warehouse);
 
+            // Salvar novamente para persistir a associação com o warehouse
             user = userRepository.save(user);
 
             // Criar carteira inicial (CNY, saldo zero)
@@ -83,15 +87,15 @@ public class UserServiceImpl implements UserService {
 
             logger.info("User registered successfully with email: {}", dto.getEmail());
 
-            // Enviar o email de boas vindas
+            // Enviar o email de boas-vindas
             try {
                 logger.info("Email sent successfully: {}", dto.getEmail());
                 userEmailService.sendWelcomeEmail(dto.getEmail(), dto.getFullname());
-             } catch (SendeEmailWelcomeException e) {
-                logger.error("Error sending email, error reported to server.",e.getMessage());
+            } catch (SendeEmailWelcomeException e) {
+                logger.error("Error sending email, error reported to server.", e.getMessage());
             } catch (Exception e) {
                 logger.error(e.getMessage());
-             }
+            }
 
             return userMapper.toResponse(user);
         } catch (Exception e) {
