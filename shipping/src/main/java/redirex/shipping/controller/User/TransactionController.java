@@ -6,14 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.*;
+import redirex.shipping.dto.request.DebitWalletRequest;
 import redirex.shipping.dto.request.DepositRequestDto;
+import redirex.shipping.dto.response.OrderItemResponse;
 import redirex.shipping.dto.response.WalletTransactionResponse;
-import redirex.shipping.exception.DepositWalletExecption;
-import redirex.shipping.exception.StripePaymentException;
+import redirex.shipping.exception.*;
+import redirex.shipping.service.OrderItemService;
 import redirex.shipping.service.UserWalletServiceImpl;
 
 @RestController
@@ -22,6 +22,7 @@ public class TransactionController {
     private static final Logger logger = LoggerFactory.getLogger(TransactionController.class);
 
     private final UserWalletServiceImpl userWalletService;
+    private final OrderItemService orderItemService;
 
     @PostMapping("private/v1/api/users/{userId}/deposit")
     public ResponseEntity<WalletTransactionResponse> depositToWallet(
@@ -53,5 +54,46 @@ public class TransactionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new WalletTransactionResponse("error", "An unexpected error occurred."));
         }
+    }
+
+    @PostMapping("private/v1/api/users/{userId}/orders/{orderId}/payment")
+    public ResponseEntity<OrderItemResponse> processPayment(
+            @PathVariable Long userId,
+            @PathVariable Long orderId) {
+
+            logger.info("Received request to process payment for order ID: {}", orderId);
+            OrderItemResponse response = orderItemService.processOrderPayment(orderId,userId);
+            logger.info("Payment processed successfully for order ID: {}", orderId);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+
+    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        logger.error("Invalid request: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request data");
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
+        logger.error("Order state error: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Invalid order state");
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<String> handleInsufficientBalanceException(InsufficientBalanceException ex) {
+        logger.error("Insufficient balance: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Insufficient balance");
+    }
+
+    @ExceptionHandler(PaymentProcessingException.class)
+    public ResponseEntity<String> handlePaymentProcessingException(PaymentProcessingException ex) {
+        logger.error("Payment failed: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Payment error");
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
+        logger.error("Access denied: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
     }
 }
