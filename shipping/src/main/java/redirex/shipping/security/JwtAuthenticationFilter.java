@@ -1,7 +1,8 @@
 package redirex.shipping.security;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +25,6 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final int BEARER_PREFIX_LENGTH = BEARER_PREFIX.length();
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
@@ -46,41 +46,76 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
+        String jwt = null;
+        String username = null;
 
+        // Verifica se o header existe e começa com "Bearer"
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String jwt = authHeader.substring(BEARER_PREFIX_LENGTH);
-
         try {
-            if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
-                logger.warn("Attempt to use blacklisted token");
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token revoked");
+            // Extrai o token removendo o prefixo e espaços extras
+            jwt = authHeader.substring(BEARER_PREFIX.length()).trim();
+
+            // Validação básica do formato do token
+            if (jwt.isEmpty() || jwt.split("\\.").length != 3) {
+                logger.error("Token JWT malformado: {}", jwt);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token malformado");
                 return;
             }
 
-            String email = jwtUtil.extractUsername(jwt);
+            logger.debug("Token JWT recebido: {}", jwt);
 
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            // Verifica se o token está na blacklist
+            if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
+                logger.warn("Tentativa de uso de token revogado");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token revogado");
+                return;
+            }
 
+            // Extrai o username do token
+            username = jwtUtil.extractUsername(jwt);
+            logger.debug("Username extraído do token: {}", username);
+
+        } catch (MalformedJwtException ex) {
+            logger.error("Token JWT malformado: {}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+            return;
+        } catch (SignatureException ex) {
+            logger.error("Assinatura JWT inválida: {}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Assinatura inválida");
+            return;
+        } catch (Exception ex) {
+            logger.error("Erro ao processar token JWT: {}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Erro no token");
+            return;
+        }
+
+        try {
+            // Se temos um username e não há autenticação no contexto atual
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                logger.debug("Carregando UserDetails para: {}", username);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                // Valida o token
                 if (jwtUtil.validateToken(jwt, userDetails)) {
+                    logger.debug("Token válido para: {}", username);
                     setAuthenticationInContext(userDetails, request);
                 }
             }
         } catch (ExpiredJwtException ex) {
-            logger.warn("Expired JWT token: {}", ex.getMessage());
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
+            logger.warn("Token JWT expirado: {}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expirado");
             return;
         } catch (UsernameNotFoundException ex) {
-            logger.error("User not found: {}", ex.getMessage());
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not found");
+            logger.error("Usuário não encontrado: {}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Usuário não encontrado");
             return;
-        } catch (JwtException | IllegalArgumentException ex) {
-            logger.error("Invalid JWT token: {}", ex.getMessage());
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+        } catch (Exception ex) {
+            logger.error("Erro ao autenticar: {}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erro de autenticação");
             return;
         }
 
@@ -95,13 +130,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         );
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
+        logger.debug("Autenticação definida no contexto para: {}", userDetails.getUsername());
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/public/auth/login")
-                || path.startsWith("/public/user/register")
-                || path.startsWith("/public/user");
+        return path.startsWith("/public/auth/login") ||
+                path.startsWith("/public/user/register") ||
+                path.startsWith("/public/user") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs");
     }
 }

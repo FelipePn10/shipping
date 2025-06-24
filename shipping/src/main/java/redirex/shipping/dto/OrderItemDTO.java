@@ -14,7 +14,6 @@ public class OrderItemDTO {
     private BigDecimal productValue;
     private CurrencyEnum originalCurrency;
     private String originCountry;
-    private String categoryName;
     private String recipientCpf; // Pode ser mascarado no serviço
     private Long addressId;
     private OrderItemStatusEnum status;
@@ -26,8 +25,8 @@ public class OrderItemDTO {
     private Double weight;
     private String dimensions;
     private boolean requestedConsolidation;
-    private Long shipmentId;
-    private Long userId;
-    private Long warehouseId;
+    private Long shipment;
+    private Long user;
+    private Long warehouse;
     private String category;
 }

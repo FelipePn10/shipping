@@ -3,11 +3,15 @@ package redirex.shipping.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import redirex.shipping.entity.UserEntity;
+import redirex.shipping.repositories.UserRepository;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -16,8 +20,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
+@RequiredArgsConstructor
 public class JwtUtil {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
+    private final UserRepository  userRepository;
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -86,6 +93,18 @@ public class JwtUtil {
             logger.error("Erro ao extrair username do token: {}", e.getMessage());
             return null;
         }
+    }
+
+    public Long getUserIdFromUsername(String username) {
+        logger.info("Getting user ID for username: {}", username);
+        UserEntity user = userRepository.findByEmail(username)
+                .orElseThrow(() -> {
+                    logger.error("User not found for username: {}", username);
+                    return new UsernameNotFoundException("User not found");
+                });
+
+        logger.info("Found user ID: {} for username: {}", user.getId(), username);
+        return user.getId();
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {

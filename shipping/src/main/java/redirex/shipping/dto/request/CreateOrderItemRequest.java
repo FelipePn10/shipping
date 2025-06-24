@@ -45,10 +45,6 @@ public class CreateOrderItemRequest {
     @Digits(integer = 15, fraction = 4, message = "Product value format is invalid")
     private BigDecimal productValue;
 
-    @NotBlank(message = "Category name is required")
-    @Size(max = 100, message = "Category name must not exceed 100 characters")
-    private String categoryName;
-
     private LocalDateTime createdAt;
 
     private LocalDateTime paidProductAt;

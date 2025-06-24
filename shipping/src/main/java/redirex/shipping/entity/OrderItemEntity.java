@@ -38,7 +38,7 @@ public class OrderItemEntity implements Serializable {
     @NotNull(message = "User is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity userId;
+    private UserEntity user;
 
     @NotBlank(message = "Product URL is required")
     @URL(message = "Product URL must be valid")
@@ -93,12 +93,12 @@ public class OrderItemEntity implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shipment_id")
-    private ShipmentEntity shipmentId;
+    private ShipmentEntity shipment;
 
     @NotNull(message = "Warehouse is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id", nullable = false)
-    private WarehouseEntity warehouseId;
+    private WarehouseEntity warehouse;
 
     @OneToMany(mappedBy = "orderItem")
     private List<OrderItemStatusHistoryEntity> statusHistory;
@@ -114,14 +114,14 @@ public class OrderItemEntity implements Serializable {
     private List<OrderItemPhotoEntity> photos = new ArrayList<>();
 
     public void setWarehouse(WarehouseEntity warehouse) {
-        this.warehouseId = warehouse;
+        this.warehouse = warehouse;
         if (warehouse != null) {
             warehouse.getOrderItems().add(this);
         }
     }
 
     public void setShipment(ShipmentEntity shipment) {
-        this.shipmentId = shipment;
+        this.shipment = shipment;
         if (shipment != null) {
             shipment.getOrderItems().add(this);
         }

@@ -17,7 +17,11 @@ import redirex.shipping.enums.OrderItemStatusEnum;
 import redirex.shipping.exception.InsufficientBalanceException;
 import redirex.shipping.exception.OrderCreationFailedException;
 import redirex.shipping.exception.PaymentProcessingException;
+import redirex.shipping.exception.ResourceNotFoundException;
 import redirex.shipping.repositories.OrderItemRepository;
+import redirex.shipping.repositories.ProductCategoryRepository;
+import redirex.shipping.repositories.UserRepository;
+import redirex.shipping.repositories.WarehouseRepository;
 import redirex.shipping.service.admin.OrderDistributionService;
 
 @Service
@@ -26,6 +30,9 @@ public class OrderItemServiceImpl implements OrderItemService {
     private static final Logger logger = LoggerFactory.getLogger(OrderItemServiceImpl.class);
 
     private final OrderItemRepository orderItemRepository;
+    private final WarehouseRepository warehouseRepository;
+    private final UserRepository userRepository;
+    private final ProductCategoryRepository productCategoryRepository;
     private final WarehouseService warehouseService;
     private final UserWalletService userWalletService;
     private final OrderDistributionService orderDistributionService;
@@ -33,13 +40,22 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Override
     @Transactional
-    public OrderItemResponse createOrderItem(Long userId, @Valid CreateOrderItemRequest request, UserEntity user, ProductCategoryEntity category, WarehouseEntity warehouse) {
+    public OrderItemResponse createOrderItem(Long userId, @Valid CreateOrderItemRequest request) {
         logger.info("Creating order for userId: {}, productUrl: {}", userId, request.getProductUrl());
 
-        // Map request to entity
+        // Buscar entidades dentro da transação
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+
+        WarehouseEntity warehouse = warehouseRepository.findById(request.getWarehouseId())
+                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with ID: " + request.getWarehouseId()));
+
+        ProductCategoryEntity category = productCategoryRepository.findById(request.getProductCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product category not found with ID: " + request.getProductCategoryId()));
+
+        // Mapear request para entidade
         OrderItemEntity orderItem = mapRequestToEntity(request, user, category, warehouse);
 
-        // Save order with initial status CREATING_ORDER
         try {
             orderItem = orderItemRepository.save(orderItem);
             logger.info("Order created - ID: {}", orderItem.getId());
@@ -57,7 +73,7 @@ public class OrderItemServiceImpl implements OrderItemService {
         OrderItemEntity orderItem = orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderItemId));
 
-        if (!orderItem.getUserId().getId().equals(userId)) {
+        if (!orderItem.getUser().getId().equals(userId)) {
             logger.warn("Order {} does not belong to user {}", orderItemId, userId);
             throw new AccessDeniedException("Order does not belong to user");
         }
@@ -67,27 +83,15 @@ public class OrderItemServiceImpl implements OrderItemService {
             throw new IllegalStateException("Order is not in a payable state");
         }
 
-        UserEntity user = orderItem.getUserId();
-        if (user == null) {
-            logger.error("User not associated with order: {}", orderItemId);
-            throw new IllegalStateException("User not associated with order");
-        }
-
         try {
-            // Process payment with retry
-            processPaymentWithRetry(user, orderItem);
-
-            // Update status to PAID
+            processPaymentWithRetry(orderItem.getUser(), orderItem);
             orderItem.setStatus(OrderItemStatusEnum.PAID);
 
-            // Assign to the least busy admin
             AdminEntity assignedAdmin = orderDistributionService.assignToLeastBusyAdmin();
             orderItem.setAdminAssigned(assignedAdmin);
 
-            // Add order to warehouse
-            warehouseService.addOrderItemToWarehouse(orderItem.getId(), orderItem.getWarehouseId().getId());
+            warehouseService.addOrderItemToWarehouse(orderItem.getId(), orderItem.getWarehouse().getId());
 
-            // Save updated order
             orderItem = orderItemRepository.save(orderItem);
             logger.info("Payment processed for order: {}", orderItem.getId());
 
@@ -133,9 +137,10 @@ public class OrderItemServiceImpl implements OrderItemService {
         logger.error("Payment failed for order: {}. Reason: {}", orderItem.getId(), reason);
     }
 
-    private OrderItemEntity mapRequestToEntity(CreateOrderItemRequest request, UserEntity user, ProductCategoryEntity category, WarehouseEntity warehouse) {
+    private OrderItemEntity mapRequestToEntity(CreateOrderItemRequest request, UserEntity user,
+                                               ProductCategoryEntity category, WarehouseEntity warehouse) {
         return OrderItemEntity.builder()
-                .userId(user)
+                .user(user)
                 .productUrl(request.getProductUrl())
                 .description(request.getDescription())
                 .size(request.getSize())
@@ -144,7 +149,7 @@ public class OrderItemServiceImpl implements OrderItemService {
                 .category(category)
                 .recipientCpf(request.getRecipientCpf())
                 .status(OrderItemStatusEnum.CREATING_ORDER)
-                .warehouseId(warehouse)
+                .warehouse(warehouse)
                 .build();
     }
 
@@ -156,14 +161,14 @@ public class OrderItemServiceImpl implements OrderItemService {
                 .size(entity.getSize())
                 .quantity(entity.getQuantity())
                 .productValue(entity.getProductValue())
-                .categoryName(entity.getCategory().getName()) // Assumindo que ProductCategoryEntity tem um campo name
+                .categoryName(entity.getCategory().getName())
                 .recipientCpf(entity.getRecipientCpf())
                 .status(entity.getStatus())
                 .createdAt(entity.getCreatedAt())
                 .paymentDeadline(entity.getPaymentDeadline())
                 .paidProductAt(entity.getPaidProductAt())
                 .arrivedAtWarehouseAt(entity.getArrivedAtWarehouseAt())
-                .shipmentId(entity.getShipmentId() != null ? entity.getShipmentId().getId() : null)
+                .shipmentId(entity.getShipment() != null ? entity.getShipment().getId() : null)
                 .build();
     }
 }

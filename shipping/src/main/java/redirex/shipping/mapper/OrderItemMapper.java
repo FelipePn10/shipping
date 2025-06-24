@@ -12,15 +12,15 @@ import redirex.shipping.entity.OrderItemEntity;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
 public interface OrderItemMapper {
-    @Mapping(source = "userId.id", target = "userId")
+    @Mapping(source = "user.id", target = "user")
     @Mapping(source = "category.name", target = "category")
-    @Mapping(source = "warehouseId.id", target = "warehouseId")
-    @Mapping(source = "shipmentId.id", target = "shipmentId")
+    @Mapping(source = "warehouse.id", target = "warehouse")
+    @Mapping(source = "shipment.id", target = "shipment")
     OrderItemDTO toDTO(OrderItemEntity entity);
 
-    @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "warehouseId", ignore = true)
-    @Mapping(target = "shipmentId", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "warehouse", ignore = true)
+    @Mapping(target = "shipment", ignore = true)
     @Mapping(target = "adminAssigned", ignore = true)
     @Mapping(target = "photos", ignore = true)
     @Mapping(source = "category", target = "category.name")
