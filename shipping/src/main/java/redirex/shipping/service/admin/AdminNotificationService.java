@@ -22,7 +22,7 @@ public class AdminNotificationService {
     private UserRepository userRepository;
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')") // Garante que apenas administradores chamem este método
+    @PreAuthorize("hasRole('ADMIN')")
     public NotificationEntity createNotification(Long adminId, Long userId, String title, String message, NotificationTypeEnum type) {
         AdminEntity admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
