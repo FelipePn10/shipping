@@ -32,10 +32,15 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
     public Page<OrderItemEntity> getRecentOrders(Pageable pageable) {
         // Busca pedidos excluindo status iniciais e ordena por criação decrescente
         return orderItemRepository.findByStatusNotInOrderByCreatedAtDesc(
-                List.of(OrderItemStatusEnum.CREATING_ORDER, OrderItemStatusEnum.IN_CART),
+                List.of(OrderItemStatusEnum.IN_CART),
                 pageable
         );
     }
+
+    public Page<OrderItemEntity> findOrdersByAdminId(Long adminId, Pageable pageable) {
+        return orderItemRepository.findByAdminAssignedId(adminId, pageable);
+    }
+
 
     @Transactional
     @Override

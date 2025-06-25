@@ -18,6 +18,8 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
             Pageable pageable
     );
 
+    Page<OrderItemEntity> findByAdminAssignedId(Long adminId, Pageable pageable);
+
     // Busca pedidos por admin
     Page<OrderItemEntity> findByAdminAssignedIdOrderByCreatedAtDesc(
             Long adminId,

@@ -9,7 +9,9 @@ import redirex.shipping.entity.OrderItemEntity;
 import redirex.shipping.enums.OrderItemStatusEnum;
 
 public interface OrdersMadeByCustomersService {
+
     Page<OrderItemEntity> getRecentOrders(Pageable pageable);
+    Page<OrderItemEntity> findOrdersByAdminId(Long adminId, Pageable pageable);
 
     @Transactional
     void updateOrderStatus(Long orderId, OrderItemStatusEnum newStatus, AdminEntity admin, String notes);

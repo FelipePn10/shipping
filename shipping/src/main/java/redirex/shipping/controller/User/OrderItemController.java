@@ -32,7 +32,7 @@ public class OrderItemController {
         logger.info("Creating order for userId: {}, request: {}", userId, request);
 
         try {
-            // Validação de consistência de IDs
+            // Validação de consistência de ‘IDs’
             if (!userId.equals(request.getUserId())) {
                 logger.warn("User ID mismatch: path={}, body={}", userId, request.getUserId());
                 throw new IllegalArgumentException("User ID in path must match request body");
