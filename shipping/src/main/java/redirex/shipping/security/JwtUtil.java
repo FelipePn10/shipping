@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import redirex.shipping.entity.AdminEntity;
 import redirex.shipping.entity.UserEntity;
+import redirex.shipping.repositories.AdminRepository;
 import redirex.shipping.repositories.UserRepository;
 
 import java.util.Date;
@@ -25,6 +27,7 @@ public class JwtUtil {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final UserRepository  userRepository;
+    private final AdminRepository adminRepository;
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -106,6 +109,19 @@ public class JwtUtil {
         logger.info("Found user ID: {} for username: {}", user.getId(), username);
         return user.getId();
     }
+
+    public Long getAdminIdFromUsername(String username) {
+        logger.info("Getting admin ID for username: {}", username);
+        AdminEntity admin = adminRepository.findByEmail(username)
+                .orElseThrow(() -> {
+                    logger.error("Admin not found for username: {}", username);
+                    return new UsernameNotFoundException("Admin not found");
+                });
+
+        logger.info("Found admin ID: {} for username: {}", admin.getId(), username);
+        return admin.getId();
+    }
+
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
