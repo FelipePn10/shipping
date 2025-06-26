@@ -12,7 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.request.AuthUserRequest;
-import redirex.shipping.dto.AuthResponseDTO;
+import redirex.shipping.dto.response.AuthUserResponse;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.TokenBlacklistService;
 import redirex.shipping.service.UserServiceImpl;
@@ -44,7 +44,7 @@ public class AuthUserController {
             );
             Long userId = userService.findUserIdByEmail(authRequest.getEmail());
             String token = jwtUtil.generateToken(authRequest.getEmail(), userId);
-            AuthResponseDTO response = AuthResponseDTO.builder()
+            AuthUserResponse response = AuthUserResponse.builder()
                     .token(token)
                     .build();
             return ResponseEntity.ok(response);
@@ -69,7 +69,7 @@ public class AuthUserController {
             );
             Long userId = userService.findUserIdByEmail(authRequest.getEmail());
             String token = jwtUtil.generateToken(authRequest.getEmail(), userId);
-            AuthResponseDTO response = AuthResponseDTO.builder()
+            AuthUserResponse response = AuthUserResponse.builder()
                     .token(token)
                     .build();
             return ResponseEntity.ok(response);
