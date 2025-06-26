@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import redirex.shipping.dto.request.AuthAdminRequest;
 import redirex.shipping.dto.response.AuthAdminResponse;
 import redirex.shipping.security.JwtUtil;
-import redirex.shipping.service.AdminServiceImpl;
+import redirex.shipping.service.admin.AdminServiceImpl;
 
 @RestController
 @RequestMapping("/public/auth/admin/v1")

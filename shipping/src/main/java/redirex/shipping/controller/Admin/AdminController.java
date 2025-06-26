@@ -14,7 +14,7 @@ import redirex.shipping.dto.RegisterAdminDTO;
 import redirex.shipping.dto.response.AdminResponse;
 import redirex.shipping.exception.AdminRegistrationException;
 import redirex.shipping.exception.AdminUpdateException;
-import redirex.shipping.service.AdminService;
+import redirex.shipping.service.admin.AdminService;
 
 @RestController
 @RequiredArgsConstructor

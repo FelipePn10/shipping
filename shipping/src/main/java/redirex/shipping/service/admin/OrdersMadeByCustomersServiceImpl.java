@@ -11,6 +11,7 @@ import redirex.shipping.entity.OrderItemEntity;
 import redirex.shipping.entity.OrderItemPhotoEntity;
 import redirex.shipping.entity.OrderItemStatusHistoryEntity;
 import redirex.shipping.enums.OrderItemStatusEnum;
+import redirex.shipping.enums.ShipmentStatusEnum;
 import redirex.shipping.exception.IllegalStatusTransitionException;
 import redirex.shipping.repositories.OrderItemPhotoRepository;
 import redirex.shipping.repositories.OrderItemRepository;
@@ -41,30 +42,40 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
         return orderItemRepository.findByAdminAssignedId(adminId, pageable);
     }
 
-
     @Transactional
     @Override
-    public void updateOrderStatus(Long orderId, OrderItemStatusEnum newStatus, AdminEntity admin, String notes) {
-        OrderItemEntity order = orderItemRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
+    public void updateOrderStatus(Long orderId,
+                                  OrderItemStatusEnum newStatus,
+                                  AdminEntity admin,
+                                  String notes,
+                                  boolean isLocationUpdate) { // Flag para identificar tipo de operação
 
-        // Valida se o admin tem permissão
+        OrderItemEntity order = orderItemRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        // Validação de admin
         if (!order.getAdminAssigned().getId().equals(admin.getId())) {
-            throw new SecurityException("Admin não atribuído a este pedido");
+            throw new SecurityException(isLocationUpdate
+                    ? "Admin not allowed to perform this operation! Consult your supervisor."
+                    : "Admin not assigned to this request");
         }
 
-        // Valida transição de status
-        validateStatusTransition(order.getStatus(), newStatus);
+        // Validação de transição
+        if (isLocationUpdate) {
+            validateShippingTransition(order.getStatus(), newStatus);
+        } else {
+            validateStatusTransition(order.getStatus(), newStatus);
+        }
 
-        // Registra histórico ANTES de alterar
         registerStatusHistory(order, order.getStatus(), newStatus, admin, notes);
 
-        // Atualiza status principal
         order.setStatus(newStatus);
         orderItemRepository.save(order);
 
-        // Dispara eventos pós-atualização
-        handlePostStatusUpdate(order, newStatus);
+        // Executa pós-processamento apenas para atualizações normais
+        if (!isLocationUpdate) {
+            handlePostStatusUpdate(order, newStatus);
+        }
     }
 
     private void validateStatusTransition(OrderItemStatusEnum current, OrderItemStatusEnum newStatus) {
@@ -75,6 +86,16 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
 
         if (current == OrderItemStatusEnum.DELIVERED && newStatus != OrderItemStatusEnum.DELIVERED) {
             throw new IllegalStatusTransitionException("Pedidos entregues não podem ser alterados");
+        }
+    }
+
+    private void validateShippingTransition(OrderItemStatusEnum statusShipping, OrderItemStatusEnum newStatus) {
+        if (statusShipping == OrderItemStatusEnum.DELIVERED && newStatus != OrderItemStatusEnum.DELIVERED) {
+            throw new IllegalStatusTransitionException("Pedidos entregues não podem ser alterados");
+        }
+
+        if (statusShipping == OrderItemStatusEnum.SHIPPED && newStatus != OrderItemStatusEnum.SHIPPED) {
+            throw new IllegalStatusTransitionException("Pedidos enviados não podem ser alterados");
         }
     }
 
@@ -103,13 +124,10 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
             case IN_WAREHOUSE:
                 order.setArrivedAtWarehouseAt(LocalDateTime.now());
                 break;
-            case DELIVERED:
-                order.setDeliveredAt(LocalDateTime.now());
-                break;
         }
 
         // Pode adicionar notificações aqui
-        if (newStatus == OrderItemStatusEnum.SHIPPED) {
+        if (newStatus == OrderItemStatusEnum.IN_WAREHOUSE) {
             notifyCustomerAboutShipment(order);
         }
     }
@@ -134,8 +152,7 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
 
     private boolean canAddPhotos(OrderItemStatusEnum status) {
         // Só permite adicionar fotos em estados específicos
-        return status == OrderItemStatusEnum.PROCESSING_IN_WAREHOUSE ||
-                status == OrderItemStatusEnum.IN_WAREHOUSE ||
+        return status == OrderItemStatusEnum.IN_WAREHOUSE ||
                 status == OrderItemStatusEnum.AWAITING_WAREHOUSE_ARRIVAL;
     }
 

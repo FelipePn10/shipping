@@ -14,7 +14,7 @@ public interface OrdersMadeByCustomersService {
     Page<OrderItemEntity> findOrdersByAdminId(Long adminId, Pageable pageable);
 
     @Transactional
-    void updateOrderStatus(Long orderId, OrderItemStatusEnum newStatus, AdminEntity admin, String notes);
+    void updateOrderStatus(Long orderId, OrderItemStatusEnum newStatusCurrent, AdminEntity admin, String notes, boolean isLocationUpdate);
 
     void addOrderPhoto(Long orderId, MultipartFile file, String description, AdminEntity admin);
 }

@@ -26,9 +26,7 @@ public class OrderDistributionService {
             OrderItemStatusEnum.PAID,
             OrderItemStatusEnum.PENDING_PAYMENT_PRODUCT,
             OrderItemStatusEnum.AWAITING_WAREHOUSE_ARRIVAL,
-            OrderItemStatusEnum.IN_WAREHOUSE,
-            OrderItemStatusEnum.PENDING_SHIPPING_PAYMENT,
-            OrderItemStatusEnum.PROCESSING_IN_WAREHOUSE
+            OrderItemStatusEnum.IN_WAREHOUSE
     );
 
     public AdminEntity assignToLeastBusyAdmin() {
