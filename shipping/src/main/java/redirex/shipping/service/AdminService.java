@@ -8,5 +8,5 @@ public interface AdminService {
     AdminResponse createAdmin(@Valid RegisterAdminDTO dto);
     AdminResponse updateAdmin(Long id, @Valid RegisterAdminDTO dto);
 
-
+    Long findAdminIdByEmail(String email);
 }

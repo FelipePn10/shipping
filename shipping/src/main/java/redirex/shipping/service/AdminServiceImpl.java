@@ -90,6 +90,15 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Long findAdminIdByEmail(String email) {
+        logger.info("Finding admin with email: {}", email);
+        return adminRepository.findByEmail(email)
+                .map(AdminEntity::getId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin with ID " + email + " not found"));
+    }
+
     private void validateAdminLoginCode(String AdministratorLoginCode) {
         Optional<AdminEntity> existsByAdministratorLoginCode = adminRepository.findByAdministratorLoginCode(AdministratorLoginCode);
         if (existsByAdministratorLoginCode.isPresent()) {
