@@ -11,7 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
-import redirex.shipping.dto.AuthRequestDTO;
+import redirex.shipping.dto.request.AuthUserRequest;
 import redirex.shipping.dto.AuthResponseDTO;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.TokenBlacklistService;
@@ -24,9 +24,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/public/auth")
 @RequiredArgsConstructor
-public class AuthController {
-
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+public class AuthUserController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthUserController.class);
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
@@ -34,7 +33,7 @@ public class AuthController {
     private final UserServiceImpl userService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody AuthRequestDTO authRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthUserRequest authRequest) {
         logger.info("Login attempt for email: {}", authRequest.getEmail());
         try {
             authenticationManager.authenticate(
@@ -59,7 +58,7 @@ public class AuthController {
     }
 
     @PostMapping("/login/enterprise")
-    public ResponseEntity<?> loginEnterprise(@Valid @RequestBody AuthRequestDTO authRequest) {
+    public ResponseEntity<?> loginEnterprise(@Valid @RequestBody AuthUserRequest authRequest) {
         logger.info("Enterprise login attempt for email: {}", authRequest.getEmail());
         try {
             authenticationManager.authenticate(

@@ -23,7 +23,7 @@ public class SearchUserRequestsController {
     private static final Logger logger = LoggerFactory.getLogger(SearchUserRequestsController.class);
 
     private final OrdersMadeByCustomersService ordersMadeByCustomersService;
-    private JwtUtil  jwtUtil;
+    private JwtUtil jwtUtil;
 
     @GetMapping("/{adminId}/search/orders")
     public ResponseEntity<Page<OrderItemResponse>> getOrdersAssignedToAdmin(

@@ -1,11 +1,11 @@
-package redirex.shipping.dto;
+package redirex.shipping.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class AuthRequestDTO {
+public class AuthUserRequest {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
