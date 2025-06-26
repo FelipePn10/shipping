@@ -31,7 +31,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public AdminResponse createAdmin(@Valid RegisterAdminDTO dto) {
         logger.info("Registering user with email: {}", dto.getEmail());
-        validateAdminNotExists(dto.getEmail(), dto.getAdministratorLoginCode());
+        validateAdminNotExists(dto.getEmail());
 
         try {
             AdminEntity admin = AdminEntity.builder()
@@ -62,9 +62,6 @@ public class AdminServiceImpl implements AdminService {
         if (!dto.getEmail().equals(admin.getEmail())) {
             validateEmailNotExists(dto.getEmail());
         }
-        if (!dto.getAdministratorLoginCode().equals(admin.getAdministratorLoginCode())) {
-            validateAdminLoginCode(dto.getAdministratorLoginCode());
-        }
 
         admin.setFullname(dto.getFullname());
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
@@ -76,9 +73,8 @@ public class AdminServiceImpl implements AdminService {
         return adminMapper.toResponse(admin);
     }
 
-    private void validateAdminNotExists(String email, String AdministratorLoginCode) {
+    private void validateAdminNotExists(String email) {
         validateEmailNotExists(email);
-        validateAdminLoginCode(AdministratorLoginCode);
     }
 
 
@@ -97,13 +93,5 @@ public class AdminServiceImpl implements AdminService {
         return adminRepository.findByEmail(email)
                 .map(AdminEntity::getId)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin with ID " + email + " not found"));
-    }
-
-    private void validateAdminLoginCode(String AdministratorLoginCode) {
-        Optional<AdminEntity> existsByAdministratorLoginCode = adminRepository.findByAdministratorLoginCode(AdministratorLoginCode);
-        if (existsByAdministratorLoginCode.isPresent()) {
-            logger.warn("Attempt to use duplicate AdministratorLoginCode: {}", AdministratorLoginCode);
-            throw new UserRegistrationException("AdministratorLoginCode already registered");
-        }
     }
 }

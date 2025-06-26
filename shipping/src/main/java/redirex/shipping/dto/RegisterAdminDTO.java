@@ -33,10 +33,6 @@ public class RegisterAdminDTO {
     @Pattern(regexp = "\\d{11}", message = "CPF must be 11 digits")
     private String cpf;
 
-    @NotBlank
-    @Size(min = 3, max = 12, message = "Your admin login code is required to log in. If you have forgotten it, please contact HR to request a change as soon as possible. Thank you.")
-    private String administratorLoginCode;
-
     @NotBlank(message = "Role is required")
     @Size(max = 50, message = "Role must not exceed 50 characters")
     @Column(nullable = false)

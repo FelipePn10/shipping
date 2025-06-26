@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/public/auth")
+@RequestMapping("/public/auth/v1")
 @RequiredArgsConstructor
 public class AuthUserController {
     private static final Logger logger = LoggerFactory.getLogger(AuthUserController.class);
@@ -32,7 +32,7 @@ public class AuthUserController {
     private final TokenBlacklistService tokenBlacklistService;
     private final UserServiceImpl userService;
 
-    @PostMapping("/login")
+    @PostMapping("user/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthUserRequest authRequest) {
         logger.info("Login attempt for email: {}", authRequest.getEmail());
         try {
@@ -82,7 +82,7 @@ public class AuthUserController {
         }
     }
 
-    @PostMapping("/logout")
+    @PostMapping("user/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String authorizationHeader) {
         final String BEARER_PREFIX = "Bearer ";
         logger.info("Logout request received");
