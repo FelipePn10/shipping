@@ -8,10 +8,7 @@ import java.util.Optional;
 
 public interface AdminRepository extends JpaRepository<AdminEntity, Long> {
     Optional<AdminEntity> findByEmail(String email);
-    Optional<AdminEntity> findByAdministratorLoginCode(String AdministratorLoginCode);
-
     boolean existsByEmail(String email);
-    boolean existsByAdministratorLoginCode(String AdministratorLoginCode);
     boolean existsByCpf(String cpf);
     List<AdminEntity> findByRole(String role);
 
