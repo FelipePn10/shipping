@@ -1,0 +1,695 @@
+openapi: "3.0.1"
+info:
+  title: "Redirex API Documentation"
+  description: "API para gerenciamento de usuários, pedidos, pagamentos e operações administrativas"
+  version: "1.0.0"
+  contact:
+    name: "Suporte Redirex"
+    email: "suporte@redirex.com"
+  license:
+    name: "Proprietário"
+    url: "https://www.redirex.com/terms"
+
+servers:
+  - url: "https://api.redirex.com/v1"
+    description: "Servidor de produção"
+
+paths:
+  /public/admin/v1/admins:
+    post:
+      summary: "Criar administrador"
+      description: "Cria um novo usuário administrador no sistema"
+      tags:
+        - "Administração"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCreateRequest"
+      responses:
+        "201":
+          description: "Administrador criado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminResponse"
+
+  /private/admin/v1/admins/{id}:
+    put:
+      summary: "Atualizar administrador"
+      description: "Atualiza informações de um administrador existente"
+      tags:
+        - "Administração"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUpdateRequest"
+      responses:
+        "200":
+          description: "Administrador atualizado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminResponse"
+
+  /public/auth/v1/login:
+    post:
+      summary: "Login de usuário"
+      description: "Autentica um usuário no sistema"
+      tags:
+        - "Autenticação"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: "Login bem-sucedido"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+
+  /private/v1/api/admins/{adminId}/orders:
+    get:
+      summary: "Buscar pedidos do administrador"
+      description: "Retorna pedidos atribuídos a um administrador específico"
+      tags:
+        - "Pedidos"
+      parameters:
+        - name: "adminId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+      responses:
+        "200":
+          description: "Lista de pedidos"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderPageResponse"
+
+  /public/users:
+    post:
+      summary: "Registrar novo usuário"
+      description: "Cria uma nova conta de usuário"
+      tags:
+        - "Usuários"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreateRequest"
+      responses:
+        "201":
+          description: "Usuário criado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+
+  /public/users/password/forgot:
+    post:
+      summary: "Solicitar reset de senha"
+      description: "Inicia o processo de recuperação de senha"
+      tags:
+        - "Autenticação"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "202":
+          description: "Solicitação de reset aceita"
+
+  /public/users/password/reset:
+    post:
+      summary: "Redefinir senha"
+      description: "Finaliza o processo de redefinição de senha"
+      tags:
+        - "Autenticação"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: "Senha redefinida com sucesso"
+
+  /private/v1/api/users/{userId}/addresses:
+    post:
+      summary: "Criar endereço"
+      description: "Adiciona um novo endereço para o usuário"
+      tags:
+        - "Usuários"
+      parameters:
+        - name: "userId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddressCreateRequest"
+      responses:
+        "201":
+          description: "Endereço criado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddressResponse"
+
+  /private/v1/api/users/{userId}/orders:
+    post:
+      summary: "Criar pedido"
+      description: "Cria um novo pedido para o usuário"
+      tags:
+        - "Pedidos"
+      parameters:
+        - name: "userId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreateRequest"
+      responses:
+        "201":
+          description: "Pedido criado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+
+  /private/v1/api/users/{userId}/deposits:
+    post:
+      summary: "Depositar na carteira"
+      description: "Adiciona fundos à carteira do usuário"
+      tags:
+        - "Pagamentos"
+      parameters:
+        - name: "userId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositRequest"
+      responses:
+        "201":
+          description: "Depósito realizado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionResponse"
+
+  /private/v1/api/users/{userId}/orders/{orderId}/payments:
+    post:
+      summary: "Processar pagamento de pedido"
+      description: "Realiza o pagamento de um pedido específico"
+      tags:
+        - "Pagamentos"
+      parameters:
+        - name: "userId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+        - name: "orderId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+      responses:
+        "200":
+          description: "Pagamento processado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+
+components:
+  schemas:
+    AdminCreateRequest:
+      type: "object"
+      required:
+        - "cpf"
+        - "email"
+        - "fullname"
+        - "password"
+        - "role"
+      properties:
+        fullname:
+          type: "string"
+          maxLength: 255
+          example: "João Silva"
+        email:
+          type: "string"
+          format: "email"
+          maxLength: 255
+          example: "admin@redirex.com"
+        password:
+          type: "string"
+          minLength: 8
+          example: "SenhaSegura123"
+        cpf:
+          type: "string"
+          pattern: "^\\d{11}$"
+          example: "12345678901"
+        role:
+          type: "string"
+          maxLength: 50
+          example: "SUPER_ADMIN"
+
+    AdminUpdateRequest:
+      type: "object"
+      properties:
+        fullname:
+          type: "string"
+          maxLength: 255
+          example: "João Silva Atualizado"
+        email:
+          type: "string"
+          format: "email"
+          maxLength: 255
+          example: "admin.updated@redirex.com"
+        password:
+          type: "string"
+          minLength: 8
+          example: "NovaSenhaSegura123"
+        cpf:
+          type: "string"
+          pattern: "^\\d{11}$"
+          example: "12345678901"
+        role:
+          type: "string"
+          maxLength: 50
+          example: "ADMIN"
+
+    AdminResponse:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          example: 1
+        fullname:
+          type: "string"
+          example: "João Silva"
+        email:
+          type: "string"
+          example: "admin@redirex.com"
+        role:
+          type: "string"
+          example: "SUPER_ADMIN"
+        createdAt:
+          type: "string"
+          format: "date-time"
+
+    LoginRequest:
+      type: "object"
+      required:
+        - "email"
+        - "password"
+      properties:
+        email:
+          type: "string"
+          format: "email"
+          example: "user@example.com"
+        password:
+          type: "string"
+          example: "UserPassword123"
+
+    LoginResponse:
+      type: "object"
+      properties:
+        token:
+          type: "string"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        expiresIn:
+          type: "integer"
+          example: 3600
+        userType:
+          type: "string"
+          example: "USER"
+
+    OrderPageResponse:
+      type: "object"
+      properties:
+        content:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/OrderResponse"
+        totalElements:
+          type: "integer"
+          example: 25
+        totalPages:
+          type: "integer"
+          example: 3
+        pageNumber:
+          type: "integer"
+          example: 0
+        pageSize:
+          type: "integer"
+          example: 10
+
+    UserCreateRequest:
+      type: "object"
+      required:
+        - "cpf"
+        - "email"
+        - "fullname"
+        - "occupation"
+        - "password"
+        - "phone"
+      properties:
+        fullname:
+          type: "string"
+          maxLength: 255
+          example: "Maria Souza"
+        email:
+          type: "string"
+          format: "email"
+          maxLength: 255
+          example: "user@example.com"
+        password:
+          type: "string"
+          minLength: 8
+          example: "UserPassword123"
+        cpf:
+          type: "string"
+          pattern: "^\\d{11}$"
+          example: "98765432100"
+        phone:
+          type: "string"
+          maxLength: 20
+          example: "+5511999999999"
+        occupation:
+          type: "string"
+          maxLength: 100
+          example: "Engenheira"
+
+    UserResponse:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          example: 100
+        fullname:
+          type: "string"
+          example: "Maria Souza"
+        email:
+          type: "string"
+          example: "user@example.com"
+        phone:
+          type: "string"
+          example: "+5511999999999"
+        occupation:
+          type: "string"
+          example: "Engenheira"
+        createdAt:
+          type: "string"
+          format: "date-time"
+
+    ForgotPasswordRequest:
+      type: "object"
+      required:
+        - "email"
+      properties:
+        email:
+          type: "string"
+          format: "email"
+          example: "user@example.com"
+
+    ResetPasswordRequest:
+      type: "object"
+      required:
+        - "email"
+        - "newPassword"
+        - "token"
+      properties:
+        email:
+          type: "string"
+          example: "user@example.com"
+        token:
+          type: "string"
+          example: "a1b2c3d4e5"
+        newPassword:
+          type: "string"
+          minLength: 8
+          example: "NovaSenhaSegura123"
+
+    AddressCreateRequest:
+      type: "object"
+      required:
+        - "city"
+        - "country"
+        - "phone"
+        - "recipientName"
+        - "residenceType"
+        - "state"
+        - "street"
+        - "zipcode"
+      properties:
+        recipientName:
+          type: "string"
+          maxLength: 255
+          example: "Maria Souza"
+        street:
+          type: "string"
+          maxLength: 255
+          example: "Rua das Flores, 123"
+        complement:
+          type: "string"
+          maxLength: 255
+          example: "Apto 101"
+        city:
+          type: "string"
+          maxLength: 100
+          example: "São Paulo"
+        state:
+          type: "string"
+          maxLength: 100
+          example: "SP"
+        zipcode:
+          type: "string"
+          maxLength: 20
+          example: "01234-567"
+        country:
+          type: "string"
+          maxLength: 100
+          example: "Brasil"
+        phone:
+          type: "string"
+          maxLength: 100
+          example: "+5511999999999"
+        residenceType:
+          type: "string"
+          enum: ["HOUSE", "APARTMENT", "COMMERCIAL", "OTHER"]
+          default: "HOUSE"
+
+    AddressResponse:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          example: 500
+        recipientName:
+          type: "string"
+          example: "Maria Souza"
+        street:
+          type: "string"
+          example: "Rua das Flores, 123"
+        complement:
+          type: "string"
+          example: "Apto 101"
+        city:
+          type: "string"
+          example: "São Paulo"
+        state:
+          type: "string"
+          example: "SP"
+        zipcode:
+          type: "string"
+          example: "01234-567"
+        country:
+          type: "string"
+          example: "Brasil"
+        phone:
+          type: "string"
+          example: "+5511999999999"
+        residenceType:
+          type: "string"
+          example: "APARTMENT"
+
+    OrderCreateRequest:
+      type: "object"
+      required:
+        - "description"
+        - "productCategoryId"
+        - "productUrl"
+        - "productValue"
+        - "quantity"
+        - "recipientCpf"
+        - "warehouseId"
+      properties:
+        warehouseId:
+          type: "integer"
+          format: "int64"
+          example: 10
+        recipientCpf:
+          type: "string"
+          maxLength: 14
+          example: "123.456.789-01"
+        productCategoryId:
+          type: "integer"
+          format: "int64"
+          example: 25
+        productUrl:
+          type: "string"
+          maxLength: 255
+          example: "https://example.com/product/123"
+        description:
+          type: "string"
+          maxLength: 255
+          example: "Smartphone XYZ"
+        size:
+          type: "number"
+          example: 0.5
+        quantity:
+          type: "integer"
+          example: 2
+        productValue:
+          type: "number"
+          minimum: 0.0
+          maximum: 999999999999999.9999
+          example: 1500.50
+        originalCurrency:
+          type: "string"
+          enum: ["BRL", "CNY"]
+          example: "CNY"
+
+    OrderResponse:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          example: 1000
+        description:
+          type: "string"
+          example: "Smartphone XYZ"
+        size:
+          type: "number"
+          example: 0.5
+        quantity:
+          type: "integer"
+          example: 2
+        currency:
+          type: "string"
+          enum: ["BRL", "CNY"]
+          example: "CNY"
+        productUrl:
+          type: "string"
+          example: "https://example.com/product/123"
+        productValue:
+          type: "number"
+          example: 1500.50
+        status:
+          type: "string"
+          enum:
+            - "CREATING_ORDER"
+            - "IN_CART"
+            - "PENDING_PAYMENT_PRODUCT"
+            - "AWAITING_WAREHOUSE_ARRIVAL"
+            - "IN_WAREHOUSE"
+            - "PENDING_SHIPPING_PAYMENT"
+            - "PROCESSING_IN_WAREHOUSE"
+            - "SHIPPED"
+            - "DELIVERED"
+            - "CANCELLED"
+            - "PAID"
+            - "PAYMENT_FAILED"
+          example: "CREATING_ORDER"
+        createdAt:
+          type: "string"
+          format: "date-time"
+
+    DepositRequest:
+      type: "object"
+      required:
+        - "amount"
+        - "currency"
+        - "paymentMethodId"
+      properties:
+        amount:
+          type: "number"
+          minimum: 0.01
+          example: 500.00
+        currency:
+          type: "string"
+          enum: ["BRL", "CNY"]
+          example: "BRL"
+        paymentMethodId:
+          type: "string"
+          example: "pay_123456789"
+
+    TransactionResponse:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          example: 2000
+        status:
+          type: "string"
+          example: "COMPLETED"
+        amount:
+          type: "number"
+          example: 500.00
+        currency:
+          type: "string"
+          example: "BRL"
+        type:
+          type: "string"
+          enum: ["DEPOSIT", "ORDER_PAYMENT", "SHIPMENT_PAYMENT", "REFUND"]
+          example: "DEPOSIT"
+        createdAt:
+          type: "string"
+          format: "date-time"
+
+securitySchemes:
+  BearerAuth:
+    type: "http"
+    scheme: "bearer"
+    bearerFormat: "JWT"
