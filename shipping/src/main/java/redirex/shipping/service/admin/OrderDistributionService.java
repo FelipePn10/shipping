@@ -21,7 +21,7 @@ public class OrderDistributionService {
     private final OrderItemRepository orderItemRepository;
     private final Random random = new Random();
 
-    // Estados considerados como pedidos ativos para o admin gerir
+    //Considerados como pedidos ativos para o admin gerir
     private static final List<OrderItemStatusEnum> ACTIVE_STATUSES = List.of(
             OrderItemStatusEnum.PAID,
             OrderItemStatusEnum.PENDING_PAYMENT_PRODUCT,
