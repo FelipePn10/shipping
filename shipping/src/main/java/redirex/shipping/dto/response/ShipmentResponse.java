@@ -2,7 +2,7 @@ package redirex.shipping.dto.response;
 
 import lombok.Builder;
 import lombok.Data;
-import redirex.shipping.enums.ShipmentStatusEnum;
+import redirex.shipping.enums.OrderItemStatusEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ public class ShipmentResponse {
     private BigDecimal totalShippingPaid;
     private Long appliedShippingCouponId;
     private String trackingCode;
-    private ShipmentStatusEnum status;
+    private OrderItemStatusEnum status;
     private LocalDateTime paidShippingAt;
     private LocalDateTime shippedAt;
     private LocalDateTime deliveredAt;
