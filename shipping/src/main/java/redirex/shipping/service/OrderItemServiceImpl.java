@@ -24,6 +24,8 @@ import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.repositories.WarehouseRepository;
 import redirex.shipping.service.admin.OrderDistributionService;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class OrderItemServiceImpl implements OrderItemService {
@@ -36,12 +38,14 @@ public class OrderItemServiceImpl implements OrderItemService {
     private final WarehouseService warehouseService;
     private final UserWalletService userWalletService;
     private final OrderDistributionService orderDistributionService;
+    private final WebScrapingService webScrapingService;
     private static final int MAX_RETRY_ATTEMPTS = 3;
 
     @Override
     @Transactional
     public OrderItemResponse createOrderItem(Long userId, @Valid CreateOrderItemRequest request) {
         logger.info("Creating order for userId: {}, productUrl: {}", userId, request.getProductUrl());
+        BigDecimal productPrice;
 
         // Buscar entidades dentro da transação
         UserEntity user = userRepository.findById(userId)
@@ -53,8 +57,19 @@ public class OrderItemServiceImpl implements OrderItemService {
         ProductCategoryEntity category = productCategoryRepository.findById(request.getProductCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product category not found with ID: " + request.getProductCategoryId()));
 
-        // Mapear request para entidade
-        OrderItemEntity orderItem = mapRequestToEntity(request, user, category, warehouse);
+        // Capturar preço do produto via scraping
+        if (request.isAutoFetchPrice()) {
+            try {
+                productPrice = webScrapingService.scrapeWeidianProductPrice(request.getProductUrl());
+            } catch (Exception e) {
+                throw new OrderCreationFailedException("Falha ao obter preço automático: " + e.getMessage());
+            }
+        } else {
+            throw new IllegalArgumentException("Captura automática de preço é obrigatória");
+        }
+
+        // Mapear request para entidade com o preço capturado
+        OrderItemEntity orderItem = mapRequestToEntity(request, user, category, warehouse, productPrice);
 
         try {
             orderItem = orderItemRepository.save(orderItem);
@@ -84,17 +99,19 @@ public class OrderItemServiceImpl implements OrderItemService {
         }
 
         try {
-            processPaymentWithRetry(orderItem.getUser(), orderItem);
-            orderItem.setStatus(OrderItemStatusEnum.PAID);
+            processPaymentWithRetry(
+                    orderItem.getUser(),
+                    orderItem.getProductValue(),
+                    orderItem.getId()
+            );
 
+            orderItem.setStatus(OrderItemStatusEnum.PAID);
             AdminEntity assignedAdmin = orderDistributionService.assignToLeastBusyAdmin();
             orderItem.setAdminAssigned(assignedAdmin);
-
             warehouseService.addOrderItemToWarehouse(orderItem.getId(), orderItem.getWarehouse().getId());
-
             orderItem = orderItemRepository.save(orderItem);
-            logger.info("Payment processed for order: {}", orderItem.getId());
 
+            logger.info("Payment processed for order: {}", orderItem.getId());
         } catch (InsufficientBalanceException ex) {
             handlePaymentFailure(orderItem, "Insufficient balance");
             throw ex;
@@ -112,21 +129,23 @@ public class OrderItemServiceImpl implements OrderItemService {
             maxAttempts = MAX_RETRY_ATTEMPTS,
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
-    private void processPaymentWithRetry(UserEntity user, OrderItemEntity orderItem) throws InsufficientBalanceException {
+    private void processPaymentWithRetry(UserEntity user, BigDecimal amount, Long orderItemId)
+            throws InsufficientBalanceException {
+
         try {
             userWalletService.debitFromWallet(
                     user.getId(),
                     CurrencyEnum.CNY,
-                    orderItem.getProductValue(),
+                    amount,
                     "ORDER_PAYMENT",
-                    "Payment of the order: " + orderItem.getId(),
-                    orderItem.getId(),
+                    "Payment of the order: " + orderItemId,
+                    orderItemId,
                     null
             );
         } catch (InsufficientBalanceException ex) {
             throw ex;
         } catch (Exception ex) {
-            logger.warn("Payment attempt failed for order: {}. Retrying...", orderItem.getId(), ex);
+            logger.warn("Payment attempt failed for order: {}. Retrying...", orderItemId, ex);
             throw ex;
         }
     }
@@ -138,14 +157,15 @@ public class OrderItemServiceImpl implements OrderItemService {
     }
 
     private OrderItemEntity mapRequestToEntity(CreateOrderItemRequest request, UserEntity user,
-                                               ProductCategoryEntity category, WarehouseEntity warehouse) {
+                                               ProductCategoryEntity category, WarehouseEntity warehouse,
+                                               BigDecimal productPrice) {
         return OrderItemEntity.builder()
                 .user(user)
                 .productUrl(request.getProductUrl())
                 .description(request.getDescription())
                 .size(request.getSize())
                 .quantity(request.getQuantity())
-                .productValue(request.getProductValue())
+                .productValue(productPrice)
                 .category(category)
                 .recipientCpf(request.getRecipientCpf())
                 .status(OrderItemStatusEnum.CREATING_ORDER)

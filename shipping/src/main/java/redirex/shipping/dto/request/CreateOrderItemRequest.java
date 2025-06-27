@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -40,10 +39,8 @@ public class CreateOrderItemRequest {
     @NotNull(message = "Quantity is required")
     private Integer quantity;
 
-    @NotNull(message = "Product value is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Product value must be positive")
-    @Digits(integer = 15, fraction = 4, message = "Product value format is invalid")
-    private BigDecimal productValue;
+    @Builder.Default
+    private boolean autoFetchPrice = true;
 
     private LocalDateTime createdAt;
 

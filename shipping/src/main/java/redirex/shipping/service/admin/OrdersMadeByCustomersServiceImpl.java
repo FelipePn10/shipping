@@ -11,7 +11,6 @@ import redirex.shipping.entity.OrderItemEntity;
 import redirex.shipping.entity.OrderItemPhotoEntity;
 import redirex.shipping.entity.OrderItemStatusHistoryEntity;
 import redirex.shipping.enums.OrderItemStatusEnum;
-import redirex.shipping.enums.ShipmentStatusEnum;
 import redirex.shipping.exception.IllegalStatusTransitionException;
 import redirex.shipping.repositories.OrderItemPhotoRepository;
 import redirex.shipping.repositories.OrderItemRepository;
