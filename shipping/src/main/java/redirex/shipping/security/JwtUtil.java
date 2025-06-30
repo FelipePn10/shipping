@@ -35,11 +35,6 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    public String generateToken(String email) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, email);
-    }
-
     public String generateToken(String email, Long userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
@@ -47,6 +42,7 @@ public class JwtUtil {
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
+        logger.debug("Gerando token para subject: {}", subject);
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
@@ -61,21 +57,81 @@ public class JwtUtil {
     }
 
     public Long getUserIdFromToken(String token) {
-        return getClaimFromToken(token, claims -> claims.get("userId", Long.class));
-    }
-
-    public List<String> getRolesFromToken(String token) {
-        return getClaimFromToken(token, claims -> claims.get("roles", List.class));
+        try {
+            Long userId = getClaimFromToken(token, claims -> claims.get("userId", Long.class));
+            if (userId == null) {
+                logger.error("Nenhum userId encontrado no token");
+                throw new IllegalArgumentException("Token não contém userId");
+            }
+            return userId;
+        } catch (Exception e) {
+            logger.error("Erro ao extrair userId do token: {}", e.getMessage());
+            throw new IllegalArgumentException("Token inválido", e);
+        }
     }
 
     public long getExpirationTimeInSeconds(String token) {
-        Date expirationDate = getClaimFromToken(token, Claims::getExpiration);
-        return (expirationDate.getTime() - System.currentTimeMillis()) / 1000;
+        try {
+            Date expirationDate = getClaimFromToken(token, Claims::getExpiration);
+            return (expirationDate.getTime() - System.currentTimeMillis()) / 1000;
+        } catch (Exception e) {
+            logger.error("Erro ao extrair tempo de expiração do token: {}", e.getMessage());
+            throw new IllegalArgumentException("Token inválido", e);
+        }
+    }
+
+    public Long getUserIdFromUsername(String username) {
+        logger.debug("Buscando userId para username: {}", username);
+        UserEntity user = userRepository.findByEmail(username)
+                .orElseThrow(() -> {
+                    logger.error("Usuário não encontrado para email: {}", username);
+                    return new UsernameNotFoundException("Usuário não encontrado");
+                });
+        return user.getId();
+    }
+
+    public Long getAdminIdFromUsername(String username) {
+        logger.debug("Buscando adminId para username: {}", username);
+        AdminEntity admin = adminRepository.findByEmail(username)
+                .orElseThrow(() -> {
+                    logger.error("Admin não encontrado para email: {}", username);
+                    return new UsernameNotFoundException("Admin não encontrado");
+                });
+        return admin.getId();
+    }
+
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        try {
+            final String username = getUsernameFromToken(token);
+            boolean isValid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+            if (!isValid) {
+                logger.warn("Token inválido para username: {}", username);
+            }
+            return isValid;
+        } catch (Exception e) {
+            logger.error("Erro ao validar token: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    private Boolean isTokenExpired(String token) {
+        try {
+            final Date expiration = getClaimFromToken(token, Claims::getExpiration);
+            return expiration.before(new Date());
+        } catch (Exception e) {
+            logger.error("Erro ao verificar expiração do token: {}", e.getMessage());
+            return true;
+        }
     }
 
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);
+        try {
+            final Claims claims = getAllClaimsFromToken(token);
+            return claimsResolver.apply(claims);
+        } catch (Exception e) {
+            logger.error("Erro ao extrair claim do token: {}", e.getMessage());
+            throw new IllegalArgumentException("Token inválido", e);
+        }
     }
 
     private Claims getAllClaimsFromToken(String token) {
@@ -83,52 +139,5 @@ public class JwtUtil {
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    public String extractUsername(String token) {
-        try {
-            return Jwts.parser()
-                    .setSigningKey(secretKey)
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
-        } catch (Exception e) {
-            logger.error("Erro ao extrair username do token: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    public Long getUserIdFromUsername(String username) {
-        logger.info("Getting user ID for username: {}", username);
-        UserEntity user = userRepository.findByEmail(username)
-                .orElseThrow(() -> {
-                    logger.error("User not found for username: {}", username);
-                    return new UsernameNotFoundException("User not found");
-                });
-
-        logger.info("Found user ID: {} for username: {}", user.getId(), username);
-        return user.getId();
-    }
-
-    public Long getAdminIdFromUsername(String username) {
-        logger.info("Getting admin ID for username: {}", username);
-        AdminEntity admin = adminRepository.findByEmail(username)
-                .orElseThrow(() -> {
-                    logger.error("Admin not found for username: {}", username);
-                    return new UsernameNotFoundException("Admin not found");
-                });
-
-        logger.info("Found admin ID: {} for username: {}", admin.getId(), username);
-        return admin.getId();
-    }
-
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
-
-    private Boolean isTokenExpired(String token) {
-        final Date expiration = getClaimFromToken(token, Claims::getExpiration);
-        return expiration.before(new Date());
     }
 }

@@ -51,6 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Verifica se o header existe e começa com "Bearer"
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
+            logger.debug("Nenhum token Bearer encontrado no cabeçalho Authorization");
             filterChain.doFilter(request, response);
             return;
         }
@@ -76,7 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // Extrai o username do token
-            username = jwtUtil.extractUsername(jwt);
+            username = jwtUtil.getUsernameFromToken(jwt);
             logger.debug("Username extraído do token: {}", username);
 
         } catch (MalformedJwtException ex) {
