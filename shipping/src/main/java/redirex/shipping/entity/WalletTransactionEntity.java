@@ -45,11 +45,16 @@ public class WalletTransactionEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 3)
     private CurrencyEnum currency;
-    @NotNull
-    private String chargedAmount;
 
-    @NotNull
-    private String chargedCurrency;
+    @NotNull(message = "Charged amount is required")
+    @Digits(integer = 15, fraction = 4, message = "Charged amount format is invalid")
+    @Column(name = "charged_amount", nullable = false, precision = 19, scale = 4)
+    private BigDecimal chargedAmount;
+
+    @NotNull(message = "Charged currency is required")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "charged_currency", nullable = false, length = 3)
+    private CurrencyEnum chargedCurrency;
 
     @NotNull(message = "Transaction type is required")
     @Enumerated(EnumType.STRING)
