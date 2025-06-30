@@ -68,6 +68,8 @@ public class OrderItemServiceImpl implements OrderItemService {
             throw new IllegalArgumentException("Captura automática de preço é obrigatória");
         }
 
+        productPrice = productPrice.setScale(4, java.math.RoundingMode.HALF_UP);
+
         // Mapear request para entidade com o preço capturado
         OrderItemEntity orderItem = mapRequestToEntity(request, user, category, warehouse, productPrice);
 
@@ -99,9 +101,12 @@ public class OrderItemServiceImpl implements OrderItemService {
         }
 
         try {
+            // Garantindo que a escala antes de passar para o serviço de débito
+            BigDecimal paymentAmount = orderItem.getProductValue().setScale(4, java.math.RoundingMode.HALF_UP);
+
             processPaymentWithRetry(
                     orderItem.getUser(),
-                    orderItem.getProductValue(),
+                    paymentAmount,
                     orderItem.getId()
             );
 
@@ -116,6 +121,7 @@ public class OrderItemServiceImpl implements OrderItemService {
             handlePaymentFailure(orderItem, "Insufficient balance");
             throw ex;
         } catch (Exception ex) {
+            logger.error("An unexpected error occurred during payment processing for order {}: {}", orderItemId, ex.getMessage(), ex);
             handlePaymentFailure(orderItem, "Payment processing failed");
             throw new PaymentProcessingException("Redirect to deposit screen", ex);
         }
@@ -134,13 +140,15 @@ public class OrderItemServiceImpl implements OrderItemService {
 
         try {
             userWalletService.debitFromWallet(
-                    user.getId(),
-                    CurrencyEnum.CNY,
-                    amount,
-                    "ORDER_PAYMENT",
-                    "Payment of the order: " + orderItemId,
-                    orderItemId,
-                    null
+                    user.getId(),                            // userId
+                    CurrencyEnum.CNY,                        // currency (moeda da carteira)
+                    amount,                                  // amount (valor a debitar)
+                    "ORDER_PAYMENT",                         // transactionType
+                    "Payment of the order: " + orderItemId,  // description
+                    orderItemId,                             // relatedOrderItemId
+                    null,                                    // shipmentId (corretamente nulo)
+                    amount,                                  // NOVO: chargedAmount (valor da cobrança)
+                    CurrencyEnum.CNY                         // NOVO: chargedCurrency (moeda da cobrança)
             );
         } catch (InsufficientBalanceException ex) {
             throw ex;
