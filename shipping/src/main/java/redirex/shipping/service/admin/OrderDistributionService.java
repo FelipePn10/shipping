@@ -30,7 +30,7 @@ public class OrderDistributionService {
     );
 
     public AdminEntity assignToLeastBusyAdmin() {
-        List<AdminEntity> allAdmins = adminRepository.findByRole("ADMIN");
+        List<AdminEntity> allAdmins = adminRepository.findByRole("ROLE_ADMIN");
 
         if(allAdmins.isEmpty()) {
             throw new IllegalStateException("No administrators available");
