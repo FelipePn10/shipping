@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class WalletTransactionResponse {
     private Long id;
     private String status;
+    private CurrencyEnum chargedCurrency;
     private Long userWalletId;
     private Long userId;
     private String fee;
@@ -24,7 +25,6 @@ public class WalletTransactionResponse {
     private BigDecimal netAmountInCNY;
     private BigDecimal feeInCNY;
     private LocalDateTime depositRequestTime;
-    private BigDecimal chargedCurrency;
     private String transactionDescription;
     private WalletTransactionTypeEnum type;
     private BigDecimal amount;
