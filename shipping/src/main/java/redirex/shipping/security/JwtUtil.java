@@ -24,9 +24,9 @@ import java.util.function.Function;
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
-    private final UserRepository  userRepository;
+    private final UserRepository userRepository;
     private final AdminRepository adminRepository;
 
     @Value("${jwt.secret}")
@@ -121,7 +121,6 @@ public class JwtUtil {
         logger.info("Found admin ID: {} for username: {}", admin.getId(), username);
         return admin.getId();
     }
-
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);

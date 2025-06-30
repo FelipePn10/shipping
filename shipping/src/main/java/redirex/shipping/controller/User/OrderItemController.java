@@ -1,5 +1,6 @@
 package redirex.shipping.controller.User;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.request.CreateOrderItemRequest;
 import redirex.shipping.dto.response.OrderItemResponse;
@@ -31,35 +33,33 @@ public class OrderItemController {
 
         logger.info("Creating order for userId: {}, request: {}", userId, request);
 
-        try {
-            // Validação de consistência de ‘IDs’
-            if (!userId.equals(request.getUserId())) {
-                logger.warn("User ID mismatch: path={}, body={}", userId, request.getUserId());
-                throw new IllegalArgumentException("User ID in path must match request body");
+        try{
+            // 1. Verificamos a consistência de IDs no path e body
+            if(!userId.equals(request.getUserId())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             }
 
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
+            // 2. Obter autenticação do contexto de segurança
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            // Extrair o ID do usuário do token corretamente
-            Long authenticatedUserId = jwtUtil.getUserIdFromUsername(username);
-            if (authenticatedUserId == null || !authenticatedUserId.equals(userId)) {
-                logger.warn("Authorization failed: authUserId={}, pathUserId={}", authenticatedUserId, userId);
-                throw new SecurityException("User not authorized for this operation");
+            // 3. Verifica se o usuário autenticado é o mesmo do path
+            if (!authentication.getName().equals(String.valueOf(userId))){
+                logger.warn("ID mismatch: authUserId={}, pathUserId={}", authentication.getName(), userId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
             }
 
-            // Criação do pedido
+            // 4. Criar pedido
             OrderItemResponse response = orderItemService.createOrderItem(userId, request);
-            logger.info("Order created successfully. ID: {}", response.getId());
-
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
-        } catch (IllegalArgumentException | SecurityException ex) {
-            logger.error("Validation error: {}", ex.getMessage());
-            throw new OrderCreationFailedException("Validation failed: " + ex.getMessage());
-        } catch (Exception ex) {
-            logger.error("Unexpected error: {}", ex.getMessage(), ex);
-            throw new OrderCreationFailedException("Internal server error: " + ex.getMessage());
+        } catch (UsernameNotFoundException e) {
+            logger.error("Username not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (OrderCreationFailedException e) {
+            logger.error("Order creation failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e){
+            logger.error("Unexpected error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }

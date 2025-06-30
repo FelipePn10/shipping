@@ -33,7 +33,7 @@ public class AuthUserController {
     private final UserServiceImpl userService;
 
     @PostMapping("user/login")
-    public ResponseEntity<?> login(@Valid @RequestBody AuthUserRequest authRequest) {
+    public ResponseEntity<?>login(@Valid @RequestBody AuthUserRequest authRequest) {
         logger.info("Login attempt for email: {}", authRequest.getEmail());
         try {
             authenticationManager.authenticate(

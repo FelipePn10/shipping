@@ -37,7 +37,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    @PostMapping("/public/user/register")
+    @PostMapping("/public/auth/v1/user/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
         try {
             logger.info("Received request to register user: {}", registerUserDTO.getEmail());
