@@ -12,11 +12,12 @@ import redirex.shipping.entity.UserWalletEntity;
 import redirex.shipping.entity.WalletTransactionEntity;
 import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.WalletTransactionTypeEnum;
+import redirex.shipping.exception.InsufficientBalanceException;
+import redirex.shipping.exception.ResourceNotFoundException;
+import redirex.shipping.exception.StripePaymentException;
 import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.repositories.UserWalletRepository;
 import redirex.shipping.repositories.WalletTransactionRepository;
-import redirex.shipping.exception.InsufficientBalanceException;
-import redirex.shipping.exception.StripePaymentException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -146,8 +147,8 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .originalCurrencyDeposited(walletCurrency) // Moeda do valor bruto intencionado
                 .createdAt(LocalDateTime.now())
                 // campos para registrar o valor cobrado em BRL
-                .chargedAmount(String.valueOf(amountToChargeInBRL))
-                .chargedCurrency(String.valueOf(CurrencyEnum.BRL))
+                .chargedAmount(amountToChargeInBRL)
+                .chargedCurrency(CurrencyEnum.valueOf(String.valueOf(CurrencyEnum.BRL)))
                 .build();
         walletTransactionRepository.save(transaction);
 
@@ -161,7 +162,7 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .fee(String.valueOf(feeInCNY))
                 .currency(walletCurrency.toString())
                 .chargedAmount(String.valueOf(amountToChargeInBRL))
-                //.chargedCurrency(CurrencyEnum.BRL))
+                .chargedCurrency(CurrencyEnum.BRL)
                 .transactionDescription(transactionDescription)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -169,41 +170,38 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Override
     @Transactional
-    public void debitFromWallet(Long userId, CurrencyEnum currency, BigDecimal amount, String transactionType,
-                                String description, Long orderItemId, Long shipmentId) throws InsufficientBalanceException {
+    public void debitFromWallet(Long userId, CurrencyEnum currency, BigDecimal amount,
+                                String transactionType, String description, Long orderItemId,
+                                Long shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency) {
         if (currency != CurrencyEnum.CNY) {
             throw new IllegalArgumentException("Debit operations only supported for CNY currency. Requested: " + currency);
         }
-        if (!SUPPORTED_CURRENCIES.contains(currency)) {
-            throw new IllegalArgumentException("Unsupported currency: " + currency);
-        }
 
         if (orderItemId != null && shipmentId == null) {
-            debitForOrder(userId, currency, amount, description, orderItemId);
+            debitForOrder(userId, currency, amount, transactionType, description, orderItemId, chargedAmount, chargedCurrency);
         } else if (shipmentId != null && orderItemId == null) {
-            debitForShipment(userId, currency, amount, description, orderItemId, shipmentId);
+            debitForShipment(userId, currency, amount, transactionType, description, shipmentId, chargedAmount, chargedCurrency);
         } else {
-            throw new IllegalArgumentException("Either orderItemId or shipmentId must be provided for debit.");
+            throw new IllegalArgumentException("Either orderItemId or shipmentId must be provided for debit, but not both.");
         }
     }
 
     @Transactional
-    public void debitForOrder(Long userId, CurrencyEnum currency, BigDecimal amount, String description, Long orderItemId)
+    public void debitForOrder(Long userId, CurrencyEnum currency, BigDecimal amount, String transactionType, String description,
+                              Long orderItemId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency)
             throws InsufficientBalanceException {
+
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Order payment amount must be positive.");
-        }
-        if (currency != CurrencyEnum.CNY) {
-            throw new IllegalArgumentException("Unsupported currency for order payment: " + currency + ". Only CNY is supported.");
         }
         if (orderItemId == null) {
             throw new IllegalArgumentException("OrderItemId is required for order payment.");
         }
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found for userId: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found for userId: " + userId));
         UserWalletEntity wallet = userWalletRepository.findByUserIdAndCurrency(user, currency)
-                .orElseThrow(() -> new IllegalArgumentException("CNY Wallet not found for userId: " + userId + ". Please ensure a wallet exists."));
+                .orElseThrow(() -> new ResourceNotFoundException("CNY Wallet not found for userId: " + userId));
 
         if (wallet.getBalance().compareTo(amount) < 0) {
             logger.warn("Insufficient balance for order payment. UserId: {}, WalletBalance: {}, Amount: {}", userId, wallet.getBalance(), amount);
@@ -214,14 +212,17 @@ public class UserWalletServiceImpl implements UserWalletService {
         userWalletRepository.save(wallet);
 
         WalletTransactionEntity transaction = WalletTransactionEntity.builder()
-                .userId(user)
                 .userWallet(wallet)
+                .userId(user)
+                .type(WalletTransactionTypeEnum.valueOf(transactionType))
                 .currency(currency)
                 .amount(amount.negate())
-                .type(WalletTransactionTypeEnum.ORDER_PAYMENT)
                 .relatedOrderItemId(orderItemId)
-                .createdAt(LocalDateTime.now())
+                .relatedShipmentId(null)
+                .chargedAmount(chargedAmount)
+                .chargedCurrency(chargedCurrency)
                 .build();
+
         walletTransactionRepository.save(transaction);
 
         logger.info("Order payment debited for userId: {}, amount: {} {}, orderItemId: {}",
@@ -229,22 +230,19 @@ public class UserWalletServiceImpl implements UserWalletService {
     }
 
     @Transactional
-    public void debitForShipment(Long userId, CurrencyEnum currency, BigDecimal amount, String description,
-                                 Long orderItemId, Long shipmentId) throws InsufficientBalanceException {
+    public void debitForShipment(Long userId, CurrencyEnum currency, BigDecimal amount, String transactionType, String description,
+                                 Long shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency) throws InsufficientBalanceException {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Shipment payment amount must be positive.");
-        }
-        if (currency != CurrencyEnum.CNY) {
-            throw new IllegalArgumentException("Unsupported currency for shipment payment: " + currency + ". Only CNY is supported.");
         }
         if (shipmentId == null) {
             throw new IllegalArgumentException("ShipmentId is required for shipment payment.");
         }
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found for userId: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found for userId: " + userId));
         UserWalletEntity wallet = userWalletRepository.findByUserIdAndCurrency(user, currency)
-                .orElseThrow(() -> new IllegalArgumentException("CNY Wallet not found for userId: " + userId + ". Please ensure a wallet exists."));
+                .orElseThrow(() -> new ResourceNotFoundException("CNY Wallet not found for userId: " + userId));
 
         if (wallet.getBalance().compareTo(amount) < 0) {
             logger.warn("Insufficient balance for shipment payment. UserId: {}, WalletBalance: {}, Amount: {}", userId, wallet.getBalance(), amount);
@@ -259,10 +257,11 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .userWallet(wallet)
                 .currency(currency)
                 .amount(amount.negate())
-                .type(WalletTransactionTypeEnum.SHIPMENT_PAYMENT)
-                .relatedOrderItemId(orderItemId)
+                .type(WalletTransactionTypeEnum.valueOf(transactionType))
+                .relatedOrderItemId(null)
                 .relatedShipmentId(shipmentId)
-                .createdAt(LocalDateTime.now())
+                .chargedAmount(chargedAmount)
+                .chargedCurrency(chargedCurrency)
                 .build();
         walletTransactionRepository.save(transaction);
 
