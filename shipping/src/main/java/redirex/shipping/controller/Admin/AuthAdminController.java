@@ -25,7 +25,7 @@ import redirex.shipping.service.admin.AdminServiceImpl;
 public class AuthAdminController {
     private static final Logger logger = LoggerFactory.getLogger(AuthAdminController.class);
 
-    private final AuthenticationManager  authenticationManager;
+    private final AuthenticationManager authenticationManager;
     private final AdminServiceImpl adminService;
     private final JwtUtil jwtUtil;
 

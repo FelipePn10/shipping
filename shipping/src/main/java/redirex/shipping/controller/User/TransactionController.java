@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
-import redirex.shipping.dto.request.DebitWalletRequest;
 import redirex.shipping.dto.request.DepositRequestDto;
 import redirex.shipping.dto.response.OrderItemResponse;
 import redirex.shipping.dto.response.WalletTransactionResponse;
