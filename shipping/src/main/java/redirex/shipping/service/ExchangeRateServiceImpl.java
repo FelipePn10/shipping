@@ -18,7 +18,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     private final ExchangeRateLogRepository exchangeRateLogRepository;
 
-    private static final BigDecimal BRL_TO_CNY_RATE = new BigDecimal("1.159");
+    private static final BigDecimal BRL_TO_CNY_RATE = new BigDecimal("1.200");
 
     @Override
     @Cacheable(value = "exchangeRates", key = "#fromCurrency + '-' + #toCurrency")
