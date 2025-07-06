@@ -61,7 +61,7 @@ public class OrderItemEntity implements Serializable {
 
     @NotNull(message = "Product value is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Product value must be positive")
-    @Column(name = "product_value", nullable = false, precision = 19, scale = 4)
+    @Column(name = "product_value", nullable = false, precision = 19, scale = 2)
     private BigDecimal productValue;
 
     @NotNull(message = "Category is required")

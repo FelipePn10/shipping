@@ -68,7 +68,7 @@ public class OrderItemServiceImpl implements OrderItemService {
             throw new IllegalArgumentException("Captura automática de preço é obrigatória");
         }
 
-        productPrice = productPrice.setScale(4, java.math.RoundingMode.HALF_UP);
+        productPrice = productPrice.setScale(2, java.math.RoundingMode.HALF_UP);
 
         // Mapear request para entidade com o preço capturado
         OrderItemEntity orderItem = mapRequestToEntity(request, user, category, warehouse, productPrice);
@@ -102,7 +102,7 @@ public class OrderItemServiceImpl implements OrderItemService {
 
         try {
             // Garantindo que a escala antes de passar para o serviço de débito
-            BigDecimal paymentAmount = orderItem.getProductValue().setScale(4, java.math.RoundingMode.HALF_UP);
+            BigDecimal paymentAmount = orderItem.getProductValue().setScale(2, java.math.RoundingMode.HALF_UP);
 
             processPaymentWithRetry(
                     orderItem.getUser(),
