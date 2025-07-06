@@ -1,0 +1,18 @@
+### POST request create order
+POST http://localhost:9090/private/v1/api/users/5/create/order
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjUsInN1YiI6ImZlbGlwZXBhbm9zc28zQGdtYWlsLmNvbSIsImlhdCI6MTc1MTgyNTc5MCwiZXhwIjoxODM4MjI1NzkwfQ.F5_GuGctAV8GY0xmApndEff50cygLOYbHRWyrykz3Jsb8ydUEakll3AtjT3IBH5iac-omKWXa3S8NGVzgIG6LA
+
+{
+  "userId": 5,
+  "warehouseId": 5,
+  "description": "DT Batch J1",
+  "productUrl": "https://shop1802721248.v.weidian.com/item.html?itemID=7304860125&spider_token=c6b0",
+  "quantity": 1,
+  "size": 43.5,
+  "recipientCpf": "13043799956",
+  "productCategoryId": 4,
+  "autoFetchPrice": true
+}
+
+###

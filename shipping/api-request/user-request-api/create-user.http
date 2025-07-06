@@ -1,0 +1,14 @@
+### POST request create user
+POST http://localhost:9090/public/auth/v1/user/register
+Content-Type: application/json
+
+{
+  "fullname": "felipepanosso",
+  "email": "felipepanosso3@gmail.com",
+  "password": "12345678fe",
+  "occupation": "gerente",
+  "cpf": "13042799956",
+  "phone": "448991805405"
+}
+
+###
