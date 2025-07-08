@@ -1,9 +1,19 @@
 package redirex.shipping.config;
 
+import com.stripe.Stripe;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+
+import jakarta.annotation.PostConstruct;
 
 @Configuration
 public class StripeConfig {
-    // Nenhuma configuração adicional necessária, já que o bean StripeServiceImpl
-    // é gerenciado pela anotação @Service com @Profile("!test") a partir de agora
+
+    @Value("${stripe.api.key}")
+    private String stripeApiKey;
+
+    @PostConstruct
+    public void init() {
+        Stripe.apiKey = stripeApiKey;
+    }
 }
