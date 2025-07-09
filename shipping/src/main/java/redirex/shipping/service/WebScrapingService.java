@@ -17,7 +17,7 @@ public class WebScrapingService {
 
     private static final Pattern PRICE_PATTERN = Pattern.compile("[0-9]+([.,][0-9]{1,2})?");
 
-    public BigDecimal scrapeWeidianProductPrice(String productUrl) {
+    public BigDecimal scrapeProductPrice(String productUrl) {
         try {
             logger.debug("Conectando à URL para capturar preço: {}", productUrl);
             Document doc = Jsoup.connect(productUrl)
@@ -26,7 +26,9 @@ public class WebScrapingService {
                     .ignoreHttpErrors(true)
                     .get();
 
-            Element priceElement = doc.selectFirst(".goods-price__value, span.price-current, [class*='price-current'], [class*='price']:not([class*='original'])");
+            // Seletores para Weidian e Taobao
+            String selector = ".goods-price__value, span.price-current, [class*='price-current'], [class*='price']:not([class*='original']), .tm-price, .price.g_price, [class*='price-strong']";
+            Element priceElement = doc.selectFirst(selector);
 
             if (priceElement == null) {
                 logger.error("Elemento de preço não encontrado na URL: {}", productUrl);
@@ -54,12 +56,13 @@ public class WebScrapingService {
      * @return Uma string representando o preço, pronta para ser convertida para BigDecimal.
      */
     private String extractPrice(String priceText) {
-        Matcher matcher = PRICE_PATTERN.matcher(priceText);
+        // Remove caracteres não numéricos, exceto ponto e vírgula, para lidar com formatos como ¥ ou outros símbolos
+        String cleanedText = priceText.replaceAll("[^0-9,.]", "");
+        Matcher matcher = PRICE_PATTERN.matcher(cleanedText);
 
         if (matcher.find()) {
-            // Pega a primeira ocorrência que corresponde ao padrão.
+            // Pega a primeira ocorrência que corresponde ao padrão
             String foundPrice = matcher.group(0);
-
             return foundPrice.replace(',', '.');
         } else {
             String errorMessage = "Nenhum padrão de preço válido encontrado no texto: " + priceText;

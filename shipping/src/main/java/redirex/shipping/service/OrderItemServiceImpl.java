@@ -60,7 +60,7 @@ public class OrderItemServiceImpl implements OrderItemService {
         // Capturar preço do produto via scraping
         if (request.isAutoFetchPrice()) {
             try {
-                productPrice = webScrapingService.scrapeWeidianProductPrice(request.getProductUrl());
+                productPrice = webScrapingService.scrapeProductPrice(request.getProductUrl());
             } catch (Exception e) {
                 throw new OrderCreationFailedException("Falha ao obter preço automático: " + e.getMessage());
             }
