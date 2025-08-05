@@ -13,11 +13,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class UserPasswordResetService {
     private static final Logger logger = LoggerFactory.getLogger(UserPasswordResetService.class);
 
     private final UserRepository userRepository;
+
+    public UserPasswordResetService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Transactional
     public void generateResetToken(UserEntity user) {

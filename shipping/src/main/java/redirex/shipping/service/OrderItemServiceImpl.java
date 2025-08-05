@@ -27,7 +27,6 @@ import redirex.shipping.service.admin.OrderDistributionService;
 import java.math.BigDecimal;
 
 @Service
-@RequiredArgsConstructor
 public class OrderItemServiceImpl implements OrderItemService {
     private static final Logger logger = LoggerFactory.getLogger(OrderItemServiceImpl.class);
 
@@ -40,6 +39,17 @@ public class OrderItemServiceImpl implements OrderItemService {
     private final OrderDistributionService orderDistributionService;
     private final WebScrapingService webScrapingService;
     private static final int MAX_RETRY_ATTEMPTS = 3;
+
+    public OrderItemServiceImpl(OrderItemRepository orderItemRepository, WarehouseRepository warehouseRepository, UserRepository userRepository, ProductCategoryRepository productCategoryRepository, WarehouseService warehouseService, UserWalletService userWalletService, OrderDistributionService orderDistributionService, WebScrapingService webScrapingService) {
+        this.orderItemRepository = orderItemRepository;
+        this.warehouseRepository = warehouseRepository;
+        this.userRepository = userRepository;
+        this.productCategoryRepository = productCategoryRepository;
+        this.warehouseService = warehouseService;
+        this.userWalletService = userWalletService;
+        this.orderDistributionService = orderDistributionService;
+        this.webScrapingService = webScrapingService;
+    }
 
     @Override
     @Transactional

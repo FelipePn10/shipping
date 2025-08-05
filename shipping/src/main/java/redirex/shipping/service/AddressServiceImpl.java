@@ -20,13 +20,19 @@ import redirex.shipping.repositories.UserRepository;
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
+
 public class AddressServiceImpl implements AddressService {
     private static final Logger logger = LoggerFactory.getLogger(AddressServiceImpl.class);
 
     private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
     private final UserRepository userRepository;
+
+    public AddressServiceImpl(AddressRepository addressRepository, AddressMapper addressMapper, UserRepository userRepository) {
+        this.addressRepository = addressRepository;
+        this.addressMapper = addressMapper;
+        this.userRepository = userRepository;
+    }
 
     @Override
     @Transactional

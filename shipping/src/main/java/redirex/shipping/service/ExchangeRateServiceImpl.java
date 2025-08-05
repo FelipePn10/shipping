@@ -1,6 +1,5 @@
 package redirex.shipping.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -12,13 +11,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     private final ExchangeRateLogRepository exchangeRateLogRepository;
 
     private static final BigDecimal BRL_TO_CNY_RATE = new BigDecimal("1.200");
+
+    public ExchangeRateServiceImpl(ExchangeRateLogRepository exchangeRateLogRepository) {
+        this.exchangeRateLogRepository = exchangeRateLogRepository;
+    }
 
     @Override
     @Cacheable(value = "exchangeRates", key = "#fromCurrency + '-' + #toCurrency")

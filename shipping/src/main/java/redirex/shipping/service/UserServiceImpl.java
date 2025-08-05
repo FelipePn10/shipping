@@ -26,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
@@ -38,6 +37,17 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final WarehouseService warehouseService;
     private final UserEmailService userEmailService;
+
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserWalletServiceImpl userWalletService, WelcomeCouponService welcomeCouponService, UserCouponRepository userCouponRepository, UserMapper userMapper, WarehouseService warehouseService, UserEmailService userEmailService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.userWalletService = userWalletService;
+        this.welcomeCouponService = welcomeCouponService;
+        this.userCouponRepository = userCouponRepository;
+        this.userMapper = userMapper;
+        this.warehouseService = warehouseService;
+        this.userEmailService = userEmailService;
+    }
 
     @Override
     @Transactional

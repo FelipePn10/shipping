@@ -1,6 +1,5 @@
 package redirex.shipping.service;
 
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,13 +16,18 @@ import redirex.shipping.repositories.WarehouseRepository;
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 public class WarehouseService {
     private static final Logger logger = LoggerFactory.getLogger(WarehouseService.class);
 
     private final WarehouseRepository warehouseRepository;
     private final OrderItemRepository orderItemRepository;
     private final WarehouseMapper warehouseMapper;
+
+    public WarehouseService(WarehouseRepository warehouseRepository, OrderItemRepository orderItemRepository, WarehouseMapper warehouseMapper) {
+        this.warehouseRepository = warehouseRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.warehouseMapper = warehouseMapper;
+    }
 
     @Transactional
     public void addOrderItemToWarehouse(Long orderItemId, Long warehouseId) {

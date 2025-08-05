@@ -1,6 +1,5 @@
 package redirex.shipping.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import redirex.shipping.entity.CouponEntity;
 import redirex.shipping.enums.CouponTypeEnum;
@@ -11,11 +10,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 public class WelcomeCouponService {
 
     private final CouponCodeGenerator couponCodeGenerator;
     private final CouponRepository couponRepository;
+
+    public WelcomeCouponService(CouponCodeGenerator couponCodeGenerator, CouponRepository couponRepository) {
+        this.couponCodeGenerator = couponCodeGenerator;
+        this.couponRepository = couponRepository;
+    }
 
     public CouponEntity createWelcomeCoupon() {
         String couponCode = couponCodeGenerator.generateCode(12);

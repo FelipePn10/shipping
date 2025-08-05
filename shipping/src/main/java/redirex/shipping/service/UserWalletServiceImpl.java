@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class UserWalletServiceImpl implements UserWalletService {
     private static final Logger logger = LoggerFactory.getLogger(UserWalletServiceImpl.class);
 
@@ -38,6 +37,14 @@ public class UserWalletServiceImpl implements UserWalletService {
     private static final List<CurrencyEnum> SUPPORTED_CURRENCIES = List.of(CurrencyEnum.CNY);
     private static final BigDecimal TRANSACTION_FEE_PERCENTAGE = new BigDecimal("0.05");
     private static final int BRL_SCALE = 2;
+
+    public UserWalletServiceImpl(UserWalletRepository userWalletRepository, WalletTransactionRepository walletTransactionRepository, UserRepository userRepository, StripeService stripeService, ExchangeRateService exchangeRateService) {
+        this.userWalletRepository = userWalletRepository;
+        this.walletTransactionRepository = walletTransactionRepository;
+        this.userRepository = userRepository;
+        this.stripeService = stripeService;
+        this.exchangeRateService = exchangeRateService;
+    }
 
     @Transactional
     public UserWalletEntity createInitialWallet(UserEntity user, CurrencyEnum cny) {
