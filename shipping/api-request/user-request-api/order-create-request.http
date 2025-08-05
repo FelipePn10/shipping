@@ -1,16 +1,16 @@
 ### POST request create order
 POST http://localhost:9090/private/v1/api/users/5/create/order
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjUsInN1YiI6ImZlbGlwZXBhbm9zc28zQGdtYWlsLmNvbSIsImlhdCI6MTc1MTgzMTU4NywiZXhwIjoxODM4MjMxNTg3fQ.TzmYOFe5qM5wS6nXJLDxFWWmgBqSn6DgIUyeQb0AI233YR-yDGoKeicQJgh9xcqmQEMPsXvv7iSG5P-a5Yoyug
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjEsInN1YiI6ImZlbGlwZXBhbm9zc28yMUBnbWFpbC5jb20iLCJpYXQiOjE3NTQ0MTY3MzUsImV4cCI6MTg0MDgxNjczNX0.D3UtL_JuHSB29dKrFDOcekmPwEJFOXCXvc20Wy4Q8f8uS63sJ9JiPZ0d-3DSY1NPIoV3ypOR9H8dAIVPWADP0A
 
 {
-  "userId": 5,
-  "warehouseId": 5,
+  "userId": 1,
+  "warehouseId": 1,
   "description": "DT Batch J1",
   "productUrl": "https://shop1802721248.v.weidian.com/item.html?itemID=7304860125&spider_token=c6b0",
   "quantity": 1,
   "size": 43.5,
-  "recipientCpf": "13043799956",
+  "recipientCpf": "13042799954",
   "productCategoryId": 4,
   "autoFetchPrice": true
 }

@@ -20,7 +20,7 @@ public class StripeServiceImpl implements StripeService {
 
     private static final Logger logger = LoggerFactory.getLogger(StripeServiceImpl.class);
 
-    @Value("${stripe.api.secretKey}")
+    @Value("${stripe.api.key}")
     private String secretKey;
 
     @PostConstruct

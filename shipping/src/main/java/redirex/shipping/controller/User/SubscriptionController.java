@@ -28,7 +28,7 @@ public class SubscriptionController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{userId")
+    @DeleteMapping("/{userId}")
     public ResponseEntity<SubscriptionResponse> cancelSubscriptionByUserId(@PathVariable Long userId) {
         SubscriptionResponse response = subscriptionService.cancelSubscriptionByUserId(userId);
         return ResponseEntity.ok(response);

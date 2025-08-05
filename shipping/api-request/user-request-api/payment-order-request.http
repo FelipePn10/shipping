@@ -1,10 +1,10 @@
 ### POST request payment order
 POST http://localhost:9090/private/v1/api/users/5/orders/10/payment
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjUsInN1YiI6ImZlbGlwZXBhbm9zc28zQGdtYWlsLmNvbSIsImlhdCI6MTc1MTgzMTU4NywiZXhwIjoxODM4MjMxNTg3fQ.TzmYOFe5qM5wS6nXJLDxFWWmgBqSn6DgIUyeQb0AI233YR-yDGoKeicQJgh9xcqmQEMPsXvv7iSG5P-a5Yoyug
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjEsInN1YiI6ImZlbGlwZXBhbm9zc28yMUBnbWFpbC5jb20iLCJpYXQiOjE3NTQ0MTY1NzcsImV4cCI6MTg0MDgxNjU3N30.1sG5Y_wrh_nhUgp_tvpbLfTUjmglbF7XzZfZeSYG74H9ZJsLrSPCLpXjandlw4BFSR0KslgWJCdk9dMFyDlFSg
 
 {
-  "userId": 5,
+  "userId": 1,
   "orderId": 10
 }
 

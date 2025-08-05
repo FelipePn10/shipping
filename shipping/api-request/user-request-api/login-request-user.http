@@ -3,8 +3,8 @@ POST http://localhost:9090/public/auth/v1/user/login
 Content-Type: application/json
 
 {
-  "email": "felipepanosso3@gmail.com",
-  "password": "12345678fe"
+  "email": "felipepanosso21@gmail.com",
+  "password": "123456784fe"
 }
 
 ###
