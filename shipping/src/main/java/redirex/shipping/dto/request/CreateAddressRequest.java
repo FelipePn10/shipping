@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import redirex.shipping.entity.AddressEntity;
 
+import java.util.UUID;
+
 @Data
 @Builder
 public class CreateAddressRequest {
@@ -44,7 +46,7 @@ public class CreateAddressRequest {
     private String phone;
 
     @NotNull
-    private Long userId;
+    private UUID userId;
 
     @Enumerated(EnumType.STRING)
     @NotNull

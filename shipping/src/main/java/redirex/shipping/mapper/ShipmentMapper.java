@@ -9,6 +9,7 @@ import redirex.shipping.entity.ShipmentEntity;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
@@ -24,12 +25,12 @@ public interface ShipmentMapper {
     ShipmentEntity toEntity(ShipmentDTO dto);
 
     @Named("mapOrderItemIds")
-    default List<Long> mapOrderItemIds(Set<OrderItemEntity> orderItems) {
+    default List<UUID> mapOrderItemIds(Set<OrderItemEntity> orderItems) {
         if (orderItems == null) {
             return null;
         }
         return orderItems.stream()
                 .map(OrderItemEntity::getId) // Mapeia o ID do OrderItemEntity
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()).reversed();
     }
 }

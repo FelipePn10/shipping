@@ -7,12 +7,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.validator.constraints.URL;
 import redirex.shipping.enums.OrderItemStatusEnum;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -29,11 +31,12 @@ import java.util.Objects;
 )
 public class OrderItemEntity implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @NotNull(message = "User is required")
     @ManyToOne(fetch = FetchType.LAZY)

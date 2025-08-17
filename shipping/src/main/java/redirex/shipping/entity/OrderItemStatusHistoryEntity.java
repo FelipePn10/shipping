@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import redirex.shipping.enums.OrderItemStatusEnum;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "order_item_status_history")
@@ -17,8 +18,8 @@ import java.time.LocalDateTime;
 public class OrderItemStatusHistoryEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_item_id", nullable = false)

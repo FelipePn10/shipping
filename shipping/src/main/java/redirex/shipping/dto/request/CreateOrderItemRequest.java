@@ -7,23 +7,24 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
 public class CreateOrderItemRequest {
     @NotNull(message = "User ID is required")
-    private Long userId;
+    private UUID userId;
 
     @NotNull(message = "Warehouse ID is required")
-    private Long warehouseId;
+    private UUID warehouseId;
 
     @NotBlank(message = "Recipient CPF is required")
     @Size(max = 14, message = "Recipient CPF must not exceed 14 characters")
     private String recipientCpf;
 
     @NotNull(message = "Product category ID is required")
-    private Long productCategoryId;
+    private UUID productCategoryId;
 
     @NotBlank(message = "Product URL is required")
     @URL(message = "Product URL must be valid")

@@ -14,6 +14,7 @@ import redirex.shipping.mapper.WarehouseMapper;
 import redirex.shipping.repositories.OrderItemRepository;
 import redirex.shipping.repositories.WarehouseRepository;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class WarehouseService {
@@ -30,7 +31,7 @@ public class WarehouseService {
     }
 
     @Transactional
-    public void addOrderItemToWarehouse(Long orderItemId, Long warehouseId) {
+    public void addOrderItemToWarehouse(UUID orderItemId, UUID warehouseId) {
         logger.info("Adding order item {} to warehouse {}", orderItemId, warehouseId);
 
         OrderItemEntity orderItem = orderItemRepository.findById(orderItemId)
@@ -54,7 +55,7 @@ public class WarehouseService {
     }
 
     @Transactional(readOnly = true)
-    public WarehouseResponse findWarehouseById(Long id) {
+    public WarehouseResponse findWarehouseById(UUID id) {
         logger.info("Finding warehouse by ID: {}", id);
         WarehouseEntity warehouse = warehouseRepository.findByIdWithItems(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found"));
@@ -62,7 +63,7 @@ public class WarehouseService {
     }
 
     @Transactional(readOnly = true)
-    public WarehouseResponse findByUserId(Long userId) {
+    public WarehouseResponse findByUserId(UUID userId) {
         WarehouseEntity warehouse = warehouseRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found for user"));
 

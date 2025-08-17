@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.*;
 import redirex.shipping.enums.CurrencyEnum;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_coupons")
@@ -17,11 +19,12 @@ import java.util.Objects;
 @AllArgsConstructor
 public class UserCouponEntity implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

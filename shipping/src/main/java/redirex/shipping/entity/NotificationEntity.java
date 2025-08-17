@@ -6,9 +6,11 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import redirex.shipping.enums.NotificationTypeEnum;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -26,11 +28,12 @@ import java.util.Objects;
 )
 public class NotificationEntity implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @NotNull(message = "User is required")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

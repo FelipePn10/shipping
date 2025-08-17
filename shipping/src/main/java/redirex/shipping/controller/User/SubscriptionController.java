@@ -8,6 +8,8 @@ import redirex.shipping.dto.request.CreateSubscriptionRequest;
 import redirex.shipping.dto.response.SubscriptionResponse;
 import redirex.shipping.service.SubscriptionService;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/user/subscriptions")
 public class SubscriptionController {
@@ -23,13 +25,13 @@ public class SubscriptionController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<SubscriptionResponse> getSubscriptionByUserId(@PathVariable Long userId) {
+    public ResponseEntity<SubscriptionResponse> getSubscriptionByUserId(@PathVariable UUID userId) {
         SubscriptionResponse response = subscriptionService.getSubscriptionByUserId(userId);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<SubscriptionResponse> cancelSubscriptionByUserId(@PathVariable Long userId) {
+    public ResponseEntity<SubscriptionResponse> cancelSubscriptionByUserId(@PathVariable UUID userId) {
         SubscriptionResponse response = subscriptionService.cancelSubscriptionByUserId(userId);
         return ResponseEntity.ok(response);
     }

@@ -8,9 +8,10 @@ import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.WalletTransactionTypeEnum;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class DebitWalletRequest {
-    private Long userId;
+    private UUID userId;
     private UserWalletEntity userWallet;
     private CurrencyEnum currency;
     private BigDecimal amount;

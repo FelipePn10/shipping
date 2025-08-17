@@ -8,6 +8,7 @@ import redirex.shipping.enums.CurrencyEnum;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -26,8 +27,8 @@ public class WalletBalanceEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @NotNull(message = "Wallet is required")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

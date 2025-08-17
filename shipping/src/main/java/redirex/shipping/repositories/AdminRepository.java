@@ -5,12 +5,13 @@ import redirex.shipping.entity.AdminEntity;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface AdminRepository extends JpaRepository<AdminEntity, Long> {
+public interface AdminRepository extends JpaRepository<AdminEntity, UUID> {
     Optional<AdminEntity> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByCpf(String cpf);
     List<AdminEntity> findByRole(String role);
 
-    Long id(Long id);
+    UUID id(UUID id);
 }

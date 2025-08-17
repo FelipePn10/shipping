@@ -6,15 +6,16 @@ import org.springframework.data.repository.query.Param;
 import redirex.shipping.entity.WarehouseEntity;
 
 import java.util.Optional;
+import java.util.UUID;
 
 
-public interface WarehouseRepository extends JpaRepository<WarehouseEntity, Long> {
+public interface WarehouseRepository extends JpaRepository<WarehouseEntity, UUID> {
 
     // Método para buscar warehouse por ID de usuário
     @Query("SELECT w FROM WarehouseEntity w WHERE w.userId.id = :userId")
-    Optional<WarehouseEntity> findByUserId(@Param("userId") Long userId);
+    Optional<WarehouseEntity> findByUserId(@Param("userId") UUID userId);
 
     // Método para carregar warehouse com itens
     @Query("SELECT w FROM WarehouseEntity w LEFT JOIN FETCH w.orderItems WHERE w.id = :id")
-    Optional<WarehouseEntity> findByIdWithItems(@Param("id") Long id);
+    Optional<WarehouseEntity> findByIdWithItems(@Param("id") UUID id);
 }

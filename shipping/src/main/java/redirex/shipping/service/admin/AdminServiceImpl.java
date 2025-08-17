@@ -17,6 +17,7 @@ import redirex.shipping.mapper.AdminMapper;
 import redirex.shipping.repositories.AdminRepository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +55,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public AdminResponse updateAdmin(Long id, @Valid RegisterAdminDTO dto) {
+    public AdminResponse updateAdmin(UUID id, @Valid RegisterAdminDTO dto) {
         logger.info("Updating user with email: {}", id);
         AdminEntity admin = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin with ID " + id + " not found"));
@@ -88,7 +89,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public Long findAdminIdByEmail(String email) {
+    public UUID findAdminIdByEmail(String email) {
         logger.info("Finding admin with email: {}", email);
         return adminRepository.findByEmail(email)
                 .map(AdminEntity::getId)

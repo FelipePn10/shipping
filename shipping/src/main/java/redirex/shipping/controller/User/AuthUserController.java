@@ -20,6 +20,7 @@ import redirex.shipping.service.UserServiceImpl;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/public/auth/v1")
@@ -42,7 +43,7 @@ public class AuthUserController {
                             authRequest.getPassword()
                     )
             );
-            Long userId = userService.findUserIdByEmail(authRequest.getEmail());
+            UUID userId = userService.findUserIdByEmail(authRequest.getEmail());
             String token = jwtUtil.generateToken(authRequest.getEmail(), userId);
             AuthUserResponse response = AuthUserResponse.builder()
                     .token(token)
@@ -69,7 +70,7 @@ public class AuthUserController {
                             authRequest.getPassword()
                     )
             );
-            Long userId = userService.findUserIdByEmail(authRequest.getEmail());
+            UUID userId = userService.findUserIdByEmail(authRequest.getEmail());
             String token = jwtUtil.generateToken(authRequest.getEmail(), userId);
             AuthUserResponse response = AuthUserResponse.builder()
                     .token(token)

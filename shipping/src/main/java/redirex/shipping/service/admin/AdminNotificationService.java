@@ -12,6 +12,8 @@ import redirex.shipping.repositories.AdminRepository;
 import redirex.shipping.repositories.NotificationRepository;
 import redirex.shipping.repositories.UserRepository;
 
+import java.util.UUID;
+
 @Service
 public class AdminNotificationService {
     @Autowired
@@ -23,7 +25,7 @@ public class AdminNotificationService {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public NotificationEntity createNotification(Long adminId, Long userId, String title, String message, NotificationTypeEnum type) {
+    public NotificationEntity createNotification(UUID adminId, UUID userId, String title, String message, NotificationTypeEnum type) {
         AdminEntity admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
         UserEntity user = userRepository.findById(userId)

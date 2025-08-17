@@ -6,12 +6,13 @@ import redirex.shipping.enums.CurrencyEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 public class UserWalletDTO {
-    private Long id;
-    private Long userId;
-    private Long walletId;
+    private UUID id;
+    private UUID userId;
+    private UUID walletId;
     private CurrencyEnum currency;
     private BigDecimal balance;
     private LocalDateTime createdAt;

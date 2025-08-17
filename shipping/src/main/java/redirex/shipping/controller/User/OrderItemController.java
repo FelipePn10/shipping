@@ -17,6 +17,7 @@ import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.OrderItemService;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/private/v1/api/users")
@@ -29,7 +30,7 @@ public class OrderItemController {
 
     @PostMapping("/{userId}/create/order")
     public ResponseEntity<OrderItemResponse> createOrder(
-            @PathVariable Long userId,
+            @PathVariable UUID userId,
             @Valid @RequestBody CreateOrderItemRequest request) {
 
         logger.info("Iniciando criação de pedido para userId: {}, request: {}", userId, request);
@@ -52,7 +53,7 @@ public class OrderItemController {
 
             // 3. Verificar se o usuário autenticado corresponde ao userId
             String username = authentication.getName(); // Email do usuário autenticado
-            Long authenticatedUserId = jwtUtil.getUserIdFromUsername(username);
+            UUID authenticatedUserId = jwtUtil.getUserIdFromUsername(username);
             if (!Objects.equals(authenticatedUserId, userId)) {
                 logger.warn("Unauthorized access: authenticatedUserId={}, pathUserId={}", authenticatedUserId, userId);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)

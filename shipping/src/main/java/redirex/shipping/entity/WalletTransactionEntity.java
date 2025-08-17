@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -30,8 +31,8 @@ public class WalletTransactionEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -67,10 +68,10 @@ public class WalletTransactionEntity implements Serializable {
     private BigDecimal amount;
 
     @Column(name = "related_order_item_id")
-    private Long relatedOrderItemId;
+    private UUID relatedOrderItemId;
 
     @Column(name = "related_shipment_id")
-    private Long relatedShipmentId;
+    private UUID relatedShipmentId;
 
     @DecimalMin(value = "0.0", message = "Exchange rate cannot be negative")
     @Digits(integer = 15, fraction = 4, message = "Exchange rate format is invalid")

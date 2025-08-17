@@ -5,17 +5,18 @@ import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.OrderItemStatusEnum;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @Data
 public class OrderItemDTO {
-    private Long id;
+    private UUID id;
     private String productUrl;
     private BigDecimal productValue;
     private CurrencyEnum originalCurrency;
     private String originCountry;
     private String recipientCpf; // Pode ser mascarado no serviço
-    private Long addressId;
+    private UUID addressId;
     private OrderItemStatusEnum status;
     private LocalDateTime createdAt;
     private LocalDateTime paymentDeadline;
@@ -25,8 +26,8 @@ public class OrderItemDTO {
     private Double weight;
     private String dimensions;
     private boolean requestedConsolidation;
-    private Long shipment;
-    private Long user;
-    private Long warehouse;
+    private UUID shipment;
+    private UUID user;
+    private UUID warehouse;
     private String category;
 }

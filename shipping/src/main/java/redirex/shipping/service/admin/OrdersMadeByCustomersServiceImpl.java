@@ -18,6 +18,7 @@ import redirex.shipping.repositories.OrderItemStatusHistoryRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -37,13 +38,13 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
         );
     }
 
-    public Page<OrderItemEntity> findOrdersByAdminId(Long adminId, Pageable pageable) {
+    public Page<OrderItemEntity> findOrdersByAdminId(UUID adminId, Pageable pageable) {
         return orderItemRepository.findByAdminAssignedId(adminId, pageable);
     }
 
     @Transactional
     @Override
-    public void updateOrderStatus(Long orderId,
+    public void updateOrderStatus(UUID orderId,
                                   OrderItemStatusEnum newStatus,
                                   AdminEntity admin,
                                   String notes,
@@ -133,7 +134,7 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
 
     @Transactional
     @Override
-    public void addOrderPhoto(Long orderId, MultipartFile file, String description, AdminEntity admin) {
+    public void addOrderPhoto(UUID orderId, MultipartFile file, String description, AdminEntity admin) {
         OrderItemEntity order = orderItemRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 

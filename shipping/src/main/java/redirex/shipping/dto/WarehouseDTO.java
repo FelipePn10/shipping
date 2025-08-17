@@ -3,11 +3,12 @@ package redirex.shipping.dto;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class WarehouseDTO {
-    private Long id;
+    private UUID id;
     private String name;
     private String location;
-    private List<Long> orderItemIds;
+    private List<UUID> orderItemIds;
 }

@@ -16,6 +16,8 @@ import redirex.shipping.exception.AdminRegistrationException;
 import redirex.shipping.exception.AdminUpdateException;
 import redirex.shipping.service.admin.AdminService;
 
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
 public class AdminController {
@@ -41,7 +43,7 @@ public class AdminController {
     }
 
     @PutMapping("/private/admin/v1/update/admin")
-    public ResponseEntity<?> updateAdmin(Long id, @Valid @RequestBody RegisterAdminDTO dto) {
+    public ResponseEntity<?> updateAdmin(UUID id, @Valid @RequestBody RegisterAdminDTO dto) {
         try {
             logger.info("Received request to update admin: {}", dto.getEmail());
             AdminResponse adminResponse = adminService.updateAdmin(id, dto);

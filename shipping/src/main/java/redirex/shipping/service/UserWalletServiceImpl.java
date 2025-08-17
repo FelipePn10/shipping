@@ -1,6 +1,5 @@
 package redirex.shipping.service;
 
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,6 +22,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserWalletServiceImpl implements UserWalletService {
@@ -73,7 +73,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Override
     @Transactional
-    public WalletTransactionResponse depositToWallet(Long userId, DepositRequestDto depositRequestDto) {
+    public WalletTransactionResponse depositToWallet(UUID userId, DepositRequestDto depositRequestDto) {
         logger.info("Attempting deposit for userId: {} with target CNY amount: {}", userId, depositRequestDto.getAmount());
 
         if (depositRequestDto.getAmount() == null || depositRequestDto.getAmount().compareTo(BigDecimal.valueOf(50)) <= 0) {
@@ -177,9 +177,9 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Override
     @Transactional
-    public void debitFromWallet(Long userId, CurrencyEnum currency, BigDecimal amount,
-                                String transactionType, String description, Long orderItemId,
-                                Long shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency) {
+    public void debitFromWallet(UUID userId, CurrencyEnum currency, BigDecimal amount,
+                                String transactionType, String description, UUID orderItemId,
+                                UUID shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency) {
         if (currency != CurrencyEnum.CNY) {
             throw new IllegalArgumentException("Debit operations only supported for CNY currency. Requested: " + currency);
         }
@@ -194,8 +194,8 @@ public class UserWalletServiceImpl implements UserWalletService {
     }
 
     @Transactional
-    public void debitForOrder(Long userId, CurrencyEnum currency, BigDecimal amount, String transactionType, String description,
-                              Long orderItemId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency)
+    public void debitForOrder(UUID userId, CurrencyEnum currency, BigDecimal amount, String transactionType, String description,
+                              UUID orderItemId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency)
             throws InsufficientBalanceException {
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -237,8 +237,8 @@ public class UserWalletServiceImpl implements UserWalletService {
     }
 
     @Transactional
-    public void debitForShipment(Long userId, CurrencyEnum currency, BigDecimal amount, String transactionType, String description,
-                                 Long shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency) throws InsufficientBalanceException {
+    public void debitForShipment(UUID userId, CurrencyEnum currency, BigDecimal amount, String transactionType, String description,
+                                 UUID shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency) throws InsufficientBalanceException {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Shipment payment amount must be positive.");
         }
@@ -278,7 +278,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Override
     @Transactional
-    public void refundToWallet(Long userId, CurrencyEnum currency, BigDecimal amount, String description, Long orderItemId) {
+    public void refundToWallet(UUID userId, CurrencyEnum currency, BigDecimal amount, String description, UUID orderItemId) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Refund amount must be positive.");
         }
@@ -310,7 +310,7 @@ public class UserWalletServiceImpl implements UserWalletService {
     }
 
     @Override
-    public BigDecimal getUserWalletBalance(Long userId, CurrencyEnum currency) {
+    public BigDecimal getUserWalletBalance(UUID userId, CurrencyEnum currency) {
         if (currency != CurrencyEnum.CNY) {
             logger.warn("Attempt to get balance for unsupported currency: {} for userId: {}", currency, userId);
             throw new IllegalArgumentException("Balance check only supported for CNY currency. Requested: " + currency);
@@ -323,14 +323,14 @@ public class UserWalletServiceImpl implements UserWalletService {
     }
 
     @Override
-    public List<UserWalletEntity> listUserWallets(Long userId) {
+    public List<UserWalletEntity> listUserWallets(UUID userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found for userId: " + userId));
         return userWalletRepository.findByUserId(user);
     }
 
     @Override
-    public List<WalletTransactionEntity> listWalletTransactions(Long userId, CurrencyEnum currencyFilter) {
+    public List<WalletTransactionEntity> listWalletTransactions(UUID userId, CurrencyEnum currencyFilter) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found for userId: " + userId));
 

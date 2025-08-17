@@ -3,10 +3,12 @@ package redirex.shipping.dto;
 import lombok.Data;
 import redirex.shipping.entity.AddressEntity.ResidenceType;
 
+import java.util.UUID;
+
 @Data
 public class AddressDTO {
 
-    private Long id;
+    private UUID id;
     private String recipientName;
     private String street;
     private String complement;
@@ -16,5 +18,5 @@ public class AddressDTO {
     private String country;
     private String phone;
     private ResidenceType residenceType;
-    private Long userId;
+    private UUID userId;
 }

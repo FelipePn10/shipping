@@ -1,5 +1,5 @@
 ### POST request login user
-POST http://localhost:9090/public/auth/v1/user/login
+POST http://localhost:8081/public/auth/v1/user/login
 Content-Type: application/json
 
 {

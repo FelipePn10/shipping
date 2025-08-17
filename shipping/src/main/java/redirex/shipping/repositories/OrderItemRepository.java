@@ -9,8 +9,9 @@ import redirex.shipping.entity.OrderItemStatusHistoryEntity;
 import redirex.shipping.enums.OrderItemStatusEnum;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long> {
+public interface OrderItemRepository extends JpaRepository<OrderItemEntity, UUID> {
 
     // Busca pedidos excluindo status iniciais
     Page<OrderItemEntity> findByStatusNotInOrderByCreatedAtDesc(
@@ -18,11 +19,11 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long
             Pageable pageable
     );
 
-    Page<OrderItemEntity> findByAdminAssignedId(Long adminId, Pageable pageable);
+    Page<OrderItemEntity> findByAdminAssignedId(UUID adminId, Pageable pageable);
 
     // Busca pedidos por admin
     Page<OrderItemEntity> findByAdminAssignedIdOrderByCreatedAtDesc(
-            Long adminId,
+            UUID adminId,
             Pageable pageable
     );
 

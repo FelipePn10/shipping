@@ -25,6 +25,7 @@ import redirex.shipping.repositories.WarehouseRepository;
 import redirex.shipping.service.admin.OrderDistributionService;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Service
 public class OrderItemServiceImpl implements OrderItemService {
@@ -53,7 +54,7 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Override
     @Transactional
-    public OrderItemResponse createOrderItem(Long userId, @Valid CreateOrderItemRequest request) {
+    public OrderItemResponse createOrderItem(UUID userId, @Valid CreateOrderItemRequest request) {
         logger.info("Creating order for userId: {}, productUrl: {}", userId, request.getProductUrl());
         BigDecimal productPrice;
 
@@ -96,7 +97,7 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Override
     @Transactional
-    public OrderItemResponse processOrderPayment(Long orderItemId, Long userId) {
+    public OrderItemResponse processOrderPayment(UUID orderItemId, UUID userId) {
         OrderItemEntity orderItem = orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderItemId));
 
@@ -145,7 +146,7 @@ public class OrderItemServiceImpl implements OrderItemService {
             maxAttempts = MAX_RETRY_ATTEMPTS,
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
-    private void processPaymentWithRetry(UserEntity user, BigDecimal amount, Long orderItemId)
+    private void processPaymentWithRetry(UserEntity user, BigDecimal amount, UUID orderItemId)
             throws InsufficientBalanceException {
 
         try {

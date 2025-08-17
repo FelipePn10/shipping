@@ -15,6 +15,8 @@ import redirex.shipping.exception.*;
 import redirex.shipping.service.OrderItemService;
 import redirex.shipping.service.UserWalletServiceImpl;
 
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
 public class TransactionController {
@@ -25,7 +27,7 @@ public class TransactionController {
 
     @PostMapping("private/v1/api/users/{userId}/deposit")
     public ResponseEntity<WalletTransactionResponse> depositToWallet(
-            @PathVariable Long userId,
+            @PathVariable UUID userId,
             @Valid @RequestBody DepositRequestDto depositRequestDto) {
         try {
             logger.info("Processing deposit request for userId: {}", userId);
@@ -57,8 +59,8 @@ public class TransactionController {
 
     @PostMapping("private/v1/api/users/{userId}/orders/{orderId}/payment")
     public ResponseEntity<OrderItemResponse> processPayment(
-            @PathVariable Long userId,
-            @PathVariable Long orderId) {
+            @PathVariable UUID userId,
+            @PathVariable UUID orderId) {
 
             logger.info("Received request to process payment for order ID: {}", orderId);
             OrderItemResponse response = orderItemService.processOrderPayment(orderId,userId);

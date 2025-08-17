@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_wallets")
@@ -23,8 +24,8 @@ public class UserWalletEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long walletId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID walletId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

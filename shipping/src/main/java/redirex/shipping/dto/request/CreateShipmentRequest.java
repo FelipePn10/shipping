@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -28,7 +29,7 @@ public class CreateShipmentRequest {
     private BigDecimal importTaxes;
 
     @NotEmpty(message = "Order item IDs are required")
-    private List<Long> orderItemIds;
+    private List<UUID> orderItemIds;
 
-    private Long appliedShippingCouponId;
+    private UUID appliedShippingCouponId;
 }

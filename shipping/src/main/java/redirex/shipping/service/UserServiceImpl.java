@@ -24,6 +24,7 @@ import redirex.shipping.service.email.UserEmailService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -116,7 +117,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateUserProfile(Long id, @Valid RegisterUserDTO dto) {
+    public UserResponse updateUserProfile(UUID id, @Valid RegisterUserDTO dto) {
         logger.info("Updating user profile for ID: {}", id);
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));
@@ -143,7 +144,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponse findUserById(Long id) {
+    public UserResponse findUserById(UUID id) {
         logger.info("Finding user by ID: {}", id);
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));
@@ -152,7 +153,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Long findUserIdByEmail(String email) {
+    public UUID findUserIdByEmail(String email) {
         logger.info("Finding user ID by email: {}", email);
         return userRepository.findByEmail(email)
                 .map(UserEntity::getId)

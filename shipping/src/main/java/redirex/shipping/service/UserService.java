@@ -4,10 +4,12 @@ import jakarta.validation.Valid;
 import redirex.shipping.dto.response.UserResponse;
 import redirex.shipping.dto.RegisterUserDTO;
 
+import java.util.UUID;
+
 public interface UserService {
     UserResponse registerUser(@Valid RegisterUserDTO dto);
-    UserResponse updateUserProfile(Long id, @Valid RegisterUserDTO dto);
+    UserResponse updateUserProfile(UUID id, @Valid RegisterUserDTO dto);
 
-    Long findUserIdByEmail(String email);
-    UserResponse findUserById(Long id);
+    UUID findUserIdByEmail(String email);
+    UserResponse findUserById(UUID id);
 }

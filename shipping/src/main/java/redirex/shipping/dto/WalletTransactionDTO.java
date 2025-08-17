@@ -6,16 +6,17 @@ import redirex.shipping.enums.WalletTransactionTypeEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 public class WalletTransactionDTO {
-    private Long id;
-    private Long userWalletId;
+    private UUID id;
+    private UUID userWalletId;
     private WalletTransactionTypeEnum type;
     private BigDecimal amount;
     private String description;
-    private Long relatedOrderItemId;
-    private Long relatedShipmentId;
+    private UUID relatedOrderItemId;
+    private UUID relatedShipmentId;
     private BigDecimal exchangeRate;
     private BigDecimal transactionFee;
     private BigDecimal originalAmountDeposited;

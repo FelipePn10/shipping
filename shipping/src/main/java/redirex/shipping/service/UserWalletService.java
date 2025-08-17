@@ -8,9 +8,10 @@ import redirex.shipping.enums.CurrencyEnum;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 public interface UserWalletService {
-    WalletTransactionResponse depositToWallet(Long userId, DepositRequestDto depositRequestDto);
+    WalletTransactionResponse depositToWallet(UUID userId, DepositRequestDto depositRequestDto);
 
         /**
          *
@@ -24,11 +25,11 @@ public interface UserWalletService {
          * @param chargedAmount     O valor original da cobrança.
          * @param chargedCurrency   A moeda original da cobrança.
          */
-        void debitFromWallet(Long userId, CurrencyEnum currency, BigDecimal amount,
-                             String transactionType, String description, Long orderItemId,
-                             Long shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency);
-    void refundToWallet(Long userId, CurrencyEnum currency, BigDecimal amount, String description, Long orderItemId);
-    BigDecimal getUserWalletBalance(Long userId, CurrencyEnum currency);
-    List<UserWalletEntity> listUserWallets(Long userId);
-    List<WalletTransactionEntity> listWalletTransactions(Long userId, CurrencyEnum currency);
+        void debitFromWallet(UUID userId, CurrencyEnum currency, BigDecimal amount,
+                             String transactionType, String description, UUID orderItemId,
+                             UUID shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency);
+    void refundToWallet(UUID userId, CurrencyEnum currency, BigDecimal amount, String description, UUID orderItemId);
+    BigDecimal getUserWalletBalance(UUID userId, CurrencyEnum currency);
+    List<UserWalletEntity> listUserWallets(UUID userId);
+    List<WalletTransactionEntity> listWalletTransactions(UUID userId, CurrencyEnum currency);
 }

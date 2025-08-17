@@ -9,12 +9,13 @@ import redirex.shipping.enums.OrderItemStatusEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
 public class OrderItemResponse {
-    private Long id;
+    private UUID id;
     private String description;
     private Float size;
     private Integer quantity;
@@ -25,12 +26,12 @@ public class OrderItemResponse {
     private String originCountry;
     private String categoryName;
     private String recipientCpf; // Pode ser mascarado no serviço
-    private Long addressId;
+    private UUID addressId;
     private OrderItemStatusEnum status;
     private LocalDateTime createdAt;
     private LocalDateTime paymentDeadline;
     private LocalDateTime paidProductAt;
     private LocalDateTime arrivedAtWarehouseAt;
     private boolean requestedConsolidation;
-    private Long shipmentId;
+    private UUID shipmentId;
 }

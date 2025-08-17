@@ -8,21 +8,22 @@ import org.springframework.data.repository.query.Param;
 import redirex.shipping.entity.OrderItemStatusHistoryEntity;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface OrderItemStatusHistoryRepository
-        extends JpaRepository<OrderItemStatusHistoryEntity, Long> {
+        extends JpaRepository<OrderItemStatusHistoryEntity, UUID> {
 
-    List<OrderItemStatusHistoryEntity> findByOrderItem_IdOrderByChangedAtDesc(Long orderItemId);
+    List<OrderItemStatusHistoryEntity> findByOrderItem_IdOrderByChangedAtDesc(UUID orderItemId);
 
     Page<OrderItemStatusHistoryEntity> findByOrderItem_IdOrderByChangedAtDesc(
-            Long orderItemId,
+            UUID orderItemId,
             Pageable pageable
     );
 
     // Busca todas as alterações feitas por um admin
     @Query("SELECT h FROM OrderItemStatusHistoryEntity h WHERE h.changedBy.id = :adminId")
     Page<OrderItemStatusHistoryEntity> findHistoryByAdmin(
-            @Param("adminId") Long adminId,
+            @Param("adminId") UUID adminId,
             Pageable pageable
     );
 
@@ -30,5 +31,5 @@ public interface OrderItemStatusHistoryRepository
     @Query("SELECT h FROM OrderItemStatusHistoryEntity h " +
             "WHERE h.orderItem.id = :orderId " +
             "ORDER BY h.changedAt DESC LIMIT 1")
-    OrderItemStatusHistoryEntity findLatestStatusChange(@Param("orderId") Long orderId);
+    OrderItemStatusHistoryEntity findLatestStatusChange(@Param("orderId") UUID orderId);
 }

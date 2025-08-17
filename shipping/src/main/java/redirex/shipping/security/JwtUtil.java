@@ -15,10 +15,7 @@ import redirex.shipping.entity.UserEntity;
 import redirex.shipping.repositories.AdminRepository;
 import redirex.shipping.repositories.UserRepository;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Component
@@ -35,7 +32,7 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    public String generateToken(String email, Long userId) {
+    public String generateToken(String email, UUID userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         return createToken(claims, email);
@@ -56,9 +53,9 @@ public class JwtUtil {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
-    public Long getUserIdFromToken(String token) {
+    public UUID getUserIdFromToken(String token) {
         try {
-            Long userId = getClaimFromToken(token, claims -> claims.get("userId", Long.class));
+            UUID userId = getClaimFromToken(token, claims -> claims.get("userId", UUID.class));
             if (userId == null) {
                 logger.error("Nenhum userId encontrado no token");
                 throw new IllegalArgumentException("Token não contém userId");
@@ -80,7 +77,7 @@ public class JwtUtil {
         }
     }
 
-    public Long getUserIdFromUsername(String username) {
+    public UUID getUserIdFromUsername(String username) {
         logger.debug("Buscando userId para username: {}", username);
         UserEntity user = userRepository.findByEmail(username)
                 .orElseThrow(() -> {
@@ -90,7 +87,7 @@ public class JwtUtil {
         return user.getId();
     }
 
-    public Long getAdminIdFromUsername(String username) {
+    public UUID getAdminIdFromUsername(String username) {
         logger.debug("Buscando adminId para username: {}", username);
         AdminEntity admin = adminRepository.findByEmail(username)
                 .orElseThrow(() -> {

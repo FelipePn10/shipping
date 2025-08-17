@@ -16,6 +16,8 @@ import redirex.shipping.entity.OrderItemEntity;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.admin.OrdersMadeByCustomersService;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/private/v1/api/admin")
 @RequiredArgsConstructor
@@ -27,12 +29,12 @@ public class SearchUserRequestsController {
 
     @GetMapping("/{adminId}/search/orders")
     public ResponseEntity<Page<OrderItemResponse>> getOrdersAssignedToAdmin(
-            @PathVariable Long adminId,
+            @PathVariable UUID adminId,
             Pageable pageable,
             Authentication authentication
     ) {
 
-        Long authenticatedAdminId = jwtUtil.getAdminIdFromUsername(authentication.getName());
+        UUID authenticatedAdminId = jwtUtil.getAdminIdFromUsername(authentication.getName());
 
         if (!adminId.equals(authenticatedAdminId)) {
             return ResponseEntity.badRequest().build();

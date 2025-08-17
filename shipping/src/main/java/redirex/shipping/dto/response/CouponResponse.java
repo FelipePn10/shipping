@@ -6,11 +6,12 @@ import redirex.shipping.enums.CouponTypeEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 public class CouponResponse {
-    private Long id;
+    private UUID id;
     private String code;
     private String description;
     private BigDecimal discountAmount;

@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import redirex.shipping.enums.NotificationTypeEnum;
 
+import java.util.UUID;
+
 @Data
 @Builder
 public class CreateNotificationRequest {
     @NotNull(message = "User ID is required")
-    private Long userId;
+    private UUID userId;
 
     @NotBlank(message = "Title is required")
     @Size(max = 100, message = "Title must not exceed 100 characters")

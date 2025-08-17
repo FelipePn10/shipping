@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -100,7 +101,7 @@ public class UserController {
 
     @GetMapping("/api/user/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable UUID id) {
         try {
             validateUserAccess(id);
             logger.info("Received request to get user by ID: {}", id);
@@ -117,7 +118,7 @@ public class UserController {
 
     @PutMapping("/api/user/{id}/profile")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @Valid @RequestBody RegisterUserDTO registerUserDTO) {
+    public ResponseEntity<?> updateUserProfile(@PathVariable UUID id, @Valid @RequestBody RegisterUserDTO registerUserDTO) {
         try {
             validateUserAccess(id);
             logger.info("Received request to update profile for user ID: {}", id);
@@ -132,9 +133,9 @@ public class UserController {
         }
     }
 
-    private void validateUserAccess(Long requestedId) {
+    private void validateUserAccess(UUID requestedId) {
         String token = ((String) SecurityContextHolder.getContext().getAuthentication().getCredentials()).substring(7); // Remove "Bearer "
-        Long userIdFromToken = jwtUtil.getUserIdFromToken(token);
+        UUID userIdFromToken = jwtUtil.getUserIdFromToken(token);
         if (!userIdFromToken.equals(requestedId)) {
             throw new UnauthorizedAccessException("You are not authorized to access this user's data");
         }

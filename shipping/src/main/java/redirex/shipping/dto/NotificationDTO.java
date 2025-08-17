@@ -5,12 +5,13 @@ import redirex.shipping.enums.NotificationTypeEnum;
 
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 public class NotificationDTO {
-    private Long id;
-    private Long userId;
-    private Long adminId;
+    private UUID id;
+    private UUID userId;
+    private UUID adminId;
     private String title;
     private String message;
     private Boolean isRead;

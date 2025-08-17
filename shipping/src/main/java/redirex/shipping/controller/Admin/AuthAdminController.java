@@ -19,6 +19,8 @@ import redirex.shipping.dto.response.AuthAdminResponse;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.admin.AdminServiceImpl;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/public/auth/admin/v1")
 @RequiredArgsConstructor
@@ -39,7 +41,7 @@ public class AuthAdminController {
                             authRequest.getPassword()
                     )
             );
-            Long adminId = adminService.findAdminIdByEmail(authRequest.getEmail());
+            UUID adminId = adminService.findAdminIdByEmail(authRequest.getEmail());
             if(adminId == null) {
                 logger.error("Admin ID not found for email: {}", authRequest.getEmail());
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Admin data not found");

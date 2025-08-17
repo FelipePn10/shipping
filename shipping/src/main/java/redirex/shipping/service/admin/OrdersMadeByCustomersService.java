@@ -8,13 +8,15 @@ import redirex.shipping.entity.AdminEntity;
 import redirex.shipping.entity.OrderItemEntity;
 import redirex.shipping.enums.OrderItemStatusEnum;
 
+import java.util.UUID;
+
 public interface OrdersMadeByCustomersService {
 
     Page<OrderItemEntity> getRecentOrders(Pageable pageable);
-    Page<OrderItemEntity> findOrdersByAdminId(Long adminId, Pageable pageable);
+    Page<OrderItemEntity> findOrdersByAdminId(UUID adminId, Pageable pageable);
 
     @Transactional
-    void updateOrderStatus(Long orderId, OrderItemStatusEnum newStatusCurrent, AdminEntity admin, String notes, boolean isLocationUpdate);
+    void updateOrderStatus(UUID orderId, OrderItemStatusEnum newStatusCurrent, AdminEntity admin, String notes, boolean isLocationUpdate);
 
-    void addOrderPhoto(Long orderId, MultipartFile file, String description, AdminEntity admin);
+    void addOrderPhoto(UUID orderId, MultipartFile file, String description, AdminEntity admin);
 }

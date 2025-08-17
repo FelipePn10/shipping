@@ -6,6 +6,7 @@ import redirex.shipping.enums.WalletTransactionTypeEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,11 +14,11 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 public class WalletTransactionResponse {
-    private Long id;
+    private UUID id;
     private String status;
     private CurrencyEnum chargedCurrency;
-    private Long userWalletId;
-    private Long userId;
+    private UUID userWalletId;
+    private UUID userId;
     private String fee;
     private String currency;
     private String chargedAmount;
@@ -29,8 +30,8 @@ public class WalletTransactionResponse {
     private WalletTransactionTypeEnum type;
     private BigDecimal amount;
     private String description;
-    private Long relatedOrderItemId;
-    private Long relatedShipmentId;
+    private UUID relatedOrderItemId;
+    private UUID relatedShipmentId;
     private BigDecimal exchangeRate;
     private BigDecimal transactionFee;
     private BigDecimal originalAmountDeposited;

@@ -5,12 +5,13 @@ import redirex.shipping.enums.SubscriptionPlanEnum;
 import redirex.shipping.enums.SubscriptionStatusEnum;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 // Resposta enviada ao cliente após operações com assinaturas.
 @Data
 public class SubscriptionResponse {
-    private Long id;
-    private Long userId;
+    private UUID id;
+    private UUID userId;
     private String stripeSubscriptionId;
     private SubscriptionPlanEnum planType;
     private SubscriptionStatusEnum status;

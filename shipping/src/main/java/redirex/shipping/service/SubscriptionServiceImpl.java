@@ -22,6 +22,7 @@ import redirex.shipping.repositories.UserRepository;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class SubscriptionServiceImpl implements SubscriptionService {
@@ -83,14 +84,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public SubscriptionResponse getSubscriptionByUserId(Long userId) {
+    public SubscriptionResponse getSubscriptionByUserId(UUID userId) {
         SubscriptionEntity subscriptionEntity = subscriptionRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Signature not found"));
         return mapToResponse(subscriptionEntity);
     }
 
     @Override
-    public SubscriptionResponse cancelSubscriptionByUserId(Long userId) {
+    public SubscriptionResponse cancelSubscriptionByUserId(UUID userId) {
         SubscriptionEntity subscription = subscriptionRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Signature not found"));
         try {
