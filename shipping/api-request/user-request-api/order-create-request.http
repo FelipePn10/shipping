@@ -1,17 +1,17 @@
 ### POST request create order
-POST http://localhost:8081/private/v1/api/users/5/create/order
+POST http://localhost:8081/private/v1/api/users/ec3c0370-185f-42ff-b4d7-24b278b7de57/create/order
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiI4MTg2NzgxYi1jMmEyLTRlYWQtYTcwMS1hOTIyZTE4MTVjZDciLCJzdWIiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwiaWF0IjoxNzU1NDUzMDg3LCJleHAiOjE4NDE4NTMwODd9.1hojtqjumJKVVvVx5_sK31FGyYDLTOavcLEHI4cMSZLWTqel26EJE8mk2yGKmSVLVvahZtbAQlf_0PuOsfUmfQ
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiJlYzNjMDM3MC0xODVmLTQyZmYtYjRkNy0yNGIyNzhiN2RlNTciLCJzdWIiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwiaWF0IjoxNzU1NTQwNTM4LCJleHAiOjE4NDE5NDA1Mzh9.XQik0oQLWEo_TgG3LxQ0AI0ZVr4UNRoPlT8MeVDTxhQdtAy_-ZZcPEGQsAch5aKaVu5Dzpc2qCPTfefiEskFnA
 
 {
-  "userId": "8186781b-c2a2-4ead-a701-a922e1815cd7",
-  "warehouseId": "6e218d22-40aa-4202-bffb-cc9c7fd85ab9",
+  "userId": "ec3c0370-185f-42ff-b4d7-24b278b7de57",
+  "warehouseId": "e8d36fea-9aa7-4bf3-82cc-8bc9f3fc9742",
   "description": "DT Batch J1",
   "productUrl": "https://shop1802721248.v.weidian.com/item.html?itemID=7304860125&spider_token=c6b0",
   "quantity": 1,
   "size": 43.5,
   "recipientCpf": "13042799954",
-  "productCategoryId": 4,
+  "productCategoryId": "fd3a847f-d6cf-4cfc-8305-e9cb3ffa72d1",
   "autoFetchPrice": true
 }
 
