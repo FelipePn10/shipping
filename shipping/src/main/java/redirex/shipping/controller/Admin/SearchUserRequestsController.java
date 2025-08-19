@@ -1,6 +1,5 @@
 package redirex.shipping.controller.Admin;
 
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,12 +19,16 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/private/v1/api/admin")
-@RequiredArgsConstructor
 public class SearchUserRequestsController {
     private static final Logger logger = LoggerFactory.getLogger(SearchUserRequestsController.class);
 
     private final OrdersMadeByCustomersService ordersMadeByCustomersService;
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+
+    public SearchUserRequestsController(OrdersMadeByCustomersService ordersMadeByCustomersService, JwtUtil jwtUtil) {
+        this.ordersMadeByCustomersService = ordersMadeByCustomersService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @GetMapping("/{adminId}/search/orders")
     public ResponseEntity<Page<OrderItemResponse>> getOrdersAssignedToAdmin(
