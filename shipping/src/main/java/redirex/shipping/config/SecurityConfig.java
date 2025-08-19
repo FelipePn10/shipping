@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 @Configuration
@@ -62,7 +61,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        logger.info("Configuring security filter chain");
+        logger.info("Configurando chain de filtros de segurança");
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
@@ -78,9 +77,8 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        logger.info("Configuring CORS with allowed origins: {}", Arrays.toString(allowedOrigins));
+        logger.info("Configurando CORS com origens permitidas: {}", Arrays.toString(allowedOrigins));
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -102,7 +100,7 @@ public class SecurityConfig {
 
     @Bean
     public JavaMailSender getJavaMailSender() {
-        logger.info("Configuring JavaMailSender with host: {}", mailHost);
+        logger.info("Configurando JavaMailSender com host: {}", mailHost);
         validateMailProperties();
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost(mailHost);
@@ -121,16 +119,16 @@ public class SecurityConfig {
 
     private void validateMailProperties() {
         if (mailHost == null || mailHost.isEmpty()) {
-            throw new IllegalStateException("Mail host must be configured");
+            throw new IllegalStateException("Mail host deve ser configurado");
         }
         if (mailPort == null || mailPort.isEmpty()) {
-            throw new IllegalStateException("Mail port must be configured");
+            throw new IllegalStateException("Mail port deve ser configurado");
         }
         if (mailUsername == null || mailUsername.isEmpty()) {
-            throw new IllegalStateException("Mail username must be configured");
+            throw new IllegalStateException("Mail username deve ser configurado");
         }
         if (mailPassword == null || mailPassword.isEmpty()) {
-            throw new IllegalStateException("Mail password must be configured");
+            throw new IllegalStateException("Mail password deve ser configurado");
         }
     }
 }

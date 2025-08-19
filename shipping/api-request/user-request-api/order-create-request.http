@@ -6,7 +6,7 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiJlYzNjMDM3MC0xODVmLTQyZ
 {
   "userId": "ec3c0370-185f-42ff-b4d7-24b278b7de57",
   "warehouseId": "e8d36fea-9aa7-4bf3-82cc-8bc9f3fc9742",
-  "description": "DT Batch J1",
+  "description": "DT Batch J2",
   "productUrl": "https://shop1802721248.v.weidian.com/item.html?itemID=7304860125&spider_token=c6b0",
   "quantity": 1,
   "size": 43.5,

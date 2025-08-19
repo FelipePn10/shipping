@@ -31,7 +31,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public AdminResponse createAdmin(@Valid RegisterAdminDTO dto) {
-        logger.info("Registering user with email: {}", dto.getEmail());
+        logger.info("Registrando admin com email: {}", dto.getEmail());
         validateAdminNotExists(dto.getEmail());
 
         try {
@@ -42,13 +42,13 @@ public class AdminServiceImpl implements AdminService {
                     .cpf(dto.getCpf())
                     .role("ROLE_ADMIN")
                     .build();
-            logger.info("Creating admin with email: {}", dto.getEmail());
+            logger.info("Criando admin com email: {}", dto.getEmail());
 
             adminRepository.save(admin);
             return adminMapper.toResponse(admin);
 
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error("Erro ao criar admin: {}", e.getMessage());
             throw new AdminRegistrationException(e.getMessage());
         }
     }
@@ -56,9 +56,9 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public AdminResponse updateAdmin(UUID id, @Valid RegisterAdminDTO dto) {
-        logger.info("Updating user with email: {}", id);
+        logger.info("Atualizando admin com ID: {}", id);
         AdminEntity admin = adminRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin with ID " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Admin com ID " + id + " não encontrado"));
 
         if (!dto.getEmail().equals(admin.getEmail())) {
             validateEmailNotExists(dto.getEmail());
@@ -70,7 +70,7 @@ public class AdminServiceImpl implements AdminService {
         }
 
         admin = adminRepository.save(admin);
-        logger.info("Updating user with email: {}", admin.getEmail());
+        logger.info("Admin atualizado com email: {}", admin.getEmail());
         return adminMapper.toResponse(admin);
     }
 
@@ -78,21 +78,20 @@ public class AdminServiceImpl implements AdminService {
         validateEmailNotExists(email);
     }
 
-
     private void validateEmailNotExists(String email) {
-        Optional<AdminEntity> existingUserByEmail = adminRepository.findByEmail(email);
-        if (existingUserByEmail.isPresent()) {
-            logger.warn("Attempt to use duplicate email: {}", email);
-            throw new UserRegistrationException("Email already registered");
+        Optional<AdminEntity> existingAdminByEmail = adminRepository.findByEmail(email);
+        if (existingAdminByEmail.isPresent()) {
+            logger.warn("Tentativa de usar email duplicado: {}", email);
+            throw new UserRegistrationException("Email já registrado");
         }
     }
 
     @Override
     @Transactional(readOnly = true)
     public UUID findAdminIdByEmail(String email) {
-        logger.info("Finding admin with email: {}", email);
+        logger.info("Buscando ID do admin com email: {}", email);
         return adminRepository.findByEmail(email)
                 .map(AdminEntity::getId)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin with ID " + email + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Admin com email " + email + " não encontrado"));
     }
 }

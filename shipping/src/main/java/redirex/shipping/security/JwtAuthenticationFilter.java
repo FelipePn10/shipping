@@ -27,12 +27,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtUtil jwtUtil;
-    private final CustomUserDetailsService userDetailsService;
+    private final CustomUnifiedUserDetailsService userDetailsService;
     private final TokenBlacklistService tokenBlacklistService;
 
     @Autowired
     public JwtAuthenticationFilter(JwtUtil jwtUtil,
-                                   CustomUserDetailsService userDetailsService,
+                                   CustomUnifiedUserDetailsService userDetailsService,
                                    TokenBlacklistService tokenBlacklistService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
@@ -42,8 +42,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+                                    FilterChain filterChain) throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+
+        // Ignorar endpoints públicos
+        if (path.startsWith("/public/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         final String authHeader = request.getHeader("Authorization");
         String jwt = null;
@@ -81,7 +88,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             logger.debug("Username extraído do token: {}", username);
 
         } catch (MalformedJwtException ex) {
-            logger.error("Token JWT malformado: {}", ex.getMessage());
+            logger.error("Token JWT mal-formado: {}", ex.getMessage());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
             return;
         } catch (SignatureException ex) {
@@ -141,6 +148,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.startsWith("/public/auth/v1/user/register") ||
                 path.startsWith("/public/user") ||
                 path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs");
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/public/auth/admin/v1/login");
     }
 }
