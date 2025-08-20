@@ -54,6 +54,8 @@ public class AddressEntity {
     @NotNull
     private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
+
     @NotBlank(message = "Phone is required")
     @Size(max = 100)
     private String phone;

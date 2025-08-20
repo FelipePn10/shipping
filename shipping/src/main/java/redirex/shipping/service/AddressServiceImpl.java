@@ -2,12 +2,12 @@ package redirex.shipping.service;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import redirex.shipping.dto.AddressDTO;
+import redirex.shipping.dto.request.AddressRequest;
 import redirex.shipping.dto.response.AddressResponse;
 import redirex.shipping.entity.AddressEntity;
 import redirex.shipping.entity.UserEntity;
@@ -20,10 +20,8 @@ import redirex.shipping.repositories.UserRepository;
 import java.time.LocalDateTime;
 
 @Service
-
 public class AddressServiceImpl implements AddressService {
     private static final Logger logger = LoggerFactory.getLogger(AddressServiceImpl.class);
-
     private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
     private final UserRepository userRepository;
@@ -36,77 +34,68 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    public AddressResponse createdAddress(@Valid AddressDTO dto) {
-        logger.info("Create address request: {}", dto.getZipcode());
+    public AddressResponse createdAddress(@Valid AddressRequest dto) {
+        logger.info("Creating address for zipcode: {}", dto.getZipcode());
         validateAddressDoesNotExist(dto.getZipcode());
 
-        if (dto.getUserId() == null) {
-            logger.error("User ID is null in AddressDTO");
-            throw new IllegalArgumentException("User ID cannot be null");
-        }
+        UserEntity user = getAuthenticatedUser();
+        AddressEntity address = addressMapper.toEntity(dto);
+        address.setUser(user);
+        address.setCreatedAt(LocalDateTime.now());
 
-        try {
-            UserEntity user = userRepository.findById(dto.getUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("User with ID " + dto.getUserId() + " not found"));
-            AddressEntity address = addressMapper.toEntity(dto);
-            address.setCreatedAt(LocalDateTime.now());
-            address.setUser(user);
-            addressRepository.save(address);
-
-            logger.info("Address successfully created");
-            return addressMapper.toResponse(address);
-        } catch (Exception e) {
-            logger.error("Address creation failed: {}", e.getMessage());
-            throw new AddressCreatedException("Failed to create address", e);
-        }
+        AddressEntity saved = addressRepository.save(address);
+        logger.info("Address created successfully: {}", saved.getId());
+        return addressMapper.toResponse(saved);
     }
 
     @Override
     @Transactional
-    public AddressResponse updateAddress(String zipcode, @Valid AddressDTO dto) {
-        logger.info("Update address request: {}", zipcode);
+    public AddressResponse updateAddress(String zipcode, @Valid AddressRequest dto) {
+        logger.info("Updating address for zipcode: {}", zipcode);
         AddressEntity address = addressRepository.findByZipcode(zipcode)
-                .orElseThrow(() -> new ResourceNotFoundException("Address with zipcode " + zipcode + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado"));
 
-        // Verifica se o novo CEP é diferente e já existe
+        UserEntity user = getAuthenticatedUser();
+        if (!address.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Usuário não tem permissão para alterar este endereço");
+        }
+
         if (!dto.getZipcode().equals(zipcode)) {
             validateAddressDoesNotExist(dto.getZipcode());
         }
 
-        address.setRecipientName(dto.getRecipientName());
-        address.setCity(dto.getCity());
-        address.setState(dto.getState());
-        address.setStreet(dto.getStreet());
-        address.setCountry(dto.getCountry());
-        address.setPhone(dto.getPhone());
-        address.setResidenceType(dto.getResidenceType());
-        address.setComplement(dto.getComplement());
+        addressMapper.updateEntityFromDto(dto, address);
+        address.setUpdatedAt(LocalDateTime.now());
 
-        // Atualiza ZIPCODE separadamente com tratamento de concorrência
-        if (!dto.getZipcode().equals(zipcode)) {
-            address.setZipcode(dto.getZipcode());
-        }
-
-        try {
-            AddressEntity updatedAddress = addressRepository.save(address);
-            logger.info("Address successfully updated");
-            return addressMapper.toResponse(updatedAddress);
-        } catch (DataIntegrityViolationException e) {
-            throw new AddressCreatedException("Zipcode " + dto.getZipcode() + " already exists");
-        }
+        AddressEntity updated = addressRepository.save(address);
+        logger.info("Address updated successfully: {}", updated.getId());
+        return addressMapper.toResponse(updated);
     }
 
     @Override
-    public AddressResponse deleteAddress(String zipcode) {
+    @Transactional
+    public void deleteAddress(String zipcode) {
         AddressEntity address = addressRepository.findByZipcode(zipcode)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado"));
+
+        UserEntity user = getAuthenticatedUser();
+        if (!address.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Usuário não tem permissão para excluir este endereço");
+        }
+
         addressRepository.delete(address);
-        return addressMapper.toResponse(address);
+        logger.info("Address deleted successfully: {}", zipcode);
+    }
+
+    private UserEntity getAuthenticatedUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
     }
 
     private void validateAddressDoesNotExist(String zipcode) {
         if (addressRepository.findByZipcode(zipcode).isPresent()) {
-            throw new AddressCreatedException("Zipcode " + zipcode + " already exists");
+            throw new AddressCreatedException("CEP " + zipcode + " já existe");
         }
     }
 }

@@ -1,0 +1,18 @@
+### POST request create address
+POST http://localhost:8081/api/user/address
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiIxMDExOTY1NS1lM2YwLTQ0NzQtYmQzMi0zYzYxZDZiNTEyMjIiLCJzdWIiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwiaWF0IjoxNzU1NzE3MTM3LCJleHAiOjE4NDIxMTcxMzd9.hwvoc0ndbvzG8UFz0dO9e39Si7jgrw2jiZfVntJzHmjXfJt0DJHCP_jI73qzPU3wVxJiCETtRkKQWtr1jeSvSA
+
+{
+  "userId": "10119655-e3f0-4474-bd32-3c61d6b51222",
+  "recipientName": "felipe panosso",
+  "country": "Brasil",
+  "state": "Parana",
+  "city": "Maringa",
+  "street": "Avenida Lucio de Held",
+  "zipcode": "87033230",
+  "phone": "44991805405",
+  "residenceType": "COMMERCIAL",
+  "complement": ""
+}
+###
