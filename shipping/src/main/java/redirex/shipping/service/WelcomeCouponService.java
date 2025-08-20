@@ -21,7 +21,7 @@ public class WelcomeCouponService {
     }
 
     public CouponEntity createWelcomeCoupon() {
-        String couponCode = couponCodeGenerator.generateCode(12);
+        String couponCode = couponCodeGenerator.generateCode(6);
         CouponEntity coupon = CouponEntity.builder()
                 .code(couponCode)
                 .isActive(true)

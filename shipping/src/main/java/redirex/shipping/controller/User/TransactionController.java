@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.request.DepositRequestDto;
 import redirex.shipping.dto.response.OrderItemResponse;
@@ -18,14 +19,19 @@ import redirex.shipping.service.UserWalletServiceImpl;
 import java.util.UUID;
 
 @RestController
-@RequiredArgsConstructor
 public class TransactionController {
     private static final Logger logger = LoggerFactory.getLogger(TransactionController.class);
 
     private final UserWalletServiceImpl userWalletService;
     private final OrderItemService orderItemService;
 
+    public TransactionController(UserWalletServiceImpl userWalletService, OrderItemService orderItemService) {
+        this.userWalletService = userWalletService;
+        this.orderItemService = orderItemService;
+    }
+
     @PostMapping("private/v1/api/users/{userId}/deposit")
+    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<WalletTransactionResponse> depositToWallet(
             @PathVariable UUID userId,
             @Valid @RequestBody DepositRequestDto depositRequestDto) {
@@ -58,6 +64,7 @@ public class TransactionController {
     }
 
     @PostMapping("private/v1/api/users/{userId}/orders/{orderId}/payment")
+    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<OrderItemResponse> processPayment(
             @PathVariable UUID userId,
             @PathVariable UUID orderId) {

@@ -11,7 +11,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import redirex.shipping.service.email.template.EmailTemplateService;
-import redirex.shipping.util.email.UserEmailDetailsUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

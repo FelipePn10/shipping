@@ -1,4 +1,4 @@
-package redirex.shipping.util.email;
+package redirex.shipping.service.email;
 
 public class UserEmailDetailsUtil {
     private String recipient;

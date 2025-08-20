@@ -1,7 +1,5 @@
 package redirex.shipping.service.email;
 
-import redirex.shipping.util.email.EnterpriseEmailDetailsUtil;
-
 public interface EnterpriseEmailService {
 
     /**

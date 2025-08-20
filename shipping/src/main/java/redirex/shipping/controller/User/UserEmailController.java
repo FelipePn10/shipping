@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.service.email.UserEmailServiceImpl;
-import redirex.shipping.util.email.UserEmailDetailsUtil;
+import redirex.shipping.service.email.UserEmailDetailsUtil;
 
 @RestController
 @RequestMapping("/email")

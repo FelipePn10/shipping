@@ -1,8 +1,7 @@
 package redirex.shipping.controller.User;
 
-
-import com.stripe.exception.StripeException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.request.CreateSubscriptionRequest;
 import redirex.shipping.dto.response.SubscriptionResponse;
@@ -12,6 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/user/subscriptions")
+@PreAuthorize("hasAuthority('USER')")
 public class SubscriptionController {
     private final SubscriptionService subscriptionService;
     public SubscriptionController(SubscriptionService subscriptionService) {

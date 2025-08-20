@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,7 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/private/v1/api/users")
+@RequestMapping("/private/api/v1/users")
 @RequiredArgsConstructor
 public class OrderItemController {
     private static final Logger logger = LoggerFactory.getLogger(OrderItemController.class);
@@ -29,6 +30,7 @@ public class OrderItemController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/{userId}/create/order")
+    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<OrderItemResponse> createOrder(
             @PathVariable UUID userId,
             @Valid @RequestBody CreateOrderItemRequest request) {

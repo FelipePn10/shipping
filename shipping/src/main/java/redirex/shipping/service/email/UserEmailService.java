@@ -1,7 +1,6 @@
 package redirex.shipping.service.email;
 
 import org.springframework.mail.MailException;
-import redirex.shipping.util.email.UserEmailDetailsUtil;
 
 
 public interface UserEmailService {
