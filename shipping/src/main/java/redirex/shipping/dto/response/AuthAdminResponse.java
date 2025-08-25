@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class AuthAdminResponse {
+    private String fullname;
     private String email;
     private String token;
-    private String fullname;
 }
