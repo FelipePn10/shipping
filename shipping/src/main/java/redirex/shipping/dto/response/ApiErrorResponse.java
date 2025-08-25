@@ -1,4 +1,5 @@
 package redirex.shipping.dto.response;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -6,8 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class AuthAdminResponse {
-    private String email;
-    private String token;
-    private String fullname;
+public class ApiErrorResponse {
+    private String message;
+    private int status;
 }

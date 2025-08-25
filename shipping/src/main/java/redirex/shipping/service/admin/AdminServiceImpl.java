@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redirex.shipping.dto.RegisterAdminDTO;
-import redirex.shipping.dto.response.AdminResponse;
+import redirex.shipping.dto.request.RegisterAdminRequest;
+import redirex.shipping.dto.request.UpdateAdminRequest;
+import redirex.shipping.dto.response.RegisterAdminResponse;
+import redirex.shipping.dto.response.UpdateAdminResponse;
 import redirex.shipping.entity.AdminEntity;
 import redirex.shipping.exception.AdminRegistrationException;
 import redirex.shipping.exception.ResourceNotFoundException;
@@ -30,48 +32,57 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public AdminResponse createAdmin(@Valid RegisterAdminDTO dto) {
-        logger.info("Registrando admin com email: {}", dto.getEmail());
-        validateAdminNotExists(dto.getEmail());
+    public RegisterAdminResponse createAdmin(@Valid RegisterAdminRequest registerAdminRequestDto) {
+        logger.info("Registering admin with email: {}", registerAdminRequestDto.getEmail());
+        validateAdminNotExists(registerAdminRequestDto.getEmail());
 
         try {
-            AdminEntity admin = AdminEntity.builder()
-                    .fullname(dto.getFullname())
-                    .email(dto.getEmail())
-                    .password(passwordEncoder.encode(dto.getPassword()))
-                    .cpf(dto.getCpf())
+            AdminEntity adminEntity = AdminEntity.builder()
+                    .fullname(registerAdminRequestDto.getFullname())
+                    .email(registerAdminRequestDto.getEmail())
+                    .password(passwordEncoder.encode(registerAdminRequestDto.getPassword()))
+                    .cpf(registerAdminRequestDto.getCpf())
                     .role("ROLE_ADMIN")
                     .build();
-            logger.info("Criando admin com email: {}", dto.getEmail());
+            logger.info("Creating admin with email: {}", registerAdminRequestDto.getEmail());
 
-            adminRepository.save(admin);
-            return adminMapper.toResponse(admin);
+            adminRepository.save(adminEntity);
+            return adminMapper.toRegisterResponse(adminEntity);
 
         } catch (Exception e) {
-            logger.error("Erro ao criar admin: {}", e.getMessage());
+            logger.error("Error creating admin: {}", e.getMessage());
             throw new AdminRegistrationException(e.getMessage());
         }
     }
 
     @Override
     @Transactional
-    public AdminResponse updateAdmin(UUID id, @Valid RegisterAdminDTO dto) {
-        logger.info("Atualizando admin com ID: {}", id);
-        AdminEntity admin = adminRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin com ID " + id + " não encontrado"));
+    public UpdateAdminResponse updateAdmin(UUID id, @Valid UpdateAdminRequest updateAdminRequestDto) {
+        logger.info("Updating adminEntity with ID: {}", id);
+        AdminEntity adminEntity = adminRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin with id " + id + " not found"));
 
-        if (!dto.getEmail().equals(admin.getEmail())) {
-            validateEmailNotExists(dto.getEmail());
+        if (!updateAdminRequestDto.getEmail().equals(adminEntity.getEmail())) {
+            validateEmailNotExists(updateAdminRequestDto.getEmail());
         }
 
-        admin.setFullname(dto.getFullname());
-        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-            admin.setPassword(passwordEncoder.encode(dto.getPassword()));
+        adminEntity.setFullname(updateAdminRequestDto.getFullname());
+
+        if (updateAdminRequestDto.getEmail() != null &&
+                !updateAdminRequestDto.getEmail().isBlank() &&
+                !updateAdminRequestDto.getEmail().equals(adminEntity.getEmail())) {
+            validateEmailNotExists(updateAdminRequestDto.getEmail());
+            adminEntity.setEmail(updateAdminRequestDto.getEmail());
         }
 
-        admin = adminRepository.save(admin);
-        logger.info("Admin atualizado com email: {}", admin.getEmail());
-        return adminMapper.toResponse(admin);
+        if (updateAdminRequestDto.getPassword() != null &&
+                !updateAdminRequestDto.getPassword().isBlank()) {
+            adminEntity.setPassword(passwordEncoder.encode(updateAdminRequestDto.getPassword()));
+        }
+
+        adminEntity = adminRepository.save(adminEntity);
+        logger.info("Admin updated with email: {}", adminEntity.getEmail());
+        return adminMapper.toUpdateResponse(adminEntity);
     }
 
     private void validateAdminNotExists(String email) {
@@ -81,17 +92,17 @@ public class AdminServiceImpl implements AdminService {
     private void validateEmailNotExists(String email) {
         Optional<AdminEntity> existingAdminByEmail = adminRepository.findByEmail(email);
         if (existingAdminByEmail.isPresent()) {
-            logger.warn("Tentativa de usar email duplicado: {}", email);
-            throw new UserRegistrationException("Email já registrado");
+            logger.warn("Attempt to use duplicate email: {}", email);
+            throw new UserRegistrationException("Email already registered");
         }
     }
 
     @Override
     @Transactional(readOnly = true)
     public UUID findAdminIdByEmail(String email) {
-        logger.info("Buscando ID do admin com email: {}", email);
+        logger.info("Fetching Admin ID with Email: {}", email);
         return adminRepository.findByEmail(email)
                 .map(AdminEntity::getId)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin com email " + email + " não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Admin with email " + email + " not found"));
     }
 }

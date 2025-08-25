@@ -1,4 +1,4 @@
-package redirex.shipping.dto;
+package redirex.shipping.dto.request;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
@@ -7,14 +7,10 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class RegisterAdminDTO {
+public class RegisterAdminRequest {
 
     @NotBlank(message = "Full name is required")
     @Size(max = 255, message = "Full name must not exceed 255 characters")
@@ -37,8 +33,4 @@ public class RegisterAdminDTO {
     @Size(max = 50, message = "Role must not exceed 50 characters")
     @Column(nullable = false)
     private String role;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
 }

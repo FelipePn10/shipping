@@ -1,14 +1,16 @@
 package redirex.shipping.service.admin;
 
 import jakarta.validation.Valid;
-import redirex.shipping.dto.RegisterAdminDTO;
-import redirex.shipping.dto.response.AdminResponse;
+import redirex.shipping.dto.request.RegisterAdminRequest;
+import redirex.shipping.dto.request.UpdateAdminRequest;
+import redirex.shipping.dto.response.RegisterAdminResponse;
+import redirex.shipping.dto.response.UpdateAdminResponse;
 
 import java.util.UUID;
 
 public interface AdminService {
-    AdminResponse createAdmin(@Valid RegisterAdminDTO dto);
-    AdminResponse updateAdmin(UUID id, @Valid RegisterAdminDTO dto);
+    RegisterAdminResponse createAdmin(@Valid RegisterAdminRequest dto);
+    UpdateAdminResponse updateAdmin(UUID id, @Valid UpdateAdminRequest dto);
 
     UUID findAdminIdByEmail(String email);
 }
