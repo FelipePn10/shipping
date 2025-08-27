@@ -30,7 +30,7 @@ public class OrderItemController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/{userId}/create/order")
-    @PreAuthorize("hasAuthority('USER')")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<OrderItemResponse> createOrder(
             @PathVariable UUID userId,
             @Valid @RequestBody CreateOrderItemRequest request) {
