@@ -1,4 +1,4 @@
-package redirex.shipping.dto;
+package redirex.shipping.dto.request;
 
 import lombok.Data;
 import redirex.shipping.enums.CouponTypeEnum;
@@ -6,7 +6,6 @@ import redirex.shipping.enums.CouponTypeEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 public class CouponRequest {

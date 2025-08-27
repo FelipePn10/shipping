@@ -1,6 +1,7 @@
 package redirex.shipping.dto;
 
 import lombok.Data;
+import redirex.shipping.dto.request.CouponRequest;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
