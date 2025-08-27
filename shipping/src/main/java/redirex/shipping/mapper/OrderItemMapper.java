@@ -4,7 +4,8 @@ package redirex.shipping.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import redirex.shipping.dto.OrderItemDTO;
+import redirex.shipping.dto.request.CreateOrderItemRequest;
+import redirex.shipping.dto.response.OrderItemResponse;
 import redirex.shipping.entity.OrderItemEntity;
 
 @Mapper(
@@ -12,17 +13,13 @@ import redirex.shipping.entity.OrderItemEntity;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
 public interface OrderItemMapper {
-    @Mapping(source = "user.id", target = "user")
-    @Mapping(source = "category.name", target = "category")
-    @Mapping(source = "warehouse.id", target = "warehouse")
-    @Mapping(source = "shipment.id", target = "shipment")
-    OrderItemDTO toDTO(OrderItemEntity entity);
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(target = "category", ignore = true)
+    @Mapping(source = "warehouse.id", target = "warehouseId")
+    CreateOrderItemRequest toDTO(OrderItemEntity entity);
 
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "warehouse", ignore = true)
-    @Mapping(target = "shipment", ignore = true)
-    @Mapping(target = "adminAssigned", ignore = true)
-    @Mapping(target = "photos", ignore = true)
-    @Mapping(source = "category", target = "category.name")
-    OrderItemEntity toEntity(OrderItemDTO dto);
+    @Mapping(source = "category", target = "category")
+    OrderItemEntity toEntity(OrderItemResponse dto);
 }
