@@ -10,9 +10,9 @@
 //import org.springframework.http.ResponseEntity;
 //import org.springframework.security.crypto.password.PasswordEncoder;
 //import org.springframework.web.bind.annotation.*;
-//import redirex.shipping.dto.ForgotPasswordDTO;
-//import redirex.shipping.dto.RegisterEnterpriseDTO;
-//import redirex.shipping.dto.ResetPasswordDTO;
+//import redirex.shipping.dto.request.ForgotPasswordRequest;
+//import redirex.shipping.dto.request.RegisterEnterpriseRequest;
+//import redirex.shipping.dto.request.ResetPasswordRequest;
 //import redirex.shipping.entity.EnterpriseEntity;
 //import redirex.shipping.repositories.EnterpriseRepository;
 //import redirex.shipping.service.EnterprisePasswordResetService;
@@ -49,7 +49,7 @@
 //    }
 //
 //    @PostMapping("/register")
-//    public ResponseEntity<?> registerEnterprise(@Valid @RequestBody RegisterEnterpriseDTO registerEnterpriseDTO) {
+//    public ResponseEntity<?> registerEnterprise(@Valid @RequestBody RegisterEnterpriseRequest registerEnterpriseDTO) {
 //        try {
 //            logger.info("Recebida requisição para criar empresa: {}", registerEnterpriseDTO.getEmail());
 //            EnterpriseEntity newEnterprise = enterpriseService.registerNewEnterprise(registerEnterpriseDTO);
@@ -65,7 +65,7 @@
 //    }
 //
 //    @PostMapping("/forgot-password")
-//    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO) {
+//    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordDTO) {
 //        logger.info("Password reset request for email: {}", forgotPasswordDTO.getEmail());
 //        Optional<EnterpriseEntity> enterpriseOptional = enterpriseRepository.findByEmail(forgotPasswordDTO.getEmail());
 //        if (enterpriseOptional.isEmpty()) {
@@ -81,7 +81,7 @@
 //    }
 //
 //    @PostMapping("/reset-password")
-//    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
+//    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordDTO) {
 //        logger.info("Password reset attemp for email: {}", resetPasswordDTO.getEmail());
 //        Optional<EnterpriseEntity> enterpriseOptional = enterpriseRepository.findByEmail(resetPasswordDTO.getEmail());
 //        if (enterpriseOptional.isEmpty()) {

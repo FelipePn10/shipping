@@ -1,6 +1,7 @@
 package redirex.shipping.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import redirex.shipping.enums.CurrencyEnum;
 
 
@@ -8,8 +9,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
-public class UserWalletDTO {
+@Getter
+@Setter
+public class UserWalletRequest {
     private UUID id;
     private UUID userId;
     private UUID walletId;

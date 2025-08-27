@@ -1,4 +1,4 @@
-package redirex.shipping.dto;
+package redirex.shipping.dto.response;
 
 import lombok.Data;
 import redirex.shipping.dto.request.CouponRequest;

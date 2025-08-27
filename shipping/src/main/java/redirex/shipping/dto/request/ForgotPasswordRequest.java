@@ -1,9 +1,9 @@
-package redirex.shipping.dto;
+package redirex.shipping.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public class ForgotPasswordDTO {
+public class ForgotPasswordRequest {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;

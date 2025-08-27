@@ -11,9 +11,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.response.UserResponse;
-import redirex.shipping.dto.ForgotPasswordDTO;
-import redirex.shipping.dto.RegisterUserDTO;
-import redirex.shipping.dto.ResetPasswordDTO;
+import redirex.shipping.dto.request.ForgotPasswordRequest;
+import redirex.shipping.dto.request.RegisterUserRequest;
+import redirex.shipping.dto.request.ResetPasswordRequest;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.exception.*;
 import redirex.shipping.security.JwtUtil;
@@ -39,10 +39,10 @@ public class UserController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/public/auth/v1/user/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
         try {
-            logger.info("Received request to register user: {}", registerUserDTO.getEmail());
-            UserResponse userResponse = userService.registerUser(registerUserDTO);
+            logger.info("Received request to register user: {}", registerUserRequest.getEmail());
+            UserResponse userResponse = userService.registerUser(registerUserRequest);
             logger.info("User registered successfully: {}", userResponse.getEmail());
             return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
         } catch (UserRegistrationException e) {
@@ -55,11 +55,11 @@ public class UserController {
     }
 
     @PostMapping("/public/user/forgot-password")
-    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordDTO forgotPasswordDTO) {
-        logger.info("Password reset request for email: {}", forgotPasswordDTO.getEmail());
-        Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(forgotPasswordDTO.getEmail());
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        logger.info("Password reset request for email: {}", forgotPasswordRequest.getEmail());
+        Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(forgotPasswordRequest.getEmail());
         if (userOptional.isEmpty()) {
-            logger.warn("No user found with email: {}", forgotPasswordDTO.getEmail());
+            logger.warn("No user found with email: {}", forgotPasswordRequest.getEmail());
             return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
         }
 
@@ -70,11 +70,11 @@ public class UserController {
     }
 
     @PostMapping("/public/user/reset-password")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
-        logger.info("Password reset attempt for email: {}", resetPasswordDTO.getEmail());
-        Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(resetPasswordDTO.getEmail());
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        logger.info("Password reset attempt for email: {}", resetPasswordRequest.getEmail());
+        Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(resetPasswordRequest.getEmail());
         if (userOptional.isEmpty()) {
-            logger.warn("No user found with email: {}", resetPasswordDTO.getEmail());
+            logger.warn("No user found with email: {}", resetPasswordRequest.getEmail());
             return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
         }
 
@@ -82,17 +82,17 @@ public class UserController {
         String resetToken = user.getPasswordResetToken();
         LocalDateTime tokenExpiry = user.getPasswordResetTokenExpiry();
 
-        if (resetToken == null || tokenExpiry == null || !resetToken.equals(resetPasswordDTO.getToken())) {
-            logger.warn("Invalid or missing reset token for email: {}", resetPasswordDTO.getEmail());
+        if (resetToken == null || tokenExpiry == null || !resetToken.equals(resetPasswordRequest.getToken())) {
+            logger.warn("Invalid or missing reset token for email: {}", resetPasswordRequest.getEmail());
             return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid reset token");
         }
 
         if (tokenExpiry.isBefore(LocalDateTime.now())) {
-            logger.warn("Expired token for email: {}", resetPasswordDTO.getEmail());
+            logger.warn("Expired token for email: {}", resetPasswordRequest.getEmail());
             return buildErrorResponse(HttpStatus.BAD_REQUEST, "Reset token expired");
         }
 
-        user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
         user.setPasswordResetToken(null);
         user.setPasswordResetTokenExpiry(null);
         passwordResetService.saveUser(user);
@@ -118,11 +118,11 @@ public class UserController {
 
     @PutMapping("/api/user/{id}/profile")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> updateUserProfile(@PathVariable UUID id, @Valid @RequestBody RegisterUserDTO registerUserDTO) {
+    public ResponseEntity<?> updateUserProfile(@PathVariable UUID id, @Valid @RequestBody RegisterUserRequest registerUserRequest) {
         try {
             validateUserAccess(id);
             logger.info("Received request to update profile for user ID: {}", id);
-            UserResponse userResponse = userService.updateUserProfile(id, registerUserDTO);
+            UserResponse userResponse = userService.updateUserProfile(id, registerUserRequest);
             return ResponseEntity.ok(userResponse);
         } catch (UnauthorizedAccessException e) {
             logger.error("Unauthorized access attempt for user ID {}: {}", id, e.getMessage());

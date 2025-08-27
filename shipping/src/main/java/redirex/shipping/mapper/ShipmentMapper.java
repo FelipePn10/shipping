@@ -3,7 +3,7 @@ package redirex.shipping.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import redirex.shipping.dto.ShipmentDTO;
+import redirex.shipping.dto.request.ShipmentRequest;
 import redirex.shipping.entity.OrderItemEntity;
 import redirex.shipping.entity.ShipmentEntity;
 
@@ -17,12 +17,12 @@ public interface ShipmentMapper {
     @Mapping(source = "user.wallet.walletId", target = "userId")
     @Mapping(target = "orderItemIds", source = "orderItems", qualifiedByName = "mapOrderItemIds")
     @Mapping(source = "appliedShippingCoupon.coupon.id", target = "appliedShippingCouponId")
-    ShipmentDTO toDTO(ShipmentEntity entity);
+    ShipmentRequest toDTO(ShipmentEntity entity);
 
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "orderItems", ignore = true)
     @Mapping(target = "appliedShippingCoupon", ignore = true)
-    ShipmentEntity toEntity(ShipmentDTO dto);
+    ShipmentEntity toEntity(ShipmentRequest dto);
 
     @Named("mapOrderItemIds")
     default List<UUID> mapOrderItemIds(Set<OrderItemEntity> orderItems) {

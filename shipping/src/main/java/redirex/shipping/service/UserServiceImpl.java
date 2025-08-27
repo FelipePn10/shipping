@@ -7,7 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.dto.response.UserResponse;
-import redirex.shipping.dto.RegisterUserDTO;
+import redirex.shipping.dto.request.RegisterUserRequest;
 import redirex.shipping.entity.CouponEntity;
 import redirex.shipping.entity.UserCouponEntity;
 import redirex.shipping.entity.UserEntity;
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse registerUser(@Valid RegisterUserDTO dto) {
+    public UserResponse registerUser(@Valid RegisterUserRequest dto) {
         logger.info("Registering user with email: {}", dto.getEmail());
         validateUserNotExists(dto.getEmail(), dto.getCpf());
 
@@ -116,7 +116,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateUserProfile(UUID id, @Valid RegisterUserDTO dto) {
+    public UserResponse updateUserProfile(UUID id, @Valid RegisterUserRequest dto) {
         logger.info("Updating user profile for ID: {}", id);
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));

@@ -1,9 +1,9 @@
-package redirex.shipping.dto;
+package redirex.shipping.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class ResetPasswordDTO {
+public class ResetPasswordRequest {
     @NotBlank(message = "Email is required")
     private String email;
 

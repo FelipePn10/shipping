@@ -1,4 +1,4 @@
-package redirex.shipping.dto;
+package redirex.shipping.dto.request;
 
 import lombok.Data;
 import redirex.shipping.enums.OrderItemStatusEnum;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class ShipmentDTO {
+public class ShipmentRequest {
     private UUID id;
     private UUID userId;
     private List<UUID> orderItemIds;

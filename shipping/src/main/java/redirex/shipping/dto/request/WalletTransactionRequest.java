@@ -1,4 +1,4 @@
-package redirex.shipping.dto;
+package redirex.shipping.dto.request;
 
 import lombok.Data;
 import redirex.shipping.enums.CurrencyEnum;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class WalletTransactionDTO {
+public class WalletTransactionRequest {
     private UUID id;
     private UUID userWalletId;
     private WalletTransactionTypeEnum type;

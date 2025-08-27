@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redirex.shipping.dto.response.WarehouseResponse;
 import redirex.shipping.entity.OrderItemEntity;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.entity.WarehouseEntity;
@@ -55,7 +54,7 @@ public class WarehouseService {
     }
 
     @Transactional(readOnly = true)
-    public WarehouseResponse findWarehouseById(UUID id) {
+    public UserCouponResponse.WarehouseResponse findWarehouseById(UUID id) {
         logger.info("Finding warehouse by ID: {}", id);
         WarehouseEntity warehouse = warehouseRepository.findByIdWithItems(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found"));
@@ -63,7 +62,7 @@ public class WarehouseService {
     }
 
     @Transactional(readOnly = true)
-    public WarehouseResponse findByUserId(UUID userId) {
+    public UserCouponResponse.WarehouseResponse findByUserId(UUID userId) {
         WarehouseEntity warehouse = warehouseRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found for user"));
 

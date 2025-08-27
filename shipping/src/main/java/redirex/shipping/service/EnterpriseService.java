@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redirex.shipping.dto.RegisterEnterpriseDTO;
+import redirex.shipping.dto.request.RegisterEnterpriseRequest;
 import redirex.shipping.entity.EnterpriseEntity;
 import redirex.shipping.repositories.EnterpriseRepository;
 import java.util.List;
@@ -32,7 +32,7 @@ public class EnterpriseService {
     }
 
     @Transactional
-    public EnterpriseEntity register(@Valid RegisterEnterpriseDTO dto) {
+    public EnterpriseEntity register(@Valid RegisterEnterpriseRequest dto) {
         validateEnterpriseNotExists(dto.getEmail(), dto.getCnpj());
 
         try {
@@ -59,9 +59,9 @@ public class EnterpriseService {
     }
 
     @Transactional
-    public EnterpriseEntity registerNewEnterprise(@Valid RegisterEnterpriseDTO registerEnterpriseDTO) {
+    public EnterpriseEntity registerNewEnterprise(@Valid RegisterEnterpriseRequest registerEnterpriseRequest) {
         EnterpriseEntity enterprise = new EnterpriseEntity();
-        enterprise.setPassword(passwordEncoder.encode(registerEnterpriseDTO.getPassword()));
+        enterprise.setPassword(passwordEncoder.encode(registerEnterpriseRequest.getPassword()));
         return enterpriseRepository.save(enterprise);
     }
 

@@ -1,4 +1,4 @@
-package redirex.shipping.dto;
+package redirex.shipping.dto.request;
 
 
 import jakarta.validation.constraints.Email;
@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RegisterUserDTO {
+public class RegisterUserRequest {
 
     @NotBlank(message = "Full name is required")
     @Size(max = 255, message = "Full name must not exceed 255 characters")
