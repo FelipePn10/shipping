@@ -1,17 +1,21 @@
 package redirex.shipping.dto.request;
 
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import redirex.shipping.enums.CurrencyEnum;
 
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 public class UserWalletRequest {
-
-    @NotNull
+    private UUID id;
     private UUID userId;
-
-    @NotNull
+    private UUID walletId;
     private CurrencyEnum currency;
+    private BigDecimal balance;
+    private LocalDateTime createdAt;
 }

@@ -2,7 +2,7 @@ package redirex.shipping.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import redirex.shipping.dto.UserWalletRequest;
+import redirex.shipping.dto.request.UserWalletRequest;
 import redirex.shipping.entity.UserWalletEntity;
 
 @Mapper(componentModel = "spring")
