@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class CouponDTO {
-    private UUID id;
+public class CouponRequest {
+//    private UUID id;
     private String code;
     private String description;
     private BigDecimal discountAmount;
