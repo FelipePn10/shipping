@@ -1,11 +1,13 @@
 package redirex.shipping.dto.response;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.OrderItemStatusEnum;
+import redirex.shipping.enums.ProductCategoryEnum;
+import redirex.shipping.enums.SizeEnum;
+import redirex.shipping.util.CpfMaskSerializer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,22 +18,20 @@ import java.util.UUID;
 @Builder
 public class OrderItemResponse {
     private UUID id;
-    private String description;
-    private Float size;
-    private Integer quantity;
-    private CurrencyEnum currency;
+    private UUID userId;
+    private UUID warehouseId;
+    @JsonSerialize(using = CpfMaskSerializer.class)
+    private String recipientCpf;
     private String productUrl;
+    private String productName;
+    private String description;
+    private SizeEnum size;
+    private ProductCategoryEnum category;
+    private Integer quantity;
     private BigDecimal productValue;
-    private CurrencyEnum originalCurrency;
-    private String originCountry;
-    private String categoryName;
-    private String recipientCpf; // Pode ser mascarado no serviço
-    private UUID addressId;
     private OrderItemStatusEnum status;
     private LocalDateTime createdAt;
-    private LocalDateTime paymentDeadline;
     private LocalDateTime paidProductAt;
-    private LocalDateTime arrivedAtWarehouseAt;
-    private boolean requestedConsolidation;
-    private UUID shipmentId;
+    private LocalDateTime deliveredAt;
+    private LocalDateTime paymentDeadline;
 }
