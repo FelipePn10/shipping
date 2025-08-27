@@ -24,6 +24,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <sonar.organization>felipepn10</sonar.organization>
+        <sonar.host.url>http://localhost:9400</sonar.host.url>
     </properties>
 
     <dependencies>
