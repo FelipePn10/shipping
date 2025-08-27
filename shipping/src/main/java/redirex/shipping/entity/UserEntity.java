@@ -8,10 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "users", indexes = {
@@ -149,5 +146,16 @@ public class UserEntity implements Serializable {
                 ", cpf='" + cpf + '\'' +
                 ", role='" + role + '\'' +
                 '}';
+    }
+
+    @OneToMany(mappedBy = "user")
+    private Collection<OrderItemEntity> orderItemEntity;
+
+    public Collection<OrderItemEntity> getOrderItemEntity() {
+        return orderItemEntity;
+    }
+
+    public void setOrderItemEntity(Collection<OrderItemEntity> orderItemEntity) {
+        this.orderItemEntity = orderItemEntity;
     }
 }

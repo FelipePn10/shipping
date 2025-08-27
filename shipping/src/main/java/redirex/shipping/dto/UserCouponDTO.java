@@ -9,7 +9,7 @@ import java.util.UUID;
 public class UserCouponDTO {
     private UUID id;
     private UUID userId;
-    private CouponDTO coupon;
+    private CouponRequest coupon;
     private Boolean isUsed;
     private LocalDateTime usedAt;
     private LocalDateTime assignedAt;
