@@ -18,7 +18,6 @@ import redirex.shipping.exception.OrderCreationFailedException;
 import redirex.shipping.exception.PaymentProcessingException;
 import redirex.shipping.exception.ResourceNotFoundException;
 import redirex.shipping.repositories.OrderItemRepository;
-import redirex.shipping.repositories.ProductCategoryRepository;
 import redirex.shipping.repositories.UserRepository;
 import redirex.shipping.repositories.WarehouseRepository;
 import redirex.shipping.service.admin.OrderDistributionService;
@@ -28,23 +27,28 @@ import java.util.UUID;
 
 @Service
 public class OrderItemServiceImpl implements OrderItemService {
+
     private static final Logger logger = LoggerFactory.getLogger(OrderItemServiceImpl.class);
 
     private final OrderItemRepository orderItemRepository;
     private final WarehouseRepository warehouseRepository;
     private final UserRepository userRepository;
-    private final ProductCategoryRepository productCategoryRepository;
     private final WarehouseService warehouseService;
     private final UserWalletService userWalletService;
     private final OrderDistributionService orderDistributionService;
     private final WebScrapingService webScrapingService;
     private static final int MAX_RETRY_ATTEMPTS = 3;
 
-    public OrderItemServiceImpl(OrderItemRepository orderItemRepository, WarehouseRepository warehouseRepository, UserRepository userRepository, ProductCategoryRepository productCategoryRepository, WarehouseService warehouseService, UserWalletService userWalletService, OrderDistributionService orderDistributionService, WebScrapingService webScrapingService) {
+    public OrderItemServiceImpl(OrderItemRepository orderItemRepository,
+                                WarehouseRepository warehouseRepository,
+                                UserRepository userRepository,
+                                WarehouseService warehouseService,
+                                UserWalletService userWalletService,
+                                OrderDistributionService orderDistributionService,
+                                WebScrapingService webScrapingService) {
         this.orderItemRepository = orderItemRepository;
         this.warehouseRepository = warehouseRepository;
         this.userRepository = userRepository;
-        this.productCategoryRepository = productCategoryRepository;
         this.warehouseService = warehouseService;
         this.userWalletService = userWalletService;
         this.orderDistributionService = orderDistributionService;
@@ -55,33 +59,34 @@ public class OrderItemServiceImpl implements OrderItemService {
     @Transactional
     public OrderItemResponse createOrderItem(UUID userId, @Valid CreateOrderItemRequest request) {
         logger.info("Creating order for userId: {}, productUrl: {}", userId, request.getProductUrl());
-        BigDecimal productPrice;
 
-        // Buscar entidades dentro da transação
+        // Buscar entidades
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
         WarehouseEntity warehouse = warehouseRepository.findById(request.getWarehouseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with ID: " + request.getWarehouseId()));
 
-        ProductCategoryEntity category = productCategoryRepository.findById(request.getProductCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product category not found with ID: " + request.getProductCategoryId()));
-
-        // Capturar preço do produto via scraping
+        // preço
+        BigDecimal productPrice;
         if (request.isAutoFetchPrice()) {
             try {
+                logger.warn("Fetching product price for userId: {}", userId);
                 productPrice = webScrapingService.scrapeProductPrice(request.getProductUrl());
             } catch (Exception e) {
-                throw new OrderCreationFailedException("Falha ao obter preço automático: " + e.getMessage());
+                throw new OrderCreationFailedException("Failed to get automatic price: " + e.getMessage());
             }
         } else {
-            throw new IllegalArgumentException("Captura automática de preço é obrigatória");
+            if (request.getProductValue() == null) {
+                throw new IllegalArgumentException("Product price must be entered when autoFetchPrice = false");
+            }
+            productPrice = request.getProductValue();
         }
 
         productPrice = productPrice.setScale(2, java.math.RoundingMode.HALF_UP);
 
-        // Mapear request para entidade com o preço capturado
-        OrderItemEntity orderItem = mapRequestToEntity(request, user, category, warehouse, productPrice);
+        // Criar entidade
+        OrderItemEntity orderItem = mapRequestToEntity(request, user, warehouse, productPrice);
 
         try {
             orderItem = orderItemRepository.save(orderItem);
@@ -89,6 +94,16 @@ public class OrderItemServiceImpl implements OrderItemService {
         } catch (Exception ex) {
             logger.error("Failed to save order item: {}", ex.getMessage(), ex);
             throw new OrderCreationFailedException("Failed to save order item: " + ex.getMessage(), ex);
+        }
+
+        // pagamento do pedido
+        try {
+            logger.warn("Making payment for the order: {} automatically", userId);
+            processOrderPayment(orderItem.getId(), user.getId());
+        } catch (InsufficientBalanceException e) {
+            logger.warn("User {} did not have enough funds to pay for the order {}", userId, orderItem.getId());
+        } catch (PaymentProcessingException e) {
+            logger.warn("An error occurred while processing the payment. Please try again.");
         }
 
         return mapEntityToResponse(orderItem);
@@ -111,7 +126,6 @@ public class OrderItemServiceImpl implements OrderItemService {
         }
 
         try {
-            // Garantindo que a escala antes de passar para o serviço de débito
             BigDecimal paymentAmount = orderItem.getProductValue().setScale(2, java.math.RoundingMode.HALF_UP);
 
             processPaymentWithRetry(
@@ -121,6 +135,7 @@ public class OrderItemServiceImpl implements OrderItemService {
             );
 
             orderItem.setStatus(OrderItemStatusEnum.PAID);
+            orderItem.setPaidProductAt(java.time.LocalDateTime.now());
             AdminEntity assignedAdmin = orderDistributionService.assignToLeastBusyAdmin();
             orderItem.setAdminAssigned(assignedAdmin);
             warehouseService.addOrderItemToWarehouse(orderItem.getId(), orderItem.getWarehouse().getId());
@@ -131,7 +146,7 @@ public class OrderItemServiceImpl implements OrderItemService {
             handlePaymentFailure(orderItem, "Insufficient balance");
             throw ex;
         } catch (Exception ex) {
-            logger.error("An unexpected error occurred during payment processing for order {}: {}", orderItemId, ex.getMessage(), ex);
+            logger.error("Unexpected error during payment processing for order {}: {}", orderItemId, ex.getMessage(), ex);
             handlePaymentFailure(orderItem, "Payment processing failed");
             throw new PaymentProcessingException("Redirect to deposit screen", ex);
         }
@@ -147,18 +162,17 @@ public class OrderItemServiceImpl implements OrderItemService {
     )
     private void processPaymentWithRetry(UserEntity user, BigDecimal amount, UUID orderItemId)
             throws InsufficientBalanceException {
-
         try {
             userWalletService.debitFromWallet(
-                    user.getId(),                            // userId
-                    CurrencyEnum.CNY,                        // currency (moeda da carteira)
-                    amount,                                  // amount (valor a debitar)
-                    "ORDER_PAYMENT",                         // transactionType
-                    "Payment of the order: " + orderItemId,  // description
-                    orderItemId,                             // relatedOrderItemId
-                    null,                                    // shipmentId (corretamente nulo)
-                    amount,                                  // NOVO: chargedAmount (valor da cobrança)
-                    CurrencyEnum.CNY                         // NOVO: chargedCurrency (moeda da cobrança)
+                    user.getId(),
+                    CurrencyEnum.CNY,
+                    amount,
+                    "ORDER_PAYMENT",
+                    "Payment of the order: " + orderItemId,
+                    orderItemId,
+                    null,
+                    amount,
+                    CurrencyEnum.CNY
             );
         } catch (InsufficientBalanceException ex) {
             throw ex;
@@ -174,39 +188,43 @@ public class OrderItemServiceImpl implements OrderItemService {
         logger.error("Payment failed for order: {}. Reason: {}", orderItem.getId(), reason);
     }
 
-    private OrderItemEntity mapRequestToEntity(CreateOrderItemRequest request, UserEntity user,
-                                               ProductCategoryEntity category, WarehouseEntity warehouse,
+    private OrderItemEntity mapRequestToEntity(CreateOrderItemRequest request,
+                                               UserEntity user,
+                                               WarehouseEntity warehouse,
                                                BigDecimal productPrice) {
         return OrderItemEntity.builder()
                 .user(user)
                 .productUrl(request.getProductUrl())
+                .productName(request.getProductName())
                 .description(request.getDescription())
                 .size(request.getSize())
                 .quantity(request.getQuantity())
                 .productValue(productPrice)
-                .category(category)
+                .category(request.getCategory())
                 .recipientCpf(request.getRecipientCpf())
                 .status(OrderItemStatusEnum.CREATING_ORDER)
                 .warehouse(warehouse)
                 .build();
     }
 
+
     private OrderItemResponse mapEntityToResponse(OrderItemEntity entity) {
         return OrderItemResponse.builder()
                 .id(entity.getId())
+                .userId(entity.getUser().getId())
+                .warehouseId(entity.getWarehouse().getId())
                 .productUrl(entity.getProductUrl())
+                .productName(entity.getProductName())
                 .description(entity.getDescription())
                 .size(entity.getSize())
                 .quantity(entity.getQuantity())
                 .productValue(entity.getProductValue())
-                .categoryName(entity.getCategory().getName())
+                .category(entity.getCategory())
                 .recipientCpf(entity.getRecipientCpf())
                 .status(entity.getStatus())
                 .createdAt(entity.getCreatedAt())
-                .paymentDeadline(entity.getPaymentDeadline())
                 .paidProductAt(entity.getPaidProductAt())
-                .arrivedAtWarehouseAt(entity.getArrivedAtWarehouseAt())
-                .shipmentId(entity.getShipment() != null ? entity.getShipment().getId() : null)
+                .deliveredAt(entity.getDeliveredAt())
                 .build();
     }
 }
