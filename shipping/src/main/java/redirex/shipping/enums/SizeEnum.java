@@ -1,0 +1,28 @@
+package redirex.shipping.enums;
+
+public enum SizeEnum {
+    SIZE_CLOTHES_PP,
+    SIZE_CLOTHES_P,
+    SIZE_CLOTHES_M,
+    SIZE_CLOTHES_G,
+    SIZE_CLOTHES_GG,
+    SIZE_CLOTHES_GGG,
+    SIZE_CLOTHES_XS,
+    SIZE_CLOTHES_S,
+    SIZE_CLOTHES_L,
+    SIZE_CLOTHES_XG,
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++//
+    SIZE_SHOES_34,
+    SIZE_SHOES_35,
+    SIZE_SHOES_36,
+    SIZE_SHOES_37,
+    SIZE_SHOES_38,
+    SIZE_SHOES_39,
+    SIZE_SHOES_40,
+    SIZE_SHOES_41,
+    SIZE_SHOES_42,
+    SIZE_SHOES_43,
+    SIZE_SHOES_44,
+    SIZE_SHOES_45,
+    SIZE_SHOES_46
+}
