@@ -56,9 +56,8 @@ public class WebScrapingService {
      * @return Uma string representando o preço, pronta para ser convertida para BigDecimal.
      */
     private String extractPrice(String priceText) {
-        // Remove caracteres não numéricos, exceto ponto e vírgula, para lidar com formatos como ¥ ou outros símbolos
-        String cleanedText = priceText.replaceAll("[^0-9,.]", "");
-        Matcher matcher = PRICE_PATTERN.matcher(cleanedText);
+        // Aplicar o padrão diretamente no texto original para evitar concatenação de números em faixas de preço
+        Matcher matcher = PRICE_PATTERN.matcher(priceText);
 
         if (matcher.find()) {
             // Pega a primeira ocorrência que corresponde ao padrão
