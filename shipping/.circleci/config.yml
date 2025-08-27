@@ -1,0 +1,17 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: 'cimg/openjdk:17.0'
+    steps:
+      - checkout
+      - run:
+          name: Analyze on SonarQube Cloud
+          command: mvn verify sonar:sonar -Dsonar.projectKey=FelipePn10_shipping
+
+workflows:
+  main:
+    jobs:
+      - build:
+          context: SonarCloud
