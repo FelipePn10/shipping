@@ -1,5 +1,5 @@
 ### POST request create admin
-POST http://localhost:8081/public/admin/v1/create/admin
+POST http://localhost:8081/public/v1/create/admin
 Content-Type: application/json
 
 {

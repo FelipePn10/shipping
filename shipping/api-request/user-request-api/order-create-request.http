@@ -1,17 +1,18 @@
 ### POST request create order
-POST http://localhost:8081/private/v1/api/users/ec3c0370-185f-42ff-b4d7-24b278b7de57/create/order
+POST http://localhost:8081/private/api/v1/users/1298c68d-5ed3-4a5e-9e70-0ee4e4988a89/create/order
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiJlYzNjMDM3MC0xODVmLTQyZmYtYjRkNy0yNGIyNzhiN2RlNTciLCJzdWIiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwiaWF0IjoxNzU1NTQwNTM4LCJleHAiOjE4NDE5NDA1Mzh9.XQik0oQLWEo_TgG3LxQ0AI0ZVr4UNRoPlT8MeVDTxhQdtAy_-ZZcPEGQsAch5aKaVu5Dzpc2qCPTfefiEskFnA
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiIxMjk4YzY4ZC01ZWQzLTRhNWUtOWU3MC0wZWU0ZTQ5ODhhODkiLCJzdWIiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwiaWF0IjoxNzU2MzE1NjI3LCJleHAiOjE4NDI3MTU2Mjd9.OGjFcZ6qPiTv3Xaj2LAnHRHmv01sg3cXSNdAtppzRZr_39Nxg0nPGTCPf5rWQzwhdkRxtyFsdBxsbCiOcz8BTw
 
 {
-  "userId": "ec3c0370-185f-42ff-b4d7-24b278b7de57",
-  "warehouseId": "e8d36fea-9aa7-4bf3-82cc-8bc9f3fc9742",
+  "userId": "1298c68d-5ed3-4a5e-9e70-0ee4e4988a89",
+  "productName": "Dunk",
+  "warehouseId": "b1413d60-0761-4c4a-8446-de8a243902a0",
   "description": "DT Batch J2",
+  "category": "TENNIS_SHOES",
   "productUrl": "https://shop1802721248.v.weidian.com/item.html?itemID=7304860125&spider_token=c6b0",
   "quantity": 1,
-  "size": 43.5,
+  "size": "SIZE_SHOES_42",
   "recipientCpf": "13042799954",
-  "productCategoryId": "fd3a847f-d6cf-4cfc-8305-e9cb3ffa72d1",
   "autoFetchPrice": true
 }
 

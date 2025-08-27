@@ -1,7 +1,6 @@
 package redirex.shipping.controller.User;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -70,7 +69,7 @@ public class TransactionController {
             @PathVariable UUID orderId) {
 
             logger.info("Received request to process payment for order ID: {}", orderId);
-            OrderItemResponse response = orderItemService.processOrderPayment(orderId,userId);
+        OrderItemResponse response = orderItemService.processOrderPayment(orderId,userId);
             logger.info("Payment processed successfully for order ID: {}", orderId);
             return ResponseEntity.status(HttpStatus.OK).body(response);
 

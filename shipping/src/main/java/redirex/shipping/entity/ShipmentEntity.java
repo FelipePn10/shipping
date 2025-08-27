@@ -45,7 +45,6 @@ public class ShipmentEntity implements Serializable {
     @JoinColumn(name = "wallet_id", nullable = false)
     private UserWalletEntity wallet;
 
-    @OneToMany(mappedBy = "shipment")
     private Set<OrderItemEntity> orderItems = new HashSet<>();
 
     @NotBlank(message = "Shipping method is required")
@@ -107,12 +106,10 @@ public class ShipmentEntity implements Serializable {
 
     public void addOrderItem(OrderItemEntity orderItem) {
         orderItems.add(orderItem);
-        orderItem.setShipment(this);
     }
 
     public void removeOrderItem(OrderItemEntity orderItem) {
         orderItems.remove(orderItem);
-        orderItem.setShipment(null);
     }
 
     public void applyCoupon(UserCouponEntity userCoupon) {
