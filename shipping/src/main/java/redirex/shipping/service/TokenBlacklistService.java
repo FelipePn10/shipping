@@ -31,8 +31,7 @@ public class TokenBlacklistService {
 
     public boolean isTokenBlacklisted(String token) {
         try {
-            Boolean isBlacklisted = redisTemplate.hasKey(buildRedisKey(token));
-            return Boolean.TRUE.equals(isBlacklisted);
+            return redisTemplate.hasKey(buildRedisKey(token));
         } catch (Exception e) {
             logger.error("Error checking token blacklist status: {}", token, e);
             throw new RedisOperationException("Failed to check token blacklist status", e);

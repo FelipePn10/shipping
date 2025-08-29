@@ -10,7 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import redirex.shipping.dto.response.UserResponse;
+import redirex.shipping.dto.request.UpdateUserRequest;
+import redirex.shipping.dto.response.*;
 import redirex.shipping.dto.request.ForgotPasswordRequest;
 import redirex.shipping.dto.request.RegisterUserRequest;
 import redirex.shipping.dto.request.ResetPasswordRequest;
@@ -39,18 +40,24 @@ public class UserController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/public/auth/v1/user/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
+    public ResponseEntity<ApiResponse<UserRegisterResponse>> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
         try {
             logger.info("Received request to register user: {}", registerUserRequest.getEmail());
-            UserResponse userResponse = userService.registerUser(registerUserRequest);
-            logger.info("User registered successfully: {}", userResponse.getEmail());
-            return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
+            UserRegisterResponse userRegisterResponseResponse = userService.registerUser(registerUserRequest);
+            logger.info("User registered successfully: {}", userRegisterResponseResponse.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.<UserRegisterResponse>builder()
+                            .data(userRegisterResponseResponse)
+                            .timestamp(LocalDateTime.now())
+                            .build());
         } catch (UserRegistrationException e) {
             logger.error("Registration error: {}", e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            logger.error("Unexpected error during registration: {}", e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error registering user");
+            ApiErrorResponse error = ApiErrorResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Error registering user. Reason: " + e.getMessage())
+                    .build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.<UserRegisterResponse>builder().error(error).build());
         }
     }
 
@@ -108,7 +115,7 @@ public class UserController {
             UserResponse userResponse = userService.findUserById(id);
             return ResponseEntity.ok(userResponse);
         } catch (UnauthorizedAccessException e) {
-            logger.error("Unauthorized access attempt for user ID {}: {}", id, e.getMessage());
+            logger.error("Unauthorized access attempt for user {}: {}", id, e.getMessage());
             return buildErrorResponse(HttpStatus.FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             logger.error("Error retrieving user with ID {}: {}", id, e.getMessage(), e);
@@ -118,18 +125,24 @@ public class UserController {
 
     @PutMapping("/api/user/{id}/profile")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> updateUserProfile(@PathVariable UUID id, @Valid @RequestBody RegisterUserRequest registerUserRequest) {
+    public ResponseEntity<ApiResponse<UserUpdateResponse>> updateUserProfile(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         try {
             validateUserAccess(id);
             logger.info("Received request to update profile for user ID: {}", id);
-            UserResponse userResponse = userService.updateUserProfile(id, registerUserRequest);
-            return ResponseEntity.ok(userResponse);
-        } catch (UnauthorizedAccessException e) {
-            logger.error("Unauthorized access attempt for user ID {}: {}", id, e.getMessage());
-            return buildErrorResponse(HttpStatus.FORBIDDEN, e.getMessage());
+            UserUpdateResponse userUpdateResponse = userService.updateUserProfile(id, updateUserRequest);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.<UserUpdateResponse>builder()
+                            .data(userUpdateResponse)
+                            .timestamp(LocalDateTime.now())
+                            .build());
         } catch (Exception e) {
-            logger.error("Error updating user profile for ID {}: {}", id, e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Error updating user profile");
+            logger.error("Error updating user profile for user ID {}: {}", id, e.getMessage(), e);
+            ApiErrorResponse error = ApiErrorResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Error update user. Reason: " + e.getMessage())
+                    .build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.<UserUpdateResponse>builder().error(error).build());
         }
     }
 

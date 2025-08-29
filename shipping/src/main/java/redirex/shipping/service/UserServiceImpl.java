@@ -6,8 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import redirex.shipping.dto.request.UpdateUserRequest;
+import redirex.shipping.dto.response.UserRegisterResponse;
 import redirex.shipping.dto.response.UserResponse;
 import redirex.shipping.dto.request.RegisterUserRequest;
+import redirex.shipping.dto.response.UserUpdateResponse;
 import redirex.shipping.entity.CouponEntity;
 import redirex.shipping.entity.UserCouponEntity;
 import redirex.shipping.entity.UserEntity;
@@ -51,7 +54,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse registerUser(@Valid RegisterUserRequest dto) {
+    public UserRegisterResponse registerUser(@Valid RegisterUserRequest dto) {
         logger.info("Registering user with email: {}", dto.getEmail());
         validateUserNotExists(dto.getEmail(), dto.getCpf());
 
@@ -116,10 +119,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateUserProfile(UUID id, @Valid RegisterUserRequest dto) {
-        logger.info("Updating user profile for ID: {}", id);
-        UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));
+    public UserUpdateResponse updateUserProfile(UUID userId, @Valid UpdateUserRequest dto) {
+        logger.info("Updating user profile for ID: {}", userId);
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + userId + " not found"));
 
         if (!dto.getEmail().equals(user.getEmail())) {
             validateEmailNotExists(dto.getEmail());
@@ -130,6 +133,8 @@ public class UserServiceImpl implements UserService {
 
         user.setFullname(dto.getFullname());
         user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setCpf(dto.getCpf());
         user.setPhone(dto.getPhone());
         user.setOccupation(dto.getOccupation());
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
@@ -143,10 +148,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponse findUserById(UUID id) {
-        logger.info("Finding user by ID: {}", id);
-        UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));
+    public UserResponse findUserById(UUID userId) {
+        logger.info("Finding user by ID: {}", userId);
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + userId + " not found"));
         return userMapper.toResponse(user);
     }
 

@@ -1,12 +1,11 @@
 package redirex.shipping.dto.response;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-import java.util.UUID;
-
-@Data
-public class UserResponse {
-    private UUID userId;
+@Getter
+@AllArgsConstructor
+public class UserRegisterResponse {
     private String fullname;
     private String email;
     private String password;
