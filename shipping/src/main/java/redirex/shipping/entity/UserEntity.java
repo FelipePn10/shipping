@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -21,7 +21,6 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserEntity implements Serializable {
-
     @Id
     @GeneratedValue(generator = "UUID")
     @Column(name = "user_id")
@@ -80,6 +79,10 @@ public class UserEntity implements Serializable {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @Column
     private String passwordResetToken;
 
@@ -101,6 +104,8 @@ public class UserEntity implements Serializable {
             String cpf,
             String phone,
             String occupation,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
             String role) {
         this.fullname = fullname;
         this.email = email;
@@ -109,10 +114,8 @@ public class UserEntity implements Serializable {
         this.phone = phone;
         this.occupation = occupation;
         this.role = role;
-    }
-
-    public void setPassword(String password, PasswordEncoder passwordEncoder) {
-        this.password = passwordEncoder.encode(password);
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     @PrePersist
@@ -150,12 +153,4 @@ public class UserEntity implements Serializable {
 
     @OneToMany(mappedBy = "user")
     private Collection<OrderItemEntity> orderItemEntity;
-
-    public Collection<OrderItemEntity> getOrderItemEntity() {
-        return orderItemEntity;
-    }
-
-    public void setOrderItemEntity(Collection<OrderItemEntity> orderItemEntity) {
-        this.orderItemEntity = orderItemEntity;
-    }
 }

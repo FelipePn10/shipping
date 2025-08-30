@@ -1,20 +1,21 @@
-package redirex.shipping.dto.response;
+package redirex.shipping.dto.internal;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Builder
 @AllArgsConstructor
-public class UserRegisterResponse {
+public class UserInternalResponse {
+    private UUID id;
     private String fullname;
     private String email;
-    private String password;
     private String cpf;
     private String phone;
     private String occupation;
-    private LocalDateTime createdAt;
+    private String createdAt;
+    private String updatedAt;
 }

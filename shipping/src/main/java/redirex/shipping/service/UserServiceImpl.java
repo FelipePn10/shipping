@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import redirex.shipping.dto.internal.UserInternalResponse;
 import redirex.shipping.dto.request.UpdateUserRequest;
 import redirex.shipping.dto.response.UserRegisterResponse;
-import redirex.shipping.dto.response.UserResponse;
 import redirex.shipping.dto.request.RegisterUserRequest;
 import redirex.shipping.dto.response.UserUpdateResponse;
 import redirex.shipping.entity.CouponEntity;
@@ -110,7 +110,7 @@ public class UserServiceImpl implements UserService {
                 logger.error(e.getMessage());
             }
 
-            return userMapper.toResponse(user);
+            return userMapper.toResponseRegisterUser(user);
         } catch (Exception e) {
             logger.error("Failed to register user with email: {}", dto.getEmail(), e);
             throw new UserRegistrationException("Failed to register user", e);
@@ -143,16 +143,16 @@ public class UserServiceImpl implements UserService {
 
         user = userRepository.save(user);
         logger.info("User profile updated successfully: {}", user.getEmail());
-        return userMapper.toResponse(user);
+        return userMapper.toResponseUpdateUser(user);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponse findUserById(UUID userId) {
+    public UserInternalResponse findUserById(UUID userId) {
         logger.info("Finding user by ID: {}", userId);
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User with ID " + userId + " not found"));
-        return userMapper.toResponse(user);
+        return userMapper.toResponseUser(user);
     }
 
     @Override

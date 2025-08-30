@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import redirex.shipping.dto.internal.UserInternalResponse;
 import redirex.shipping.dto.request.UpdateUserRequest;
 import redirex.shipping.dto.response.*;
 import redirex.shipping.dto.request.ForgotPasswordRequest;
@@ -112,8 +113,8 @@ public class UserController {
         try {
             validateUserAccess(id);
             logger.info("Received request to get user by ID: {}", id);
-            UserResponse userResponse = userService.findUserById(id);
-            return ResponseEntity.ok(userResponse);
+            UserInternalResponse userInternalResponseResponse = userService.findUserById(id);
+            return ResponseEntity.ok(userInternalResponseResponse);
         } catch (UnauthorizedAccessException e) {
             logger.error("Unauthorized access attempt for user {}: {}", id, e.getMessage());
             return buildErrorResponse(HttpStatus.FORBIDDEN, e.getMessage());
