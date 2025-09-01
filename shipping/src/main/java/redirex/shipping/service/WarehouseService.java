@@ -12,6 +12,7 @@ import redirex.shipping.exception.ResourceNotFoundException;
 import redirex.shipping.mapper.WarehouseMapper;
 import redirex.shipping.repositories.OrderItemRepository;
 import redirex.shipping.repositories.WarehouseRepository;
+import redirex.shipping.dto.response.WarehouseResponse;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -54,7 +55,7 @@ public class WarehouseService {
     }
 
     @Transactional(readOnly = true)
-    public UserCouponResponse.WarehouseResponse findWarehouseById(UUID id) {
+    public WarehouseResponse findWarehouseById(UUID id) {
         logger.info("Finding warehouse by ID: {}", id);
         WarehouseEntity warehouse = warehouseRepository.findByIdWithItems(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found"));
@@ -62,7 +63,7 @@ public class WarehouseService {
     }
 
     @Transactional(readOnly = true)
-    public UserCouponResponse.WarehouseResponse findByUserId(UUID userId) {
+    public WarehouseResponse findByUserId(UUID userId) {
         WarehouseEntity warehouse = warehouseRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found for user"));
 
