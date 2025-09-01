@@ -1,0 +1,8 @@
+### POST request to example server
+POST http://localhost:8081/public/user/account/change/password/redirex
+Content-Type: application/json
+
+{
+  "email": "felipepanosso21@gmail.com"
+}
+###

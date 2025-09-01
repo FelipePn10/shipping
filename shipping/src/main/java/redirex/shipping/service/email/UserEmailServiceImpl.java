@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import redirex.shipping.service.email.template.EmailTemplateService;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Service
@@ -75,16 +74,12 @@ public class UserEmailServiceImpl implements UserEmailService {
     }
 
     @Override
-    public void sendPasswordResetEmail(String to, String token) throws MailException {
-        logger.info("Preparing password reset email for: {}", to);
+    public void sendPasswordResetCodeEmail(String to, String code) throws MailException {
+        logger.info("Preparing password reset code email for: {}", to);
         try {
-            String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8.name());
-            String encodedEmail = URLEncoder.encode(to, StandardCharsets.UTF_8.name());
-            String resetLink = String.format("%s/reset-password?email=%s&token=%s", frontendUrl, encodedEmail, encodedToken);
 
-            // Delega a construção do conteúdo para o serviço de template
-            String htmlBody = emailTemplateService.buildPasswordResetEmailHtml(resetLink);
-            String textBody = emailTemplateService.buildPasswordResetEmailText(resetLink);
+            String htmlBody = emailTemplateService.buildPasswordResetEmailHtml(code);
+            String textBody = emailTemplateService.buildPasswordResetEmailText(code);
 
             UserEmailDetailsUtil details = new UserEmailDetailsUtil();
             details.setRecipient(to);
@@ -93,10 +88,10 @@ public class UserEmailServiceImpl implements UserEmailService {
             details.setTextContent(textBody);
 
             sendSimpleMail(details);
-            logger.info("Password reset email sent to: {}", to);
-        } catch (UnsupportedEncodingException e) {
-            logger.error("Encoding error for password reset email to {}: {}", to, e.getMessage(), e);
-            throw new MailException("Erro de codificação ao preparar o email de redefinição de senha", e) {};
+            logger.info("Password reset code email sent to: {}", to);
+        } catch (Exception e) {
+            logger.error("Error preparing password reset code email to {}: {}", to, e.getMessage(), e);
+            throw new MailException("Erro ao preparar o email de redefinição de senha", e) {};
         }
     }
 

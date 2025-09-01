@@ -1,15 +1,17 @@
 package redirex.shipping.dto.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ResetPasswordRequest {
+public class VerifyCodeRequest {
+    @Email
     @NotBlank
-    private String resetSessionToken;
+    private String email;
 
     @NotBlank
-    private String newPassword;
+    private String code;
 }

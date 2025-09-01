@@ -3,16 +3,16 @@ package redirex.shipping.service.email.template;
 public interface EmailTemplateService {
 
     /**
-     * @param resetLink O link para a página de redefinição de senha.
+     * @param code O código de verificação para redefinição de senha.
      * @return
      */
-    String buildPasswordResetEmailHtml(String resetLink);
+    String buildPasswordResetEmailHtml(String code);
 
     /**
-     * @param resetLink
+     * @param code
      * @return
      */
-    String buildPasswordResetEmailText(String resetLink);
+    String buildPasswordResetEmailText(String code);
 
     /**
      * @param userName O nome do novo usuário.

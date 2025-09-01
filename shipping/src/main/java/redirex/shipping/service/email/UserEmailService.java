@@ -5,12 +5,13 @@ import org.springframework.mail.MailException;
 
 public interface UserEmailService {
     /**
-     * Envia um email de redefinição de senha.
+     * Envia um código de verificação para redefinição de senha.
      *
-     * @param to    Endereço de email do destinatário
-     * @param token Token de redefinição de senha
+     * @param to   Email do usuário
+     * @param code Código de verificação (6 dígitos)
      */
-    void sendPasswordResetEmail(String to, String token);
+    void sendPasswordResetCodeEmail(String to, String code);
+
 
     /**
      * Envia um email simples com os detalhes fornecidos.

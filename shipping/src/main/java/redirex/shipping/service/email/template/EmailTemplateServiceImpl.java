@@ -19,7 +19,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     }
 
     @Override
-    public String buildPasswordResetEmailHtml(String resetLink) {
+    public String buildPasswordResetEmailHtml(String code) {
         int currentYear = Year.now().getValue();
         return """
         <!DOCTYPE html>
@@ -65,23 +65,18 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
                     font-size: 15px; 
                     color: #495057; 
                 }
-                .button-container { 
+                .code-container { 
                     text-align: center; 
                     margin: 32px 0; 
+                    background-color: #f1f3f5;
+                    padding: 20px;
+                    border-radius: 4px;
                 }
-                .button { 
-                    display: inline-block; 
-                    padding: 12px 30px; 
-                    color: #ffffff !important; 
-                    background-color: #2c3e50; 
-                    text-decoration: none; 
-                    border-radius: 4px; 
-                    font-size: 15px; 
-                    font-weight: 500; 
-                    transition: background-color 0.2s ease; 
-                }
-                .button:hover { 
-                    background-color: #1a252f; 
+                .code { 
+                    font-size: 32px; 
+                    font-weight: bold; 
+                    color: #2c3e50; 
+                    letter-spacing: 8px;
                 }
                 .alert { 
                     font-size: 14px; 
@@ -104,15 +99,6 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
                     color: #2c3e50; 
                     text-decoration: none; 
                 }
-                .link-block {
-                    word-break: break-all;
-                    font-size: 13px;
-                    color: #495057;
-                    background-color: #f1f3f5;
-                    padding: 12px;
-                    border-radius: 4px;
-                    margin-top: 8px;
-                }
             </style>
         </head>
         <body>
@@ -125,19 +111,16 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
                     
                     <p>Recebemos uma solicitação para redefinir a senha da sua conta em <strong>%s</strong>.</p>
                     
-                    <p>Para prosseguir com a redefinição, utilize o link abaixo:</p>
+                    <p>Para prosseguir com a redefinição, utilize o código de verificação abaixo:</p>
                     
-                    <div class="button-container">
-                        <a href="%s" class="button">Redefinir Senha</a>
+                    <div class="code-container">
+                        <div class="code">%s</div>
                     </div>
                     
                     <div class="alert">
-                        Este link será válido por 30 minutos. Caso não tenha solicitado esta alteração, 
+                        Este código será válido por 30 minutos. Caso não tenha solicitado esta alteração, 
                         ignore esta mensagem ou entre em contato com nosso suporte.
                     </div>
-                    
-                    <p>Se o botão não funcionar, copie e cole este endereço em seu navegador:</p>
-                    <div class="link-block">%s</div>
                 </div>
                 <div class="footer">
                     &copy; %d %s. Todos os direitos reservados.<br>
@@ -146,11 +129,11 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
             </div>
         </body>
         </html>
-        """.formatted(appName, resetLink, resetLink, currentYear, appName);
+        """.formatted(appName, code, currentYear, appName);
     }
 
     @Override
-    public String buildPasswordResetEmailText(String resetLink) {
+    public String buildPasswordResetEmailText(String code) {
         return """
         REDEFINIÇÃO DE SENHA - %s
         ==============================================
@@ -159,16 +142,15 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
         
         Recebemos uma solicitação para redefinir a senha da sua conta.
         
-        Para criar uma nova senha, acesse:
-        %s
+        Seu código de verificação é: %s
         
-        Este link é válido por 30 minutos.
+        Este código é válido por 30 minutos.
         
         Caso não tenha solicitado esta alteração, ignore esta mensagem.
         
         Atenciosamente,
         Equipe %s
-        """.formatted(appName, resetLink, appName);
+        """.formatted(appName, code, appName);
     }
 
     @Override

@@ -1,0 +1,9 @@
+### POST request to example server
+POST http://localhost:8081/public/user/account/verify/reset/code/redirex
+Content-Type: application/json
+
+{
+  "email": "felipepanosso21@gmail.com",
+  "code": "095029"
+}
+###

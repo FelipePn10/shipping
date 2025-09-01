@@ -1,44 +1,37 @@
 package redirex.shipping.controller.User;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.internal.UserInternalResponse;
 import redirex.shipping.dto.request.UpdateUserRequest;
 import redirex.shipping.dto.response.*;
-import redirex.shipping.dto.request.ForgotPasswordRequest;
 import redirex.shipping.dto.request.RegisterUserRequest;
-import redirex.shipping.dto.request.ResetPasswordRequest;
-import redirex.shipping.entity.UserEntity;
 import redirex.shipping.exception.*;
 import redirex.shipping.security.JwtUtil;
-import redirex.shipping.service.UserPasswordResetService;
 import redirex.shipping.service.UserServiceImpl;
-import redirex.shipping.service.email.UserEmailService;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequiredArgsConstructor
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final UserServiceImpl userService;
-    private final UserEmailService emailService;
-    private final UserPasswordResetService passwordResetService;
-    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+
+    public UserController(UserServiceImpl userService, JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/public/auth/v1/user/register")
     public ResponseEntity<ApiResponse<UserRegisterResponse>> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
@@ -60,51 +53,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.<UserRegisterResponse>builder().error(error).build());
         }
-    }
-
-    @PostMapping("/public/user/forgot-password")
-    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
-        logger.info("Password reset request for email: {}", forgotPasswordRequest.getEmail());
-        Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(forgotPasswordRequest.getEmail());
-        if (userOptional.isEmpty()) {
-            logger.warn("No user found with email: {}", forgotPasswordRequest.getEmail());
-            return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
-        }
-
-        UserEntity user = userOptional.get();
-        passwordResetService.generateResetToken(user);
-        emailService.sendPasswordResetEmail(user.getEmail(), user.getPasswordResetToken());
-        return ResponseEntity.ok(buildSuccessResponse("Password reset email sent successfully"));
-    }
-
-    @PostMapping("/public/user/reset-password")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
-        logger.info("Password reset attempt for email: {}", resetPasswordRequest.getEmail());
-        Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(resetPasswordRequest.getEmail());
-        if (userOptional.isEmpty()) {
-            logger.warn("No user found with email: {}", resetPasswordRequest.getEmail());
-            return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
-        }
-
-        UserEntity user = userOptional.get();
-        String resetToken = user.getPasswordResetToken();
-        LocalDateTime tokenExpiry = user.getPasswordResetTokenExpiry();
-
-        if (resetToken == null || tokenExpiry == null || !resetToken.equals(resetPasswordRequest.getToken())) {
-            logger.warn("Invalid or missing reset token for email: {}", resetPasswordRequest.getEmail());
-            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid reset token");
-        }
-
-        if (tokenExpiry.isBefore(LocalDateTime.now())) {
-            logger.warn("Expired token for email: {}", resetPasswordRequest.getEmail());
-            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Reset token expired");
-        }
-
-        user.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
-        user.setPasswordResetToken(null);
-        user.setPasswordResetTokenExpiry(null);
-        passwordResetService.saveUser(user);
-        return ResponseEntity.ok(buildSuccessResponse("Password reset successfully"));
     }
 
     @GetMapping("/api/user/{id}")
