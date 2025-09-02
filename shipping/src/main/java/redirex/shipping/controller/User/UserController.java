@@ -33,7 +33,7 @@ public class UserController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping("/public/auth/v1/user/register")
+    @PostMapping("/public/auth/user/register")
     public ResponseEntity<ApiResponse<UserRegisterResponse>> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
         try {
             logger.info("Received request to register user: {}", registerUserRequest.getEmail());
@@ -72,7 +72,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("/api/user/{id}/profile")
+    @PutMapping("/api/v1/update/user/{id}/profile")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<UserUpdateResponse>> updateUserProfile(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         try {

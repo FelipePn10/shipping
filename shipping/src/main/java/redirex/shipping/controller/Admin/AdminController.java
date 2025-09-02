@@ -15,7 +15,7 @@ import redirex.shipping.service.admin.AdminService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/public/v1")
+@RequestMapping("/private/v1")
 @RequiredArgsConstructor
 @Slf4j
 public class AdminController {

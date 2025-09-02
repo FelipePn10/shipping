@@ -18,7 +18,7 @@ import redirex.shipping.service.admin.OrdersMadeByCustomersService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/private/v1/api/admin")
+@RequestMapping("/private/api/v1/admin")
 public class SearchUserRequestsController {
     private static final Logger logger = LoggerFactory.getLogger(SearchUserRequestsController.class);
 

@@ -18,7 +18,7 @@ import redirex.shipping.service.AddressService;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/v1/user")
 public class AddressController {
     private static final Logger logger = LoggerFactory.getLogger(AddressController.class);
     private final AddressService addressService;
@@ -29,7 +29,7 @@ public class AddressController {
         this.addressMapper = addressMapper;
     }
 
-    @PostMapping("/address")
+    @PostMapping("/create/address")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<?> createAddress(@Valid @RequestBody CreateAddressRequest request) {
         try {
@@ -46,7 +46,7 @@ public class AddressController {
         }
     }
 
-    @PutMapping("/address/{zipcode}")
+    @PutMapping("/update/address/{zipcode}")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<?> updateAddress(
             @PathVariable String zipcode,
@@ -64,7 +64,7 @@ public class AddressController {
         }
     }
 
-    @DeleteMapping("/address/{zipcode}")
+    @DeleteMapping("/delete/address/{zipcode}")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<?> deleteAddress(@PathVariable String zipcode) {
         try {

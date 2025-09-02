@@ -60,33 +60,6 @@ public class AuthUserController {
         }
     }
 
-    @PostMapping("/login/enterprise")
-    public ResponseEntity<?> loginEnterprise(@Valid @RequestBody AuthUserRequest authRequest) {
-        logger.info("Tentativa de login empresarial para email: {}", authRequest.getEmail());
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authRequest.getEmail(),
-                            authRequest.getPassword()
-                    )
-            );
-            UUID userId = userService.findUserIdByEmail(authRequest.getEmail());
-            String token = jwtUtil.generateToken(authRequest.getEmail(), userId);
-            AuthUserResponse response = AuthUserResponse.builder()
-                    .token(token)
-                    .userId(userId)
-                    .build();
-            logger.info("Login empresarial bem-sucedido para email: {}", authRequest.getEmail());
-            return ResponseEntity.ok(response);
-        } catch (BadCredentialsException e) {
-            logger.warn("Credenciais inválidas para email: {}", authRequest.getEmail());
-            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Credenciais inválidas");
-        } catch (Exception e) {
-            logger.error("Erro ao processar login empresarial: {}", e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao processar login");
-        }
-    }
-
     @PostMapping("/user/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String authorizationHeader) {
         final String BEARER_PREFIX = "Bearer ";
