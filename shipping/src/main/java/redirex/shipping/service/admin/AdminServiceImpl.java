@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +58,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public UpdateAdminResponse updateAdmin(UUID id, @Valid UpdateAdminRequest updateAdminRequestDto) {
         logger.info("Updating adminEntity with ID: {}", id);
         AdminEntity adminEntity = adminRepository.findById(id)

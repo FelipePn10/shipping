@@ -3,6 +3,7 @@ package redirex.shipping.service.admin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +31,7 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
     private final OrderItemStatusHistoryRepository statusHistoryRepository;
 
     @Override
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Page<OrderItemEntity> getRecentOrders(Pageable pageable) {
         // Busca pedidos excluindo status iniciais e ordena por criação decrescente
         return orderItemRepository.findByStatusNotInOrderByCreatedAtDesc(
@@ -44,6 +46,7 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
 
     @Transactional
     @Override
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public void updateOrderStatus(UUID orderId,
                                   OrderItemStatusEnum newStatus,
                                   AdminEntity admin,
@@ -134,6 +137,7 @@ public class OrdersMadeByCustomersServiceImpl implements OrdersMadeByCustomersSe
 
     @Transactional
     @Override
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public void addOrderPhoto(UUID orderId, MultipartFile file, String description, AdminEntity admin) {
         OrderItemEntity order = orderItemRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
