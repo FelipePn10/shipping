@@ -1,8 +1,10 @@
 package redirex.shipping.dto.response;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import redirex.shipping.util.CpfMaskSerializer;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +14,7 @@ import java.time.LocalDateTime;
 public class UserRegisterResponse {
     private String fullname;
     private String email;
-    private String password;
+    @JsonSerialize(using = CpfMaskSerializer.class)
     private String cpf;
     private String phone;
     private String occupation;
