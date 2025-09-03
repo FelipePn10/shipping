@@ -56,7 +56,6 @@ public class UserController {
     }
 
     @GetMapping("/api/user/{id}")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserById(@PathVariable UUID id) {
         try {
             validateUserAccess(id);
@@ -73,7 +72,6 @@ public class UserController {
     }
 
     @PutMapping("/api/v1/update/user/{id}/profile")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<UserUpdateResponse>> updateUserProfile(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         try {
             validateUserAccess(id);

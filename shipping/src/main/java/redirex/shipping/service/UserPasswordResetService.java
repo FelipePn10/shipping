@@ -2,6 +2,7 @@ package redirex.shipping.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ public class UserPasswordResetService {
 
     // Gera o codigo de 6 dígitos e salva na tabela password_reset_tokens
     @Transactional
+    @PreAuthorize("#user.email == authentication.name")
     public String createResetCode(UserEntity user) {
         String code = String.format("%06d", (int) (Math.random() * 999999));
 
@@ -49,6 +51,7 @@ public class UserPasswordResetService {
 
     /** Valida o código e gera sessionToken */
     @Transactional
+    @PreAuthorize("#user.email == authentication.name")
     public String verifyCode(UserEntity user, String code) {
         PasswordResetToken token = tokenRepository.findByUserAndCodeAndUsedFalse(user, code)
                 .filter(t -> t.getExpiryDate().isAfter(LocalDateTime.now()))
@@ -64,6 +67,7 @@ public class UserPasswordResetService {
 
     /** Reseta a senha com sessionToken */
     @Transactional
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public void resetPassword(String sessionToken, String newPassword) {
         PasswordResetToken token = tokenRepository.findBySessionTokenAndUsedFalse(sessionToken)
                 .filter(t -> t.getSessionExpiry().isAfter(LocalDateTime.now()))

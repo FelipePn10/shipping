@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import redirex.shipping.dto.request.AddressRequest;
@@ -34,6 +35,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
+    @PreAuthorize("@permissionService.isOwner(#dto.userId)")
     public AddressResponse createdAddress(@Valid AddressRequest dto) {
         logger.info("Creating address for zipcode: {}", dto.getZipcode());
         validateAddressDoesNotExist(dto.getZipcode());
@@ -50,6 +52,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
+    @PreAuthorize("@permissionService.isOwnerOrAdmin(#dto.userId)")
     public AddressResponse updateAddress(String zipcode, @Valid AddressRequest dto) {
         logger.info("Updating address for zipcode: {}", zipcode);
         AddressEntity address = addressRepository.findByZipcode(zipcode)
@@ -74,6 +77,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
+    @PreAuthorize("@permissionService.isOwnerOrAdmin(#userId)")
     public void deleteAddress(String zipcode) {
         AddressEntity address = addressRepository.findByZipcode(zipcode)
                 .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado"));

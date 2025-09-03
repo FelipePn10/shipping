@@ -16,6 +16,8 @@ import redirex.shipping.mapper.AddressMapper;
 import redirex.shipping.service.AddressService;
 
 import java.net.URI;
+import java.util.Objects;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -29,10 +31,17 @@ public class AddressController {
         this.addressMapper = addressMapper;
     }
 
-    @PostMapping("/create/address")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public ResponseEntity<?> createAddress(@Valid @RequestBody CreateAddressRequest request) {
+    @PostMapping("{userId}/create/address")
+    public ResponseEntity<?> createAddress(
+            @PathVariable UUID userId,
+            @Valid @RequestBody CreateAddressRequest request) {
         try {
+            if (!Objects.equals(userId, request.getUserId())) {
+                logger.warn("UserId inconsistency: pathUserId={}, requestUserId={} ", userId, request.getUserId());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .build();
+            }
+
             logger.info("Processing create address for authenticated user");
             AddressRequest dto = addressMapper.toDTO(request);
             AddressResponse response = addressService.createdAddress(dto);
@@ -47,7 +56,6 @@ public class AddressController {
     }
 
     @PutMapping("/update/address/{zipcode}")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<?> updateAddress(
             @PathVariable String zipcode,
             @Valid @RequestBody AddressRequest dto) {
@@ -60,12 +68,12 @@ public class AddressController {
             return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (Exception e) {
             logger.error("Update error for zipcode {}: {}", zipcode, e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno do servidor");
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error with updating address");
+
         }
     }
 
     @DeleteMapping("/delete/address/{zipcode}")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<?> deleteAddress(@PathVariable String zipcode) {
         try {
             logger.info("Deleting address for zipcode: {}", zipcode);

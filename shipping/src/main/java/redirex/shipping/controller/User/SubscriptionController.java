@@ -11,7 +11,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/user/subscriptions")
-@PreAuthorize("hasAuthority('USER')")
 public class SubscriptionController {
     private final SubscriptionService subscriptionService;
     public SubscriptionController(SubscriptionService subscriptionService) {

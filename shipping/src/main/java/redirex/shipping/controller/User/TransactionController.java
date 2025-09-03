@@ -30,7 +30,6 @@ public class TransactionController {
     }
 
     @PostMapping("private/v1/api/users/{userId}/deposit")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<WalletTransactionResponse> depositToWallet(
             @PathVariable UUID userId,
             @Valid @RequestBody DepositRequestDto depositRequestDto) {
@@ -63,7 +62,6 @@ public class TransactionController {
     }
 
     @PostMapping("private/v1/api/users/{userId}/orders/{orderId}/payment")
-    @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<OrderItemResponse> processPayment(
             @PathVariable UUID userId,
             @PathVariable UUID orderId) {

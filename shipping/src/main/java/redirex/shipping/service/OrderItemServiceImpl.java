@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.dto.request.CreateOrderItemRequest;
@@ -57,6 +58,7 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Override
     @Transactional
+    @PreAuthorize("@permissionService.isOwnerOrAdmin(#userId)")
     public OrderItemResponse createOrderItem(UUID userId, @Valid CreateOrderItemRequest request) {
         logger.info("Creating order for userId: {}, productUrl: {}", userId, request.getProductUrl());
 
@@ -111,6 +113,7 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Override
     @Transactional
+    @PreAuthorize("@permissionService.isOwnerOrAdmin(#userId)")
     public OrderItemResponse processOrderPayment(UUID orderItemId, UUID userId) {
         OrderItemEntity orderItem = orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderItemId));
