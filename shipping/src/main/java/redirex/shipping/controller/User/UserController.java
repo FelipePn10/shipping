@@ -72,7 +72,9 @@ public class UserController {
     }
 
     @PutMapping("/api/v1/update/user/{id}/profile")
-    public ResponseEntity<ApiResponse<UserUpdateResponse>> updateUserProfile(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest updateUserRequest) {
+    public ResponseEntity<ApiResponse<UserUpdateResponse>> updateUserProfile(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateUserRequest updateUserRequest) {
         try {
             validateUserAccess(id);
             logger.info("Received request to update profile for user ID: {}", id);

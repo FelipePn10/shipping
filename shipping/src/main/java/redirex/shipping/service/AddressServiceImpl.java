@@ -77,19 +77,15 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    @PreAuthorize("@permissionService.isOwnerOrAdmin(#userId)")
+    @PreAuthorize("@permissionService.isOwnerOrAdminByZipcode(#zipcode)")
     public void deleteAddress(String zipcode) {
         AddressEntity address = addressRepository.findByZipcode(zipcode)
                 .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado"));
 
-        UserEntity user = getAuthenticatedUser();
-        if (!address.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Usuário não tem permissão para excluir este endereço");
-        }
-
         addressRepository.delete(address);
         logger.info("Address deleted successfully: {}", zipcode);
     }
+
 
     private UserEntity getAuthenticatedUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();

@@ -12,11 +12,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.request.CreateOrderItemRequest;
+import redirex.shipping.dto.response.AddressResponse;
+import redirex.shipping.dto.response.ApiErrorResponse;
+import redirex.shipping.dto.response.ApiResponse;
 import redirex.shipping.dto.response.OrderItemResponse;
 import redirex.shipping.exception.OrderCreationFailedException;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.OrderItemService;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -30,7 +34,7 @@ public class OrderItemController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/{userId}/create/order")
-    public ResponseEntity<OrderItemResponse> createOrder(
+    public ResponseEntity<ApiResponse<OrderItemResponse>> createOrder(
             @PathVariable UUID userId,
             @Valid @RequestBody CreateOrderItemRequest request) {
 
@@ -65,20 +69,34 @@ public class OrderItemController {
             OrderItemResponse response = orderItemService.createOrderItem(userId, request);
             logger.info("Request created successfully for userId: {}", userId);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(response);
-
+                    .body(ApiResponse.<OrderItemResponse>builder()
+                            .data(response)
+                            .timestamp(LocalDateTime.now())
+                            .build());
         } catch (UsernameNotFoundException e) {
             logger.error("Usuário não encontrado: {}", e.getMessage());
+            ApiErrorResponse error = ApiErrorResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Address not found. Reason: " + e.getMessage())
+                    .build();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(null);
+                    .body(ApiResponse.<OrderItemResponse>builder().error(error).build());
         } catch (OrderCreationFailedException e) {
-            logger.error("Falha na criação do pedido: {}", e.getMessage());
+            logger.error("Order creation failed: {}", e.getMessage());
+            ApiErrorResponse error = ApiErrorResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Address not found. Reason: " + e.getMessage())
+                    .build();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(null);
+                    .body(ApiResponse.<OrderItemResponse>builder().error(error).build());
         } catch (Exception e) {
-            logger.error("Erro inesperado ao criar pedido: {}", e.getMessage(), e);
+            logger.error("Unexpected error creating order: {}", e.getMessage(), e);
+            ApiErrorResponse error = ApiErrorResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Internal server error. Reason: " + e.getMessage())
+                    .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+                    .body(ApiResponse.<OrderItemResponse>builder().error(error).build());
         }
     }
 }
