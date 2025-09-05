@@ -1,6 +1,5 @@
 package redirex.shipping.dto.request;
 
-import lombok.Data;
 import redirex.shipping.enums.CurrencyEnum;
 import redirex.shipping.enums.WalletTransactionTypeEnum;
 
@@ -8,18 +7,19 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
-public class WalletTransactionRequest {
-    private UUID id;
-    private UUID userWalletId;
-    private WalletTransactionTypeEnum type;
-    private BigDecimal amount;
-    private String description;
-    private UUID relatedOrderItemId;
-    private UUID relatedShipmentId;
-    private BigDecimal exchangeRate;
-    private BigDecimal transactionFee;
-    private BigDecimal originalAmountDeposited;
-    private CurrencyEnum originalCurrencyDeposited;
-    private LocalDateTime createdAt;
+public record WalletTransactionRequest (
+    UUID id,
+    UUID userWalletId,
+    WalletTransactionTypeEnum type,
+    BigDecimal amount,
+    String description,
+    UUID relatedOrderItemId,
+    UUID relatedShipmentId,
+    BigDecimal exchangeRate,
+    BigDecimal transactionFee,
+    BigDecimal originalAmountDeposited,
+    CurrencyEnum originalCurrencyDeposited,
+    LocalDateTime createdAt
+) {
+
 }

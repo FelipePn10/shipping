@@ -2,28 +2,39 @@ package redirex.shipping.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
-import redirex.shipping.entity.AddressEntity.ResidenceType;
+import redirex.shipping.entity.AddressEntity;
 
-@Data
-public class AddressRequest {
+public record AddressRequest(
+        @NotBlank
+        String recipientName,
 
         @NotBlank
-        private String recipientName;
+        String street,
+
+        String complement,
+
         @NotBlank
-        private String street;
-        private String complement;
+        String city,
+
         @NotBlank
-        private String city;
-        @NotBlank
-        private String state;
+        String state,
+
         @NotBlank
         @Size(min = 2, max = 16)
-        private String zipcode;
+        String zipcode,
+
         @NotBlank
-        private String country;
-        private String phone;
-        private ResidenceType residenceType;
-    }
+        String country,
+
+        String phone,
+
+        AddressEntity.ResidenceType residenceType
+) {
+        public AddressRequest {
+                if (residenceType == null) {
+                        residenceType = AddressEntity.ResidenceType.HOUSE;
+                }
+        }
+}
 
     //*** Não é possível criar endereço, fazer a correção!

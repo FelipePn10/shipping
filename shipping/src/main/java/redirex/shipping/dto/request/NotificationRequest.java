@@ -1,20 +1,20 @@
 package redirex.shipping.dto.request;
 
-import lombok.Data;
 import redirex.shipping.enums.NotificationTypeEnum;
 
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
-public class NotificationRequest {
-    private UUID id;
-    private UUID userId;
-    private UUID adminId;
-    private String title;
-    private String message;
-    private Boolean isRead;
-    private LocalDateTime createdAt;
-    private NotificationTypeEnum type;
+public record NotificationRequest (
+    UUID id,
+    UUID userId,
+    UUID adminId,
+    String title,
+    String message,
+    Boolean isRead,
+    LocalDateTime createdAt,
+    NotificationTypeEnum type
+) {
+
 }

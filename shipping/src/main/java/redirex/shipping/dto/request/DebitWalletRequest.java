@@ -10,18 +10,20 @@ import redirex.shipping.enums.WalletTransactionTypeEnum;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public class DebitWalletRequest {
-    private UUID userId;
-    private UserWalletEntity userWallet;
-    private CurrencyEnum currency;
-    private BigDecimal amount;
-    private WalletTransactionTypeEnum transactionType;
-    private String description;
+public record DebitWalletRequest (
+    UUID userId,
+    UserWalletEntity userWallet,
+    CurrencyEnum currency,
+    BigDecimal amount,
+    WalletTransactionTypeEnum transactionType,
+    String description,
 
     @Nullable
-    private OrderItemEntity orderItem;
+    OrderItemEntity orderItem,
 
     @Nullable
-    private ShipmentEntity shipment;
+    ShipmentEntity shipment
+) {
+
 }
 

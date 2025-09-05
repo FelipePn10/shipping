@@ -1,25 +1,25 @@
 package redirex.shipping.dto.request;
 
-import lombok.Data;
 import redirex.shipping.enums.CouponTypeEnum;
 
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
-public class CouponRequest {
-//    private UUID id;
-    private String code;
-    private String description;
-    private BigDecimal discountAmount;
-    private Double discountPercentage;
-    private BigDecimal maxDiscountValue;
-    private LocalDateTime validFrom;
-    private LocalDateTime validTo;
-    private CouponTypeEnum type;
-    private BigDecimal minPurchaseValue;
-    private Boolean isActive;
-    private Boolean isWelcomeCoupon;
-    private Boolean isNewsletterCoupon;
+public record CouponRequest (
+//  UUID id,
+    String code,
+    String description,
+    BigDecimal discountAmount,
+    Double discountPercentage,
+    BigDecimal maxDiscountValue,
+    LocalDateTime validFrom,
+    LocalDateTime validTo,
+    CouponTypeEnum type,
+    BigDecimal minPurchaseValue,
+    Boolean isActive,
+    Boolean isWelcomeCoupon,
+    Boolean isNewsletterCoupon
+) {
+
 }

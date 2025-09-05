@@ -1,15 +1,14 @@
 package redirex.shipping.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-public class ResetPasswordRequest {
+
+public record ResetPasswordRequest (
     @NotBlank
-    private String resetSessionToken;
+    String resetSessionToken,
 
     @NotBlank
-    private String newPassword;
+    String newPassword
+    ) {
+
 }

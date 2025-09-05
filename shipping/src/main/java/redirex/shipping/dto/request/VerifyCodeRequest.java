@@ -2,16 +2,14 @@ package redirex.shipping.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-public class VerifyCodeRequest {
+public record VerifyCodeRequest (
     @Email
     @NotBlank
-    private String email;
+    String email,
 
     @NotBlank
-    private String code;
+    String code
+    ) {
+
 }
