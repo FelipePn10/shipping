@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -37,8 +38,14 @@ public class UserWalletServiceImpl implements UserWalletService {
     private static final List<CurrencyEnum> SUPPORTED_CURRENCIES = List.of(CurrencyEnum.CNY);
     private static final BigDecimal TRANSACTION_FEE_PERCENTAGE = new BigDecimal("0.05");
     private static final int BRL_SCALE = 2;
+    private static final String DEPOSIT_SUCCESS_STATUS = "success";
+    private static final String PAYMENT_FAILED_ERROR = "payment_failed";
 
-    public UserWalletServiceImpl(UserWalletRepository userWalletRepository, WalletTransactionRepository walletTransactionRepository, UserRepository userRepository, StripeService stripeService, ExchangeRateService exchangeRateService) {
+    public UserWalletServiceImpl(UserWalletRepository userWalletRepository,
+                                 WalletTransactionRepository walletTransactionRepository,
+                                 UserRepository userRepository,
+                                 StripeService stripeService,
+                                 ExchangeRateService exchangeRateService) {
         this.userWalletRepository = userWalletRepository;
         this.walletTransactionRepository = walletTransactionRepository;
         this.userRepository = userRepository;
@@ -47,17 +54,17 @@ public class UserWalletServiceImpl implements UserWalletService {
     }
 
     @Transactional
-    public UserWalletEntity createInitialWallet(UserEntity user, CurrencyEnum cny) {
-        CurrencyEnum currency = CurrencyEnum.CNY;
-        logger.info("Creating initial CNY wallet for user: {}", user.getEmail());
+    public UserWalletEntity createInitialWallet(UserEntity user, CurrencyEnum currency) {
+        logger.info("Creating initial {} wallet for user: {}", currency, user.getEmail());
 
         if (!SUPPORTED_CURRENCIES.contains(currency)) {
             throw new IllegalArgumentException("Unsupported currency for initial wallet: " + currency + ". Only CNY is supported.");
         }
 
-        if (userWalletRepository.findByUserIdAndCurrency(user, currency).isPresent()) {
+        Optional<UserWalletEntity> existingWallet = userWalletRepository.findByUserIdAndCurrency(user, currency);
+        if (existingWallet.isPresent()) {
             logger.warn("User {} already has a {} wallet. Returning existing wallet.", user.getEmail(), currency);
-            return userWalletRepository.findByUserIdAndCurrency(user, currency).get();
+            return existingWallet.get();
         }
 
         UserWalletEntity wallet = UserWalletEntity.builder()
@@ -74,107 +81,160 @@ public class UserWalletServiceImpl implements UserWalletService {
     @Override
     @Transactional
     public WalletTransactionResponse depositToWallet(UUID userId, DepositRequestDto depositRequestDto) {
-        logger.info("Attempting deposit for userId: {} with target CNY amount: {}", userId, depositRequestDto.getAmount());
+        logger.info("Attempting deposit for userId: {} with target CNY amount: {}", userId, depositRequestDto.amount());
 
-        if (depositRequestDto.getAmount() == null || depositRequestDto.getAmount().compareTo(BigDecimal.valueOf(50)) <= 0) {
+        try {
+            validateDepositRequest(depositRequestDto);
+
+            UserEntity user = getUserEntity(userId);
+            UserWalletEntity wallet = getUserWallet(user, CurrencyEnum.CNY);
+
+            BigDecimal brlToCnyRate = getValidExchangeRate();
+            BigDecimal amountToChargeInBRL = calculateAmountInBRL(depositRequestDto.amount(), brlToCnyRate);
+
+            processStripePayment(depositRequestDto.paymentMethodId(), amountToChargeInBRL);
+            return completeDepositTransaction(user, wallet, depositRequestDto.amount(), amountToChargeInBRL, brlToCnyRate);
+
+        } catch (Exception e) {
+            logger.error("Deposit failed for userId: {}", userId, e);
+            return WalletTransactionResponse.createError(userId, "Deposit failed: " + e.getMessage());
+        }
+    }
+
+    private void validateDepositRequest(DepositRequestDto depositRequestDto) {
+        if (depositRequestDto.amount() == null || depositRequestDto.amount().compareTo(BigDecimal.valueOf(50)) <= 0) {
             throw new IllegalArgumentException("Target deposit amount (CNY) must be greater than zero.");
         }
-        if (depositRequestDto.getPaymentMethodId() == null || depositRequestDto.getPaymentMethodId().isBlank()) {
+        if (depositRequestDto.paymentMethodId() == null || depositRequestDto.paymentMethodId().isBlank()) {
             throw new IllegalArgumentException("Stripe PaymentMethod ID is required for deposit.");
         }
+    }
 
-        CurrencyEnum walletCurrency = CurrencyEnum.CNY;
-        BigDecimal targetCNYAmount = depositRequestDto.getAmount().setScale(2, RoundingMode.HALF_UP); // Valor que o usuário quer na carteira -> CNY
-
-        UserEntity user = userRepository.findById(userId)
+    private UserEntity getUserEntity(UUID userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     logger.error("User not found for userId: {}", userId);
                     return new IllegalArgumentException("User not found for userId: " + userId);
                 });
+    }
 
-        UserWalletEntity wallet = userWalletRepository.findByUserIdAndCurrency(user, walletCurrency)
+    private UserWalletEntity getUserWallet(UserEntity user, CurrencyEnum currency) {
+        return userWalletRepository.findByUserIdAndCurrency(user, currency)
                 .orElseGet(() -> {
                     logger.info("CNY wallet not found for user {}, creating one.", user.getEmail());
                     return createInitialWallet(user, CurrencyEnum.CNY);
                 });
+    }
 
-        // Obter taxa de câmbio BRL para CNY
+    private BigDecimal getValidExchangeRate() {
         BigDecimal brlToCnyRate = exchangeRateService.getExchangeRate(CurrencyEnum.BRL, CurrencyEnum.CNY);
         if (brlToCnyRate == null || brlToCnyRate.compareTo(BigDecimal.ZERO) <= 0) {
             logger.error("Invalid BRL to CNY exchange rate: {}", brlToCnyRate);
             throw new IllegalStateException("Could not retrieve a valid BRL to CNY exchange rate.");
         }
+        return brlToCnyRate;
+    }
 
-        // Calcular o valor a ser cobrado em BRL
-        // amountToChargeInBRL = targetCNYAmount / brlToCnyRate
-        BigDecimal amountToChargeInBRL = targetCNYAmount.divide(brlToCnyRate, BRL_SCALE, RoundingMode.CEILING);
+    private BigDecimal calculateAmountInBRL(BigDecimal targetCNYAmount, BigDecimal exchangeRate) {
+        return targetCNYAmount.divide(exchangeRate, BRL_SCALE, RoundingMode.CEILING);
+    }
+
+    private void processStripePayment(String paymentMethodId, BigDecimal amountToChargeInBRL) {
         long amountToChargeInBRLCents = amountToChargeInBRL.multiply(new BigDecimal("100")).longValue();
 
-        logger.info("Target CNY: {}, BRL to CNY Rate: {}, Calculated BRL charge: {} ({} cents)",
-                targetCNYAmount, brlToCnyRate, amountToChargeInBRL, amountToChargeInBRLCents);
-
-        boolean paymentSuccessful;
-        try {
-            logger.info("Processing Stripe payment for userId: {}, amountInCents (BRL): {}, currency: BRL",
-                    userId, amountToChargeInBRLCents);
-            paymentSuccessful = stripeService.processPayment(depositRequestDto.getPaymentMethodId(), amountToChargeInBRLCents, CurrencyEnum.BRL);
-        } catch (StripePaymentException e) {
-            logger.error("Stripe payment failed for userId: {}. Amount BRL: {}. Reason: {}",
-                    userId, amountToChargeInBRL, e.getMessage(), e);
-            throw e;
-        }
+        logger.info("Processing Stripe payment, amountInCents (BRL): {}", amountToChargeInBRLCents);
+        boolean paymentSuccessful = stripeService.processPayment(paymentMethodId, amountToChargeInBRLCents, CurrencyEnum.BRL);
 
         if (!paymentSuccessful) {
-            logger.error("Stripe payment (BRL) was not successful for userId: {}, but no exception was thrown.", userId);
+            logger.error("Stripe payment (BRL) was not successful");
             throw new StripePaymentException("Stripe payment processing in BRL failed for an unknown reason.");
         }
 
-        logger.info("Stripe payment successful for userId: {}. Charged: {} BRL for target {} CNY",
-                userId, amountToChargeInBRL, targetCNYAmount);
+        logger.info("Stripe payment successful. Charged: {} BRL", amountToChargeInBRL);
+    }
 
-        // Cálculo de taxa sobre o valor alvo em CNY
-        BigDecimal feeInCNY = targetCNYAmount.multiply(TRANSACTION_FEE_PERCENTAGE).setScale(2, RoundingMode.HALF_UP);
+    @Transactional
+    protected WalletTransactionResponse completeDepositTransaction(
+            UserEntity user,
+            UserWalletEntity wallet,
+            BigDecimal targetCNYAmount,
+            BigDecimal amountToChargeInBRL,
+            BigDecimal exchangeRate
+    ) {
+        BigDecimal feeInCNY = calculateFee(targetCNYAmount);
         BigDecimal netAmountInCNY = targetCNYAmount.subtract(feeInCNY);
 
-        wallet.setBalance(wallet.getBalance().add(netAmountInCNY));
-        userWalletRepository.save(wallet);
+        updateWalletBalance(wallet, netAmountInCNY);
+        WalletTransactionEntity transaction = createAndSaveTransaction(
+                user, wallet, netAmountInCNY, feeInCNY, targetCNYAmount, amountToChargeInBRL
+        );
 
-        String transactionDescription = String.format("Stripe Deposit. Charged %.2f BRL for %.2f CNY target.",
-                amountToChargeInBRL, targetCNYAmount);
+        logger.info("Deposit completed for userId: {}. Net amount credited: {} {}, Fee: {} {}. Charged in BRL: {}",
+                user.getId(), netAmountInCNY, wallet.getCurrency(), feeInCNY, wallet.getCurrency(), amountToChargeInBRL);
+
+        return createSuccessResponse(transaction, wallet, user.getId(), feeInCNY, amountToChargeInBRL, netAmountInCNY);
+    }
+
+    private BigDecimal calculateFee(BigDecimal amount) {
+        return amount.multiply(TRANSACTION_FEE_PERCENTAGE).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private void updateWalletBalance(UserWalletEntity wallet, BigDecimal amount) {
+        wallet.setBalance(wallet.getBalance().add(amount));
+        userWalletRepository.save(wallet);
+    }
+
+    private WalletTransactionEntity createAndSaveTransaction(
+            UserEntity user,
+            UserWalletEntity wallet,
+            BigDecimal netAmountInCNY,
+            BigDecimal feeInCNY,
+            BigDecimal targetCNYAmount,
+            BigDecimal amountToChargeInBRL
+    ) {
+        String transactionDescription = createTransactionDescription(amountToChargeInBRL, targetCNYAmount);
 
         WalletTransactionEntity transaction = WalletTransactionEntity.builder()
                 .userId(user)
                 .userWallet(wallet)
-                .currency(walletCurrency) // Moeda da carteira e da transação principal
-                .amount(netAmountInCNY) // Valor líquido creditado na carteira em CNY
-                .type(WalletTransactionTypeEnum.DEPOSIT)
-
-                .transactionFee(feeInCNY) // Taxa em CNY
-                .originalAmountDeposited(targetCNYAmount) // Valor bruto intencionado em CNY
-                .originalCurrencyDeposited(walletCurrency) // Moeda do valor bruto intencionado
-                .createdAt(LocalDateTime.now())
-                // campos para registrar o valor cobrado em BRL
-                .chargedAmount(amountToChargeInBRL)
-                .chargedCurrency(CurrencyEnum.valueOf(String.valueOf(CurrencyEnum.BRL)))
-                .build();
-        walletTransactionRepository.save(transaction);
-
-        logger.info("Deposit completed for userId: {}. Net amount credited: {} {}, Fee: {} {}. Charged in BRL: {}",
-                userId, netAmountInCNY, walletCurrency, feeInCNY, walletCurrency, amountToChargeInBRL);
-
-        return WalletTransactionResponse.builder()
-                .status("success")
-                .userId(userId)
+                .currency(wallet.getCurrency())
                 .amount(netAmountInCNY)
-                .fee(String.valueOf(feeInCNY))
-                .currency(walletCurrency.toString())
-                .chargedAmount(String.valueOf(amountToChargeInBRL))
-                .chargedCurrency(CurrencyEnum.BRL)
-                .transactionDescription(transactionDescription)
+                .type(WalletTransactionTypeEnum.DEPOSIT)
+                .transactionFee(feeInCNY)
+                .originalAmountDeposited(targetCNYAmount)
+                .originalCurrencyDeposited(wallet.getCurrency())
                 .createdAt(LocalDateTime.now())
+                .chargedAmount(amountToChargeInBRL)
+                .chargedCurrency(CurrencyEnum.BRL)
                 .build();
+
+        return walletTransactionRepository.save(transaction);
     }
 
+    private String createTransactionDescription(BigDecimal amountInBRL, BigDecimal targetInCNY) {
+        return String.format("Stripe Deposit. Charged %.2f BRL for %.2f CNY target.", amountInBRL, targetInCNY);
+    }
+
+    private WalletTransactionResponse createSuccessResponse(
+            WalletTransactionEntity transaction,
+            UserWalletEntity wallet,
+            UUID userId,
+            BigDecimal feeInCNY,
+            BigDecimal amountToChargeInBRL,
+            BigDecimal netAmountInCNY
+    ) {
+        return WalletTransactionResponse.createDepositSuccess(
+                transaction.getId(),
+                wallet.getWalletId(),
+                userId,
+                feeInCNY,
+                wallet.getCurrency(),
+                amountToChargeInBRL,
+                netAmountInCNY,
+                createTransactionDescription(amountToChargeInBRL, netAmountInCNY.add(feeInCNY)),
+                transaction.getCreatedAt()
+        );
+    }
     @Override
     @Transactional
     public void debitFromWallet(UUID userId, CurrencyEnum currency, BigDecimal amount,

@@ -6,6 +6,8 @@ import redirex.shipping.dto.response.UserRegisterResponse;
 import redirex.shipping.dto.response.UserUpdateResponse;
 import redirex.shipping.entity.UserEntity;
 
+import java.util.UUID;
+
 @Component
 public class UserMapper {
 
@@ -13,39 +15,46 @@ public class UserMapper {
         if (user == null) {
             return null;
         }
-        return UserRegisterResponse.builder()
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .createdAt(user.getCreatedAt())
-                .build();
+
+        return new UserRegisterResponse(
+                user.getFullname(),
+                user.getEmail(),
+                user.getCpf(),
+                user.getPhone(),
+                user.getOccupation(),
+                user.getCreatedAt()
+        );
     }
 
     public UserUpdateResponse toResponseUpdateUser(UserEntity user) {
         if (user == null) {
             return null;
         }
-        return UserUpdateResponse.builder()
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .cpf(user.getCpf())
-                .phone(user.getPhone())
-                .occupation(user.getOccupation())
-                .updatedAt(user.getUpdatedAt())
-                .build();
+
+        return new UserUpdateResponse(
+                user.getFullname(),
+                user.getEmail(),
+                user.getCpf(),
+                user.getPhone(),
+                user.getOccupation(),
+                user.getUpdatedAt()
+        );
     }
 
     public UserInternalResponse toResponseUser(UserEntity user) {
         if (user == null) {
             return null;
         }
-        return UserInternalResponse.builder()
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .cpf(user.getCpf())
-                .phone(user.getPhone())
-                .occupation(user.getOccupation())
-                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
-                .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null)
-                .build();
+
+        return new UserInternalResponse(
+                user.getId(),
+                user.getFullname(),
+                user.getEmail(),
+                user.getCpf(),
+                user.getPhone(),
+                user.getOccupation(),
+                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null,
+                user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null
+        );
     }
 }

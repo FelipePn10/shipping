@@ -12,16 +12,13 @@ public record WalletTransactionResponse(
         CurrencyEnum chargedCurrency,
         UUID userWalletId,
         UUID userId,
-        String fee,
-        String currency,
-        String chargedAmount,
-        BigDecimal amountToChargeInBRL,
-        BigDecimal netAmountInCNY,
-        BigDecimal feeInCNY,
+        BigDecimal fee,
+        CurrencyEnum currency,
+        BigDecimal chargedAmount,
+        BigDecimal netAmount,
         LocalDateTime depositRequestTime,
         String transactionDescription,
         WalletTransactionTypeEnum type,
-        BigDecimal amount,
         String description,
         UUID relatedOrderItemId,
         UUID relatedShipmentId,
@@ -29,14 +26,72 @@ public record WalletTransactionResponse(
         BigDecimal transactionFee,
         BigDecimal originalAmountDeposited,
         CurrencyEnum originalCurrencyDeposited,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String errorMessage
 ) {
 
-    // Record para respostas de erro
-    public record ErrorResponse(String error, String message) {}
+    public static WalletTransactionResponse createDepositSuccess(
+            UUID transactionId,
+            UUID userWalletId,
+            UUID userId,
+            BigDecimal fee,
+            CurrencyEnum currency,
+            BigDecimal chargedAmount,
+            BigDecimal netAmount,
+            String transactionDescription,
+            LocalDateTime createdAt
+    ) {
+        return new WalletTransactionResponse(
+                transactionId,
+                "success",
+                CurrencyEnum.BRL,
+                userWalletId,
+                userId,
+                fee,
+                currency,
+                chargedAmount,
+                netAmount,
+                null,
+                transactionDescription,
+                WalletTransactionTypeEnum.DEPOSIT,
+                null,
+                null,
+                null,
+                null,
+                fee,
+                netAmount.add(fee),
+                currency,
+                createdAt,
+                null  // Sem erro
+        );
+    }
 
-    // Método factory para criar resposta de erro
-    public static ErrorResponse createError(String error, String message) {
-        return new ErrorResponse(error, message);
+    public static WalletTransactionResponse createError(
+            UUID userId,
+            String errorMessage
+    ) {
+        return new WalletTransactionResponse(
+                null,
+                "error",
+                null,
+                null,
+                userId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                errorMessage,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                LocalDateTime.now(),
+                errorMessage
+        );
     }
 }

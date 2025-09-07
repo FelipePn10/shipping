@@ -36,31 +36,36 @@ public class SearchUserRequestsController {
             Pageable pageable,
             Authentication authentication
     ) {
-
         UUID authenticatedAdminId = jwtUtil.getAdminIdFromUsername(authentication.getName());
 
         if (!adminId.equals(authenticatedAdminId)) {
             return ResponseEntity.badRequest().build();
         }
 
-        // Dados brutos
         Page<OrderItemEntity> orders = ordersMadeByCustomersService.findOrdersByAdminId(adminId, pageable);
-
-        // Resposta limpa e formatada para o front-end
         Page<OrderItemResponse> ordersResponse = orders.map(this::toDto);
 
         return ResponseEntity.ok(ordersResponse);
     }
+
     private OrderItemResponse toDto(OrderItemEntity entity) {
-        // Mapear campos desejados
-        return OrderItemResponse.builder()
-                .id(entity.getId())
-                .status(entity.getStatus())
-                .createdAt(entity.getCreatedAt())
-                .description(entity.getDescription())
-                .productUrl(entity.getProductUrl())
-                .quantity(entity.getQuantity())
-                .size(entity.getSize())
-                .build();
+        return new OrderItemResponse(
+                entity.getId(),
+                entity.getUser() != null ? entity.getUser().getId() : null,
+                entity.getWarehouse() != null ? entity.getWarehouse().getId() : null,
+                entity.getRecipientCpf(),
+                entity.getProductUrl(),
+                entity.getProductName(),
+                entity.getDescription(),
+                entity.getSize(),
+                entity.getCategory(),
+                entity.getQuantity(),
+                entity.getProductValue(),
+                entity.getStatus(),
+                entity.getCreatedAt(),
+                entity.getPaidProductAt(),
+                entity.getDeliveredAt(),
+                entity.getPaymentDeadline()
+        );
     }
 }

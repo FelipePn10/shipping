@@ -56,20 +56,20 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserRegisterResponse registerUser(@Valid RegisterUserRequest dto) {
-        logger.info("Registering user with email: {}", dto.getEmail());
-        validateUserNotExists(dto.getEmail(), dto.getCpf());
+        logger.info("Registering user with email: {}", dto.email());
+        validateUserNotExists(dto.email(), dto.cpf());
 
         try {
             // Criar cupom de boas-vindas
             CouponEntity welcomeCoupon = welcomeCouponService.createWelcomeCoupon();
 
             UserEntity user = UserEntity.builder()
-                    .fullname(dto.getFullname())
-                    .email(dto.getEmail())
-                    .password(passwordEncoder.encode(dto.getPassword()))
-                    .cpf(dto.getCpf())
-                    .phone(dto.getPhone())
-                    .occupation(dto.getOccupation())
+                    .fullname(dto.fullname())
+                    .email(dto.email())
+                    .password(passwordEncoder.encode(dto.password()))
+                    .cpf(dto.cpf())
+                    .phone(dto.phone())
+                    .occupation(dto.occupation())
                     .role("ROLE_USER")
                     .coupon(welcomeCoupon)
                     .build();
@@ -99,12 +99,12 @@ public class UserServiceImpl implements UserService {
                     .build();
             userCouponRepository.save(userCoupon);
 
-            logger.info("User registered successfully with email: {}", dto.getEmail());
+            logger.info("User registered successfully with email: {}", dto.email());
 
             // Enviar o email de boas-vindas
             try {
-                logger.info("Email sent successfully: {}", dto.getEmail());
-                userEmailService.sendWelcomeEmail(dto.getEmail(), dto.getFullname());
+                logger.info("Email sent successfully: {}", dto.email());
+                userEmailService.sendWelcomeEmail(dto.email(), dto.fullname());
             } catch (SendeEmailWelcomeException e) {
                 logger.error("Error sending email, error reported to server.", e.getMessage());
             } catch (Exception e) {
@@ -113,7 +113,7 @@ public class UserServiceImpl implements UserService {
 
             return userMapper.toResponseRegisterUser(user);
         } catch (Exception e) {
-            logger.error("Failed to register user with email: {}", dto.getEmail(), e);
+            logger.error("Failed to register user with email: {}", dto.email(), e);
             throw new UserRegistrationException("Failed to register user", e);
         }
     }
@@ -126,21 +126,21 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User with ID " + userId + " not found"));
 
-        if (!dto.getEmail().equals(user.getEmail())) {
-            validateEmailNotExists(dto.getEmail());
+        if (!dto.email().equals(user.getEmail())) {
+            validateEmailNotExists(dto.email());
         }
-        if (!dto.getCpf().equals(user.getCpf())) {
-            validateCpfNotExists(dto.getCpf());
+        if (!dto.cpf().equals(user.getCpf())) {
+            validateCpfNotExists(dto.cpf());
         }
 
-        user.setFullname(dto.getFullname());
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setCpf(dto.getCpf());
-        user.setPhone(dto.getPhone());
-        user.setOccupation(dto.getOccupation());
-        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setFullname(dto.fullname());
+        user.setEmail(dto.email());
+        user.setPassword(passwordEncoder.encode(dto.password()));
+        user.setCpf(dto.cpf());
+        user.setPhone(dto.phone());
+        user.setOccupation(dto.occupation());
+        if (dto.password() != null && !dto.password().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.password()));
         }
 
         user = userRepository.save(user);

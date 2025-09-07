@@ -60,29 +60,29 @@ public class OrderItemServiceImpl implements OrderItemService {
     @Transactional
     @PreAuthorize("@permissionService.isOwnerOrAdmin(#userId)")
     public OrderItemResponse createOrderItem(UUID userId, @Valid CreateOrderItemRequest request) {
-        logger.info("Creating order for userId: {}, productUrl: {}", userId, request.getProductUrl());
+        logger.info("Creating order for userId: {}, productUrl: {}", userId, request.productUrl());
 
         // Buscar entidades
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
-        WarehouseEntity warehouse = warehouseRepository.findById(request.getWarehouseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with ID: " + request.getWarehouseId()));
+        WarehouseEntity warehouse = warehouseRepository.findById(request.warehouseId())
+                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with ID: " + request.warehouseId()));
 
         // preço
         BigDecimal productPrice;
-        if (request.isAutoFetchPrice()) {
+        if (request.autoFetchPrice()) {
             try {
                 logger.warn("Fetching product price for userId: {}", userId);
-                productPrice = webScrapingService.scrapeProductPrice(request.getProductUrl());
+                productPrice = webScrapingService.scrapeProductPrice(request.productUrl());
             } catch (Exception e) {
                 throw new OrderCreationFailedException("Failed to get automatic price: " + e.getMessage());
             }
         } else {
-            if (request.getProductValue() == null) {
+            if (request.productValue() == null) {
                 throw new IllegalArgumentException("Product price must be entered when autoFetchPrice = false");
             }
-            productPrice = request.getProductValue();
+            productPrice = request.productValue();
         }
 
         productPrice = productPrice.setScale(2, java.math.RoundingMode.HALF_UP);
@@ -197,37 +197,37 @@ public class OrderItemServiceImpl implements OrderItemService {
                                                BigDecimal productPrice) {
         return OrderItemEntity.builder()
                 .user(user)
-                .productUrl(request.getProductUrl())
-                .productName(request.getProductName())
-                .description(request.getDescription())
-                .size(request.getSize())
-                .quantity(request.getQuantity())
+                .productUrl(request.productUrl())
+                .productName(request.productName())
+                .description(request.description())
+                .size(request.size())
+                .quantity(request.quantity())
                 .productValue(productPrice)
-                .category(request.getCategory())
-                .recipientCpf(request.getRecipientCpf())
+                .category(request.category())
+                .recipientCpf(request.recipientCpf())
                 .status(OrderItemStatusEnum.CREATING_ORDER)
                 .warehouse(warehouse)
                 .build();
     }
 
-
     private OrderItemResponse mapEntityToResponse(OrderItemEntity entity) {
-        return OrderItemResponse.builder()
-                .id(entity.getId())
-                .userId(entity.getUser().getId())
-                .warehouseId(entity.getWarehouse().getId())
-                .productUrl(entity.getProductUrl())
-                .productName(entity.getProductName())
-                .description(entity.getDescription())
-                .size(entity.getSize())
-                .quantity(entity.getQuantity())
-                .productValue(entity.getProductValue())
-                .category(entity.getCategory())
-                .recipientCpf(entity.getRecipientCpf())
-                .status(entity.getStatus())
-                .createdAt(entity.getCreatedAt())
-                .paidProductAt(entity.getPaidProductAt())
-                .deliveredAt(entity.getDeliveredAt())
-                .build();
+        return new OrderItemResponse(
+                entity.getId(),
+                entity.getUser().getId(),
+                entity.getWarehouse().getId(),
+                entity.getRecipientCpf(),
+                entity.getProductUrl(),
+                entity.getProductName(),
+                entity.getDescription(),
+                entity.getSize(),
+                entity.getCategory(),
+                entity.getQuantity(),
+                entity.getProductValue(),
+                entity.getStatus(),
+                entity.getCreatedAt(),
+                entity.getPaidProductAt(),
+                entity.getDeliveredAt(),
+                entity.getPaymentDeadline()
+        );
     }
 }

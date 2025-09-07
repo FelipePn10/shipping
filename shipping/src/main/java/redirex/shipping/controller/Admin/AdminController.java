@@ -24,9 +24,9 @@ public class AdminController {
 
     @PostMapping("/create/admin")
     public ResponseEntity<RegisterAdminResponse> createAdmin(@Valid @RequestBody RegisterAdminRequest dto) {
-        log.info("Received request to create admin: {}", dto.getEmail());
+        log.info("Received request to create admin: {}", dto.email());
         RegisterAdminResponse adminResponse = adminService.createAdmin(dto);
-        log.info("Admin created successfully: {}", adminResponse.getEmail());
+        log.info("Admin created successfully: {}", adminResponse.email());
         return ResponseEntity.status(HttpStatus.CREATED).body(adminResponse);
     }
 
@@ -36,7 +36,7 @@ public class AdminController {
             @Valid @RequestBody UpdateAdminRequest dto) {
         log.info("Received request to update admin: {}", id);
         UpdateAdminResponse adminResponse = adminService.updateAdmin(id, dto);
-        log.info("Admin updated successfully: {}", adminResponse.getEmail());
+        log.info("Admin updated successfully: {}", adminResponse.email());
         return ResponseEntity.ok(adminResponse);
     }
 }

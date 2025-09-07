@@ -33,22 +33,22 @@ public class EnterpriseService {
 
     @Transactional
     public EnterpriseEntity register(@Valid RegisterEnterpriseRequest dto) {
-        validateEnterpriseNotExists(dto.getEmail(), dto.getCnpj());
+        validateEnterpriseNotExists(dto.email(), dto.cnpj());
 
         try {
             EnterpriseEntity enterprise = new EnterpriseEntity(
-                    dto.getName(),
-                    dto.getEmail(),
-                    passwordEncoder.encode(dto.getPassword()),
-                    dto.getCnpj(),
-                    dto.getPhone(),
-                    dto.getAddress(),
-                    dto.getComplement(),
-                    dto.getCity(),
-                    dto.getState(),
-                    dto.getZipcode(),
-                    dto.getCountry(),
-                    dto.getOccupation(),
+                    dto.name(),
+                    dto.email(),
+                    passwordEncoder.encode(dto.password()),
+                    dto.cnpj(),
+                    dto.phone(),
+                    dto.address(),
+                    dto.complement(),
+                    dto.city(),
+                    dto.state(),
+                    dto.zipcode(),
+                    dto.country(),
+                    dto.occupation(),
                     "ROLE_ENTERPRISE"
             );
             return enterpriseRepository.save(enterprise);
@@ -61,7 +61,7 @@ public class EnterpriseService {
     @Transactional
     public EnterpriseEntity registerNewEnterprise(@Valid RegisterEnterpriseRequest registerEnterpriseRequest) {
         EnterpriseEntity enterprise = new EnterpriseEntity();
-        enterprise.setPassword(passwordEncoder.encode(registerEnterpriseRequest.getPassword()));
+        enterprise.setPassword(passwordEncoder.encode(registerEnterpriseRequest.password()));
         return enterpriseRepository.save(enterprise);
     }
 

@@ -37,8 +37,8 @@ public class AddressServiceImpl implements AddressService {
     @Transactional
     @PreAuthorize("@permissionService.isOwner(#dto.userId)")
     public AddressResponse createdAddress(@Valid AddressRequest dto) {
-        logger.info("Creating address for zipcode: {}", dto.getZipcode());
-        validateAddressDoesNotExist(dto.getZipcode());
+        logger.info("Creating address for zipcode: {}", dto.zipcode());
+        validateAddressDoesNotExist(dto.zipcode());
 
         UserEntity user = getAuthenticatedUser();
         AddressEntity address = addressMapper.toEntity(dto);
@@ -63,8 +63,8 @@ public class AddressServiceImpl implements AddressService {
             throw new AccessDeniedException("Usuário não tem permissão para alterar este endereço");
         }
 
-        if (!dto.getZipcode().equals(zipcode)) {
-            validateAddressDoesNotExist(dto.getZipcode());
+        if (!dto.zipcode().equals(zipcode)) {
+            validateAddressDoesNotExist(dto.zipcode());
         }
 
         addressMapper.updateEntityFromDto(dto, address);

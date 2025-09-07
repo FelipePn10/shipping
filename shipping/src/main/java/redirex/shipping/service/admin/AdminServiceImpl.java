@@ -34,18 +34,18 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public RegisterAdminResponse createAdmin(@Valid RegisterAdminRequest registerAdminRequestDto) {
-        logger.info("Registering admin with email: {}", registerAdminRequestDto.getEmail());
-        validateAdminNotExists(registerAdminRequestDto.getEmail());
+        logger.info("Registering admin with email: {}", registerAdminRequestDto.email());
+        validateAdminNotExists(registerAdminRequestDto.email());
 
         try {
             AdminEntity adminEntity = AdminEntity.builder()
-                    .fullname(registerAdminRequestDto.getFullname())
-                    .email(registerAdminRequestDto.getEmail())
-                    .password(passwordEncoder.encode(registerAdminRequestDto.getPassword()))
-                    .cpf(registerAdminRequestDto.getCpf())
+                    .fullname(registerAdminRequestDto.fullname())
+                    .email(registerAdminRequestDto.email())
+                    .password(passwordEncoder.encode(registerAdminRequestDto.password()))
+                    .cpf(registerAdminRequestDto.cpf())
                     .role("ROLE_ADMIN")
                     .build();
-            logger.info("Creating admin with email: {}", registerAdminRequestDto.getEmail());
+            logger.info("Creating admin with email: {}", registerAdminRequestDto.email());
 
             adminRepository.save(adminEntity);
             return adminMapper.toRegisterResponse(adminEntity);
@@ -64,22 +64,22 @@ public class AdminServiceImpl implements AdminService {
         AdminEntity adminEntity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin with id " + id + " not found"));
 
-        if (!updateAdminRequestDto.getEmail().equals(adminEntity.getEmail())) {
-            validateEmailNotExists(updateAdminRequestDto.getEmail());
+        if (!updateAdminRequestDto.email().equals(adminEntity.getEmail())) {
+            validateEmailNotExists(updateAdminRequestDto.email());
         }
 
-        adminEntity.setFullname(updateAdminRequestDto.getFullname());
+        adminEntity.setFullname(updateAdminRequestDto.fullname());
 
-        if (updateAdminRequestDto.getEmail() != null &&
-                !updateAdminRequestDto.getEmail().isBlank() &&
-                !updateAdminRequestDto.getEmail().equals(adminEntity.getEmail())) {
-            validateEmailNotExists(updateAdminRequestDto.getEmail());
-            adminEntity.setEmail(updateAdminRequestDto.getEmail());
+        if (updateAdminRequestDto.email() != null &&
+                !updateAdminRequestDto.email().isBlank() &&
+                !updateAdminRequestDto.email().equals(adminEntity.getEmail())) {
+            validateEmailNotExists(updateAdminRequestDto.email());
+            adminEntity.setEmail(updateAdminRequestDto.email());
         }
 
-        if (updateAdminRequestDto.getPassword() != null &&
-                !updateAdminRequestDto.getPassword().isBlank()) {
-            adminEntity.setPassword(passwordEncoder.encode(updateAdminRequestDto.getPassword()));
+        if (updateAdminRequestDto.password() != null &&
+                !updateAdminRequestDto.password().isBlank()) {
+            adminEntity.setPassword(passwordEncoder.encode(updateAdminRequestDto.password()));
         }
 
         adminEntity = adminRepository.save(adminEntity);

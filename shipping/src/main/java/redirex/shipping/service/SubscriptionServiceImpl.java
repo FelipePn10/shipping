@@ -41,7 +41,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public SubscriptionResponse createSubscription(CreateSubscriptionRequest request) {
-        UserEntity userEntity = userRepository.findById(request.getUserId())
+        UserEntity userEntity = userRepository.findById(request.userId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         try {
@@ -49,13 +49,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             Customer customer = getOrCreateStripeCustomer(userEntity);
 
             // Vincular método de pagamento do cliente
-            PaymentMethod paymentMethod = PaymentMethod.retrieve(request.getPaymentMethodId());
+            PaymentMethod paymentMethod = PaymentMethod.retrieve(request.paymentMethodId());
             paymentMethod.attach(new  HashMap<String, Object>() {{
                 put("customer", customer.getId());
             }});
 
             // Definir plano (mapeamento de SubscriptionPlanEnum para Stripe Price ID)
-            String priceId = getStripePriceId(request.getPlanType());
+            String priceId = getStripePriceId(request.planType());
 
             // Criar assinatura Stripe
             Map<String, Object> subscriptionParams = new HashMap<>();
@@ -65,7 +65,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                     put("price", priceId);
                 }});
             }});
-            subscriptionParams.put("default_payment_method", request.getPaymentMethodId());
+            subscriptionParams.put("default_payment_method", request.paymentMethodId());
             Subscription stripeSubscription = Subscription.create(subscriptionParams);
 
             // Salvar assinatura no banco
@@ -73,7 +73,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             subscriptionEntity.setUser(userEntity);
             subscriptionEntity.setStripeSubscriptionId(stripeSubscription.getId());
             subscriptionEntity.setPlanId(priceId);
-            subscriptionEntity.setPlanType(request.getPlanType());
+            subscriptionEntity.setPlanType(request.planType());
             subscriptionEntity.setStatus(SubscriptionStatusEnum.ACTIVE);
             subscriptionRepository.save(subscriptionEntity);
 
@@ -125,15 +125,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     private SubscriptionResponse mapToResponse(SubscriptionEntity entity) {
-        SubscriptionResponse response = new SubscriptionResponse();
-        response.setId(entity.getId());
-        response.setUserId(entity.getUser().getId());
-        response.setStripeSubscriptionId(entity.getStripeSubscriptionId());
-        response.setPlanType(entity.getPlanType());
-        response.setStatus(entity.getStatus());
-        response.setCreatedAt(entity.getCreatedAt());
-        response.setUpdatedAt(entity.getUpdatedAt());
-        response.setCancelledAt(entity.getCancelledAt());
-        return response;
+        return new SubscriptionResponse(
+                entity.getId(),
+                entity.getUser().getId(),
+                entity.getStripeSubscriptionId(),
+                entity.getPlanType(),
+                entity.getStatus(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt(),
+                entity.getCancelledAt()
+        );
     }
 }

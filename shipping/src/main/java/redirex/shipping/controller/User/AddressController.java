@@ -37,8 +37,8 @@ public class AddressController {
             @PathVariable UUID userId,
             @Valid @RequestBody CreateAddressRequest request) {
         try {
-            if (!Objects.equals(userId, request.getUserId())) {
-                logger.warn("UserId inconsistency: pathUserId={}, requestUserId={} ", userId, request.getUserId());
+            if (!Objects.equals(userId, request.userId())) {
+                logger.warn("UserId inconsistency: pathUserId={}, requestUserId={} ", userId, request.userId());
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .build();
             }
@@ -48,27 +48,21 @@ public class AddressController {
             logger.info("Received request to create address for authenticated user");
             AddressResponse response = addressService.createdAddress(dto);
             logger.info("Address created for authenticated user: {}", response);
+
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.<AddressResponse>builder()
-                            .data(response)
-                            .timestamp(LocalDateTime.now())
-                            .build());
+                    .body(ApiResponse.success(response));
         } catch (AddressCreatedException e) {
             logger.error("Address creation error: {}", e.getMessage(), e);
-            ApiErrorResponse error = ApiErrorResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Error registering user. Reason: " + e.getMessage())
-                    .build();
+            ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.BAD_REQUEST,
+                    "Error registering user. Reason: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.<AddressResponse>builder().error(error).build());
+                    .body(ApiResponse.error(error));
         } catch (Exception e) {
             logger.error("Internal server error: {}", e.getMessage(), e);
-            ApiErrorResponse error = ApiErrorResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Error internal server. Reason: " + e.getMessage())
-                    .build();
+            ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.BAD_REQUEST,
+                    "Error internal server. Reason: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.<AddressResponse>builder().error(error).build());
+                    .body(ApiResponse.error(error));
         }
     }
 
@@ -80,27 +74,21 @@ public class AddressController {
             logger.info("Updating address for zipcode: {}", zipcode);
             AddressResponse updateResponse = addressService.updateAddress(zipcode, dto);
             logger.info("Address updated for zipcode: {}", updateResponse);
+
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.<AddressResponse>builder()
-                            .data(updateResponse)
-                            .timestamp(LocalDateTime.now())
-                            .build());
+                    .body(ApiResponse.success(updateResponse));
         } catch (ResourceNotFoundException e) {
             logger.warn("address selected to update is not registered in the database: {}", zipcode);
-            ApiErrorResponse error = ApiErrorResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Address not found. Reason: " + e.getMessage())
-                    .build();
+            ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.BAD_REQUEST,
+                    "Address not found. Reason: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.<AddressResponse>builder().error(error).build());
+                    .body(ApiResponse.error(error));
         } catch (Exception e) {
             logger.error("Update error for zipcode {}: {}", zipcode, e.getMessage(), e);
-            ApiErrorResponse error = ApiErrorResponse.builder()
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .message("Error internal server. Reason: " + e.getMessage())
-                    .build();
+            ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error internal server. Reason: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.<AddressResponse>builder().error(error).build());
+                    .body(ApiResponse.error(error));
         }
     }
 
@@ -120,6 +108,8 @@ public class AddressController {
     }
 
     private ResponseEntity<Object> buildErrorResponse(HttpStatus status, String message) {
-        return ResponseEntity.status(status).body(message);
+        ApiErrorResponse error = ApiErrorResponse.create(status, message);
+        return ResponseEntity.status(status)
+                .body(ApiResponse.error(error));
     }
 }

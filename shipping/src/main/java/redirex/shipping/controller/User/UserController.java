@@ -5,20 +5,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.internal.UserInternalResponse;
 import redirex.shipping.dto.request.UpdateUserRequest;
 import redirex.shipping.dto.response.*;
 import redirex.shipping.dto.request.RegisterUserRequest;
-import redirex.shipping.exception.*;
+import redirex.shipping.exception.UnauthorizedAccessException;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.UserServiceImpl;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -36,32 +32,31 @@ public class UserController {
     @PostMapping("/public/auth/user/register")
     public ResponseEntity<ApiResponse<UserRegisterResponse>> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
         try {
-            logger.info("Received request to register user: {}", registerUserRequest.getEmail());
-            UserRegisterResponse userRegisterResponseResponse = userService.registerUser(registerUserRequest);
-            logger.info("User registered successfully: {}", userRegisterResponseResponse.getEmail());
+            logger.info("Received request to register user: {}", registerUserRequest.email());
+            UserRegisterResponse userRegisterResponse = userService.registerUser(registerUserRequest);
+            logger.info("User registered successfully: {}", userRegisterResponse.email());
+
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.<UserRegisterResponse>builder()
-                            .data(userRegisterResponseResponse)
-                            .timestamp(LocalDateTime.now())
-                            .build());
-        } catch (UserRegistrationException e) {
+                    .body(ApiResponse.success(userRegisterResponse));
+
+        } catch (Exception e) {
             logger.error("Registration error: {}", e.getMessage(), e);
-            ApiErrorResponse error = ApiErrorResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Error registering user. Reason: " + e.getMessage())
-                    .build();
+            ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.BAD_REQUEST,
+                    "Error registering user. Reason: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.<UserRegisterResponse>builder().error(error).build());
+                    .body(ApiResponse.error(error));
         }
     }
 
     @GetMapping("/api/user/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<UserInternalResponse>> getUserById(@PathVariable UUID id) {
         try {
             validateUserAccess(id);
             logger.info("Received request to get user by ID: {}", id);
-            UserInternalResponse userInternalResponseResponse = userService.findUserById(id);
-            return ResponseEntity.ok(userInternalResponseResponse);
+            UserInternalResponse userInternalResponse = userService.findUserById(id);
+
+            return ResponseEntity.ok(ApiResponse.success(userInternalResponse));
+
         } catch (UnauthorizedAccessException e) {
             logger.error("Unauthorized access attempt for user {}: {}", id, e.getMessage());
             return buildErrorResponse(HttpStatus.FORBIDDEN, e.getMessage());
@@ -79,19 +74,19 @@ public class UserController {
             validateUserAccess(id);
             logger.info("Received request to update profile for user ID: {}", id);
             UserUpdateResponse userUpdateResponse = userService.updateUserProfile(id, updateUserRequest);
+
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.<UserUpdateResponse>builder()
-                            .data(userUpdateResponse)
-                            .timestamp(LocalDateTime.now())
-                            .build());
+                    .body(ApiResponse.success(userUpdateResponse));
+
+        } catch (UnauthorizedAccessException e) {
+            logger.error("Unauthorized access attempt for user {}: {}", id, e.getMessage());
+            return buildErrorResponse(HttpStatus.FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             logger.error("Error updating user profile for user ID {}: {}", id, e.getMessage(), e);
-            ApiErrorResponse error = ApiErrorResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Error update user. Reason: " + e.getMessage())
-                    .build();
+            ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.BAD_REQUEST,
+                    "Error update user. Reason: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.<UserUpdateResponse>builder().error(error).build());
+                    .body(ApiResponse.error(error));
         }
     }
 
@@ -103,20 +98,9 @@ public class UserController {
         }
     }
 
-    private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", status.value());
-        response.put("error", status.getReasonPhrase());
-        response.put("message", message);
-        return new ResponseEntity<>(response, status);
-    }
-
-    private Map<String, Object> buildSuccessResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", HttpStatus.OK.value());
-        response.put("message", message);
-        return response;
+    private <T> ResponseEntity<ApiResponse<T>> buildErrorResponse(HttpStatus status, String message) {
+        ApiErrorResponse error = ApiErrorResponse.create(status, message);
+        return ResponseEntity.status(status)
+                .body(ApiResponse.error(error));
     }
 }

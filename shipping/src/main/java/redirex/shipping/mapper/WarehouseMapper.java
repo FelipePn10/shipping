@@ -13,24 +13,32 @@ import java.util.stream.Collectors;
 public class WarehouseMapper {
 
     public WarehouseResponse toResponse(WarehouseEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
         // Ordena os itens por data de chegada (mais recente primeiro)
         List<OrderItemSummaryResponse> items = entity.getOrderItems().stream()
                 .sorted(Comparator.comparing(OrderItemEntity::getArrivedAtWarehouseAt).reversed())
                 .map(this::toOrderItemSummary)
                 .collect(Collectors.toList());
 
-        return WarehouseResponse.builder()
-                .id(entity.getId())
-                .orderItems(items)
-                .build();
+        return new WarehouseResponse(
+                entity.getId(),
+                items
+        );
     }
 
     private OrderItemSummaryResponse toOrderItemSummary(OrderItemEntity item) {
-        return OrderItemSummaryResponse.builder()
-                .id(item.getId())
-                .description(item.getDescription())
-                .status(item.getStatus())
-                .arrivedAt(item.getArrivedAtWarehouseAt())
-                .build();
+        if (item == null) {
+            return null;
+        }
+
+        return new OrderItemSummaryResponse(
+                item.getId(),
+                item.getDescription(),
+                item.getStatus(),
+                item.getArrivedAtWarehouseAt()
+        );
     }
 }

@@ -1,7 +1,6 @@
 package redirex.shipping.controller.User;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.request.CreateSubscriptionRequest;
 import redirex.shipping.dto.response.SubscriptionResponse;

@@ -1,8 +1,8 @@
 package redirex.shipping.controller.Admin;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,36 +23,42 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/admin/auth")
-@RequiredArgsConstructor
-@Slf4j
 public class AuthAdminController {
+    private static final Logger log = LoggerFactory.getLogger(AuthAdminController.class);
 
     private final AuthenticationManager authenticationManager;
     private final AdminServiceImpl adminService;
     private final JwtUtil jwtUtil;
 
+    public AuthAdminController(
+            AuthenticationManager authenticationManager,
+            AdminServiceImpl adminService,
+            JwtUtil jwtUtil
+    ) {
+        this.authenticationManager = authenticationManager;
+        this.adminService = adminService;
+        this.jwtUtil = jwtUtil;
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthAdminResponse>> login(@Valid @RequestBody AuthAdminRequest authRequest) {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(authRequest.email(), authRequest.password())
             );
 
-            UUID adminId = adminService.findAdminIdByEmail(authRequest.getEmail());
-            String token = jwtUtil.generateToken(authRequest.getEmail(), adminId);
+            UUID adminId = adminService.findAdminIdByEmail(authRequest.email());
+            String token = jwtUtil.generateToken(authRequest.email(), adminId);
 
-            AuthAdminResponse data = AuthAdminResponse.builder().token(token).fullname(authRequest.getFullname()).email(authRequest.getEmail()).build();
+            AuthAdminResponse data = new AuthAdminResponse(authRequest.fullname(), authRequest.email(), token);
 
-            return ResponseEntity.ok(ApiResponse.<AuthAdminResponse>builder().data(data).build());
+            return ResponseEntity.ok(ApiResponse.success(data));
 
         } catch (BadCredentialsException e) {
-            ApiErrorResponse error = ApiErrorResponse.builder()
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .message("Invalid email or password")
-                    .build();
+            ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.UNAUTHORIZED, "Invalid email or password");
 
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.<AuthAdminResponse>builder().error(error).build());
+                    .body(ApiResponse.error(error));
         }
     }
 }

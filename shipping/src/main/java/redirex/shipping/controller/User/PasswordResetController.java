@@ -5,10 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import redirex.shipping.dto.request.ForgotPasswordRequest;
 import redirex.shipping.dto.request.ResetPasswordRequest;
 import redirex.shipping.dto.request.VerifyCodeRequest;
+import redirex.shipping.dto.response.ApiErrorResponse;
 import redirex.shipping.dto.response.ApiResponse;
 import redirex.shipping.entity.UserEntity;
 import redirex.shipping.service.UserPasswordResetService;
@@ -16,6 +16,7 @@ import redirex.shipping.service.email.UserEmailService;
 
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @RestController
 public class PasswordResetController {
@@ -32,45 +33,64 @@ public class PasswordResetController {
 
     @PostMapping("/public/user/account/change/password/redirex")
     public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        logger.info("Password reset requested for email {}", request.getEmail());
+        logger.info("Password reset requested for email {}", request.email());
 
-        UserEntity user = passwordResetService.findUserByEmail(request.getEmail())
-                .orElseThrow(() -> buildException(HttpStatus.NOT_FOUND, "User not found"));
+        try {
+            Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(request.email());
 
-        String code = passwordResetService.createResetCode(user);
-        userEmailService.sendPasswordResetCodeEmail(user.getEmail(), code);
+            if (userOptional.isEmpty()) {
+                logger.warn("User not found for email: {}", request.email());
+                return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
+            }
 
-        return ResponseEntity.ok(ApiResponse.<String>builder()
-                .data("Verification code sent to email")
-                .timestamp(LocalDateTime.now())
-                .build());
+            UserEntity user = userOptional.get();
+            String code = passwordResetService.createResetCode(user);
+            userEmailService.sendPasswordResetCodeEmail(user.getEmail(), code);
+
+            return ResponseEntity.ok(ApiResponse.success("Verification code sent to email"));
+
+        } catch (Exception e) {
+            logger.error("Error processing password reset request: {}", e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing request");
+        }
     }
 
     @PostMapping("/public/user/account/verify/reset/code/redirex")
     public ResponseEntity<ApiResponse<String>> verifyResetCode(@Valid @RequestBody VerifyCodeRequest request) {
-        UserEntity user = passwordResetService.findUserByEmail(request.getEmail())
-                .orElseThrow(() -> buildException(HttpStatus.NOT_FOUND, "User not found"));
+        try {
+            Optional<UserEntity> userOptional = passwordResetService.findUserByEmail(request.email());
 
-        String sessionToken = passwordResetService.verifyCode(user, request.getCode());
+            if (userOptional.isEmpty()) {
+                logger.warn("User not found for email: {}", request.email());
+                return buildErrorResponse(HttpStatus.NOT_FOUND, "User not found");
+            }
 
-        return ResponseEntity.ok(ApiResponse.<String>builder()
-                .data(sessionToken)
-                .timestamp(LocalDateTime.now())
-                .build());
+            UserEntity user = userOptional.get();
+            String sessionToken = passwordResetService.verifyCode(user, request.code());
+
+            return ResponseEntity.ok(ApiResponse.success(sessionToken));
+
+        } catch (Exception e) {
+            logger.error("Error verifying reset code: {}", e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid verification code");
+        }
     }
 
     @PostMapping("/public/user/account/reset/password/redirex")
     public ResponseEntity<ApiResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        passwordResetService.resetPassword(request.getResetSessionToken(), request.getNewPassword());
+        try {
+            passwordResetService.resetPassword(request.resetSessionToken(), request.newPassword());
+            return ResponseEntity.ok(ApiResponse.success("Password reset successfully"));
 
-        return ResponseEntity.ok(ApiResponse.<String>builder()
-                .data("Password reset successfully")
-                .timestamp(LocalDateTime.now())
-                .build());
+        } catch (Exception e) {
+            logger.error("Error resetting password: {}", e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Error resetting password");
+        }
     }
 
-    private ResponseStatusException buildException(HttpStatus status, String message) {
-        logger.warn("{} - {}", status.value(), message);
-        return new ResponseStatusException(status, message);
+    private <T> ResponseEntity<ApiResponse<T>> buildErrorResponse(HttpStatus status, String message) {
+        ApiErrorResponse error = ApiErrorResponse.create(status, message);
+        return ResponseEntity.status(status)
+                .body(ApiResponse.error(error));
     }
 }

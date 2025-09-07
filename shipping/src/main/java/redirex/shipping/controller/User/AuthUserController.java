@@ -2,7 +2,6 @@ package redirex.shipping.controller.User;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,7 +23,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/public/auth/v1")
-@RequiredArgsConstructor
 public class AuthUserController {
     private static final Logger logger = LoggerFactory.getLogger(AuthUserController.class);
 
@@ -33,35 +31,41 @@ public class AuthUserController {
     private final TokenBlacklistService tokenBlacklistService;
     private final UserServiceImpl userService;
 
+    public AuthUserController(
+            AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil,
+            TokenBlacklistService tokenBlacklistService,
+            UserServiceImpl userService
+    ) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.tokenBlacklistService = tokenBlacklistService;
+        this.userService = userService;
+    }
+
     @PostMapping("/user/login")
     public ResponseEntity<ApiResponse<AuthUserResponse>> login(
             @Valid @RequestBody AuthUserRequest authRequest) {
-        logger.info("Login attempt for email: {}", authRequest.getEmail());
+        logger.info("Login attempt for email: {}", authRequest.email());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            authRequest.getEmail(),
-                            authRequest.getPassword()
+                            authRequest.email(),
+                            authRequest.password()
                     )
             );
-            UUID userId = userService.findUserIdByEmail(authRequest.getEmail());
-            String token = jwtUtil.generateToken(authRequest.getEmail(), userId);
+            UUID userId = userService.findUserIdByEmail(authRequest.email());
+            String token = jwtUtil.generateToken(authRequest.email(), userId);
 
-            AuthUserResponse response = AuthUserResponse.builder()
-                    .token(token)
-                    .userId(userId)
-                    .build();
+            AuthUserResponse response = new AuthUserResponse(token, userId);
 
-            logger.info("Successful login for email: {}", authRequest.getEmail());
+            logger.info("Successful login for email: {}", authRequest.email());
 
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.<AuthUserResponse>builder()
-                            .data(response)
-                            .timestamp(LocalDateTime.now())
-                            .build());
+                    .body(ApiResponse.success(response));
 
         } catch (BadCredentialsException e) {
-            logger.warn("Invalid credentials for email: {}", authRequest.getEmail());
+            logger.warn("Invalid credentials for email: {}", authRequest.email());
             return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid credentials");
         } catch (Exception e) {
             logger.error("Error processing login: {}", e.getMessage(), e);
@@ -95,10 +99,7 @@ public class AuthUserController {
             tokenBlacklistService.addToBlacklist(token, expirationInSeconds);
             logger.info("Token successfully blacklisted. Expires in {} seconds", expirationInSeconds);
 
-            return ResponseEntity.ok(ApiResponse.<String>builder()
-                    .data("Logout successful")
-                    .timestamp(LocalDateTime.now())
-                    .build());
+            return ResponseEntity.ok(ApiResponse.success("Logout successful"));
 
         } catch (TokenBlacklistService.RedisOperationException e) {
             logger.error("Redis communication failure: {}", e.getMessage(), e);
@@ -110,17 +111,8 @@ public class AuthUserController {
     }
 
     private <T> ResponseEntity<ApiResponse<T>> buildErrorResponse(HttpStatus status, String message) {
-        ApiErrorResponse error = ApiErrorResponse.builder()
-                .status(status.value())
-                .message(message)
-                .build();
-
-        ApiResponse<T> response = ApiResponse.<T>builder()
-                .data(null)
-                .error(error)
-                .timestamp(LocalDateTime.now())
-                .build();
-
-        return ResponseEntity.status(status).body(response);
+        ApiErrorResponse error = ApiErrorResponse.create(status, message);
+        return ResponseEntity.status(status)
+                .body(ApiResponse.error(error));
     }
 }
