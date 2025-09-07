@@ -1,26 +1,24 @@
 package redirex.shipping.dto.response;
 
-import lombok.Builder;
-import lombok.Data;
 import redirex.shipping.entity.AddressEntity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
-@Builder
-public class AddressResponse {
-        private UUID id;
-        private UUID userId;
-        private String recipientName;
-        private String street;
-        private String complement;
-        private String city;
-        private String state;
-        private String zipcode;
-        private String country;
-        private String phone;
-        private AddressEntity.ResidenceType residenceType;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
-    }
+public record AddressResponse (
+        UUID id,
+        UUID userId,
+        String recipientName,
+        String street,
+        String complement,
+        String city,
+        String state,
+        String zipcode,
+        String country,
+        String phone,
+        AddressEntity.ResidenceType residenceType,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
+        ) {
+
+}

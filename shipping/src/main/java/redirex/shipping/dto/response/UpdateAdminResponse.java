@@ -1,12 +1,9 @@
 package redirex.shipping.dto.response;
 
-import lombok.Getter;
-import lombok.Setter;
+public record UpdateAdminResponse (
+    String fullname,
+    String email
+) {
 
-@Getter
-@Setter
-public class UpdateAdminResponse {
-    private String fullname;
-    private String email;
 }
 
