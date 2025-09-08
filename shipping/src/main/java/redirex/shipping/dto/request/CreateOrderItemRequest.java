@@ -1,5 +1,7 @@
 package redirex.shipping.dto.request;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.URL;
 import redirex.shipping.enums.ProductCategoryEnum;
@@ -27,6 +29,7 @@ public record CreateOrderItemRequest(
         @NotNull(message = "Category is required")
         ProductCategoryEnum category,
 
+        @Enumerated(EnumType.STRING)
         SizeEnum size,
 
         @NotBlank

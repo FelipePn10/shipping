@@ -61,6 +61,7 @@ public class OrderItemEntity implements Serializable {
     @Column(name = "description", nullable = false)
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "size")
     private SizeEnum size;
 
