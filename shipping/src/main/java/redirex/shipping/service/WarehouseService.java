@@ -41,7 +41,7 @@ public class WarehouseService {
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found"));
 
         // Atualiza status e relacionamento
-        orderItem.setStatus(OrderItemStatusEnum.IN_WAREHOUSE);
+        orderItem.setStatus(OrderItemStatusEnum.PAID);
         orderItem.setWarehouse(warehouse);
         orderItem.setArrivedAtWarehouseAt(LocalDateTime.now());
 
