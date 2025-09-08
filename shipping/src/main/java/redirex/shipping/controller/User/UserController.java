@@ -29,7 +29,7 @@ public class UserController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping("/public/auth/user/register")
+    @PostMapping("/public/auth/v1/user/register")
     public ResponseEntity<ApiResponse<UserRegisterResponse>> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
         try {
             logger.info("Received request to register user: {}", registerUserRequest.email());
