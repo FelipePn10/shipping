@@ -1,43 +1,44 @@
 package redirex.shipping.controller.Admin;
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import redirex.shipping.dto.request.RegisterAdminRequest;
-import redirex.shipping.dto.request.UpdateAdminRequest;
-import redirex.shipping.dto.response.RegisterAdminResponse;
-import redirex.shipping.dto.response.UpdateAdminResponse;
-import redirex.shipping.service.admin.AdminService;
-
+import redirex.shipping.dto.response.ApiErrorResponse;
+import redirex.shipping.dto.response.ApiResponse;
+import redirex.shipping.dto.response.DeleteUserResponse;
+import redirex.shipping.exception.ResourceNotFoundException;
+import redirex.shipping.service.UserService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/public/v1")
-@RequiredArgsConstructor
 @Slf4j
 public class AdminController {
+    private final UserService userService;
 
-    private final AdminService adminService;
-
-    @PostMapping("/create/admin")
-    public ResponseEntity<RegisterAdminResponse> createAdmin(@Valid @RequestBody RegisterAdminRequest dto) {
-        log.info("Received request to create admin: {}", dto.email());
-        RegisterAdminResponse adminResponse = adminService.createAdmin(dto);
-        log.info("Admin created successfully: {}", adminResponse.email());
-        return ResponseEntity.status(HttpStatus.CREATED).body(adminResponse);
+    public AdminController(UserService userService) {
+        this.userService = userService;
     }
 
-    @PutMapping("admin/{id}")
-    public ResponseEntity<UpdateAdminResponse> updateAdmin(
-            @PathVariable UUID id,
-            @Valid @RequestBody UpdateAdminRequest dto) {
-        log.info("Received request to update admin: {}", id);
-        UpdateAdminResponse adminResponse = adminService.updateAdmin(id, dto);
-        log.info("Admin updated successfully: {}", adminResponse.email());
-        return ResponseEntity.ok(adminResponse);
+    @DeleteMapping("api/admin/v1/delete/user/{userId}")
+    public ResponseEntity<ApiResponse<DeleteUserResponse>> deleteUserProfile(@PathVariable UUID userId) {
+        try {
+            log.info("Deleting address for zipcode: {}", userId);
+            userService.deleteUserProfile(userId);
+            return ResponseEntity.noContent().build();
+        } catch (ResourceNotFoundException e) {
+            log.warn("Address not found: {}", userId);
+            return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            log.error("Delete error for userId {}: {}", userId, e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno do servidor");
+        }
+    }
+
+    private <T> ResponseEntity<ApiResponse<T>> buildErrorResponse(HttpStatus status, String message) {
+        ApiErrorResponse error = ApiErrorResponse.create(status, message);
+        return ResponseEntity.status(status)
+                .body(ApiResponse.error(error));
     }
 }
 

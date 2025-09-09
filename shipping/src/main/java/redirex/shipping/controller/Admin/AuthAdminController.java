@@ -8,21 +8,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.request.AuthAdminRequest;
-import redirex.shipping.dto.response.ApiErrorResponse;
-import redirex.shipping.dto.response.ApiResponse;
-import redirex.shipping.dto.response.AuthAdminResponse;
+import redirex.shipping.dto.request.RegisterAdminRequest;
+import redirex.shipping.dto.request.UpdateAdminRequest;
+import redirex.shipping.dto.response.*;
 import redirex.shipping.security.JwtUtil;
 import redirex.shipping.service.admin.AdminServiceImpl;
 
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/admin/auth")
 public class AuthAdminController {
     private static final Logger log = LoggerFactory.getLogger(AuthAdminController.class);
 
@@ -40,7 +36,15 @@ public class AuthAdminController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping("/login")
+    @PostMapping("public/admin/auth/v1/create/admin")
+    public ResponseEntity<RegisterAdminResponse> createAdmin(@Valid @RequestBody RegisterAdminRequest dto) {
+        log.info("Received request to create admin: {}", dto.email());
+        RegisterAdminResponse adminResponse = adminService.createAdmin(dto);
+        log.info("Admin created successfully: {}", adminResponse.email());
+        return ResponseEntity.status(HttpStatus.CREATED).body(adminResponse);
+    }
+
+    @PostMapping("public/admin/auth/login")
     public ResponseEntity<ApiResponse<AuthAdminResponse>> login(@Valid @RequestBody AuthAdminRequest authRequest) {
         try {
             authenticationManager.authenticate(
@@ -51,14 +55,22 @@ public class AuthAdminController {
             String token = jwtUtil.generateToken(authRequest.email(), adminId);
 
             AuthAdminResponse data = new AuthAdminResponse(authRequest.fullname(), authRequest.email(), token);
-
             return ResponseEntity.ok(ApiResponse.success(data));
 
         } catch (BadCredentialsException e) {
             ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.UNAUTHORIZED, "Invalid email or password");
-
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error(error));
         }
+    }
+
+    @PutMapping("update/auth/admin/{id}")
+    public ResponseEntity<UpdateAdminResponse> updateAdmin(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateAdminRequest dto) {
+        log.info("Received request to update admin: {}", id);
+        UpdateAdminResponse adminResponse = adminService.updateAdmin(id, dto);
+        log.info("Admin updated successfully: {}", adminResponse.email());
+        return ResponseEntity.ok(adminResponse);
     }
 }
