@@ -27,7 +27,11 @@ public class WarehouseEntity implements Serializable {
     @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 
-    @OneToOne
+    @OneToOne(
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity userId;
 }

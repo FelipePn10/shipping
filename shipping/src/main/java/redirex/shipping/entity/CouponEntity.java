@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -20,8 +21,6 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(name = "coupons")
-
-// Representando um cupom de desconto aplicável ao frete.
 public class CouponEntity implements Serializable {
 
     @Serial
@@ -30,6 +29,9 @@ public class CouponEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @ManyToMany(mappedBy = "coupons")
+    private Set<UserEntity> users;
 
     @NotBlank(message = "Coupon code is required")
     @Size(max = 50, message = "Coupon code must not exceed 50 characters")
