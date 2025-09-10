@@ -24,6 +24,7 @@ import redirex.shipping.repositories.WarehouseRepository;
 import redirex.shipping.service.admin.OrderDistributionService;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -207,6 +208,7 @@ public class OrderItemServiceImpl implements OrderItemService {
                 .recipientCpf(request.recipientCpf())
                 .status(OrderItemStatusEnum.CREATING_ORDER)
                 .warehouse(warehouse)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 

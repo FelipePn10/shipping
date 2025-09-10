@@ -20,4 +20,5 @@ public enum OrderItemStatusEnum {
 
         HAS_ARRIVED_IN_YOUR_CITY,               // Chegou na cidade de destino
 
+
 }
