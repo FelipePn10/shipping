@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface UserService {
     UserRegisterResponse registerUser(@Valid RegisterUserRequest dto);
     UserUpdateResponse updateUserProfile(UUID userId, @Valid UpdateUserRequest dto);
+    void deleteUserProfile(UUID userId);
 
     UUID findUserIdByEmail(String email);
     UserInternalResponse findUserById(UUID userId);

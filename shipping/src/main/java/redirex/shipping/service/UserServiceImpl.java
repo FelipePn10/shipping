@@ -9,24 +9,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redirex.shipping.dto.internal.UserInternalResponse;
 import redirex.shipping.dto.request.UpdateUserRequest;
+import redirex.shipping.dto.response.DeleteUserResponse;
 import redirex.shipping.dto.response.UserRegisterResponse;
 import redirex.shipping.dto.request.RegisterUserRequest;
 import redirex.shipping.dto.response.UserUpdateResponse;
-import redirex.shipping.entity.CouponEntity;
-import redirex.shipping.entity.UserCouponEntity;
-import redirex.shipping.entity.UserEntity;
-import redirex.shipping.entity.WarehouseEntity;
+import redirex.shipping.entity.*;
 import redirex.shipping.enums.CurrencyEnum;
-import redirex.shipping.exception.ResourceNotFoundException;
-import redirex.shipping.exception.SendeEmailWelcomeException;
-import redirex.shipping.exception.UserRegistrationException;
+import redirex.shipping.enums.OrderItemStatusEnum;
+import redirex.shipping.exception.*;
 import redirex.shipping.mapper.UserMapper;
-import redirex.shipping.repositories.UserCouponRepository;
-import redirex.shipping.repositories.UserRepository;
+import redirex.shipping.repositories.*;
 import redirex.shipping.service.email.UserEmailService;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -40,9 +39,12 @@ public class UserServiceImpl implements UserService {
     private final UserCouponRepository userCouponRepository;
     private final UserMapper userMapper;
     private final WarehouseService warehouseService;
+    private final WarehouseRepository warehouseRepository;
     private final UserEmailService userEmailService;
+    private final OrderItemRepository orderItemRepository;
+    private final UserWalletRepository userWalletRepository;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserWalletServiceImpl userWalletService, WelcomeCouponService welcomeCouponService, UserCouponRepository userCouponRepository, UserMapper userMapper, WarehouseService warehouseService, UserEmailService userEmailService) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserWalletServiceImpl userWalletService, WelcomeCouponService welcomeCouponService, UserCouponRepository userCouponRepository, UserMapper userMapper, WarehouseService warehouseService, WarehouseRepository warehouseRepository, UserEmailService userEmailService, OrderItemRepository orderItemRepository, UserWalletRepository userWalletRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userWalletService = userWalletService;
@@ -50,44 +52,48 @@ public class UserServiceImpl implements UserService {
         this.userCouponRepository = userCouponRepository;
         this.userMapper = userMapper;
         this.warehouseService = warehouseService;
+        this.warehouseRepository = warehouseRepository;
         this.userEmailService = userEmailService;
+        this.orderItemRepository = orderItemRepository;
+        this.userWalletRepository = userWalletRepository;
     }
 
     @Override
     @Transactional
-    public UserRegisterResponse registerUser(@Valid RegisterUserRequest dto) {
-        logger.info("Registering user with email: {}", dto.email());
-        validateUserNotExists(dto.email(), dto.cpf());
+    public UserRegisterResponse registerUser(@Valid RegisterUserRequest request) {
+        logger.info("Registering user with email: {}", request.email());
+        validateUserNotExists(request.email(), request.cpf());
 
         try {
             // Criar cupom de boas-vindas
             CouponEntity welcomeCoupon = welcomeCouponService.createWelcomeCoupon();
 
             UserEntity user = UserEntity.builder()
-                    .fullname(dto.fullname())
-                    .email(dto.email())
-                    .password(passwordEncoder.encode(dto.password()))
-                    .cpf(dto.cpf())
-                    .phone(dto.phone())
-                    .occupation(dto.occupation())
+                    .fullname(request.fullname())
+                    .email(request.email())
+                    .password(passwordEncoder.encode(request.password()))
+                    .cpf(request.cpf())
+                    .phone(request.phone())
+                    .occupation(request.occupation())
                     .role("ROLE_USER")
-                    .coupon(welcomeCoupon)
+                    .createdAt(LocalDateTime.now())
                     .build();
+            if (welcomeCoupon != null) {
+                user.getCoupons().add(welcomeCoupon);
+            }
 
-            // Salvar o UserEntity primeiro
             user = userRepository.save(user);
 
-            // Criar warehouse padrão
             WarehouseEntity warehouse = warehouseService.createWarehouseForUser(user);
             user.setWarehouse(warehouse);
 
-            // Salvar novamente para persistir a associação com o warehouse
             user = userRepository.save(user);
 
-            // Criar carteira inicial (CNY, saldo zero)
+            // (CNY, saldo zero)
             userWalletService.createInitialWallet(user, CurrencyEnum.CNY);
 
             // Criar UserCouponEntity para rastreamento adicional
+            assert welcomeCoupon != null;
             UserCouponEntity userCoupon = UserCouponEntity.builder()
                     .user(user)
                     .coupon(welcomeCoupon)
@@ -99,12 +105,12 @@ public class UserServiceImpl implements UserService {
                     .build();
             userCouponRepository.save(userCoupon);
 
-            logger.info("User registered successfully with email: {}", dto.email());
+            logger.info("User registered successfully with email: {}", request.email());
 
-            // Enviar o email de boas-vindas
+            // email de boas-vindas
             try {
-                logger.info("Email sent successfully: {}", dto.email());
-                userEmailService.sendWelcomeEmail(dto.email(), dto.fullname());
+                logger.info("Email sent successfully: {}", request.email());
+                userEmailService.sendWelcomeEmail(request.email(), request.fullname());
             } catch (SendeEmailWelcomeException e) {
                 logger.error("Error sending email, error reported to server.", e.getMessage());
             } catch (Exception e) {
@@ -112,8 +118,9 @@ public class UserServiceImpl implements UserService {
             }
 
             return userMapper.toResponseRegisterUser(user);
+
         } catch (Exception e) {
-            logger.error("Failed to register user with email: {}", dto.email(), e);
+            logger.error("Failed to register user with email: {}", request.email(), e);
             throw new UserRegistrationException("Failed to register user", e);
         }
     }
@@ -121,31 +128,82 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @PreAuthorize("@permissionService.isOwnerOrAdmin(#dto.userId)")
-    public UserUpdateResponse updateUserProfile(UUID userId, @Valid UpdateUserRequest dto) {
+    public UserUpdateResponse updateUserProfile(UUID userId, @Valid UpdateUserRequest request) {
         logger.info("Updating user profile for ID: {}", userId);
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User with ID " + userId + " not found"));
-
-        if (!dto.email().equals(user.getEmail())) {
-            validateEmailNotExists(dto.email());
-        }
-        if (!dto.cpf().equals(user.getCpf())) {
-            validateCpfNotExists(dto.cpf());
+        if (!request.email().equals(user.getEmail())) {
+            validateEmailNotExists(request.email());
         }
 
-        user.setFullname(dto.fullname());
-        user.setEmail(dto.email());
-        user.setPassword(passwordEncoder.encode(dto.password()));
-        user.setCpf(dto.cpf());
-        user.setPhone(dto.phone());
-        user.setOccupation(dto.occupation());
-        if (dto.password() != null && !dto.password().isBlank()) {
-            user.setPassword(passwordEncoder.encode(dto.password()));
-        }
+        user.setFullname(request.fullname());
+        user.setEmail(request.email());
+        user.setCpf(request.cpf());
+        user.setPhone(request.phone());
+        user.setOccupation(request.occupation());
 
         user = userRepository.save(user);
         logger.info("User profile updated successfully: {}", user.getEmail());
         return userMapper.toResponseUpdateUser(user);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public void deleteUserProfile(UUID userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + userId + " not found"));
+
+        checkUserWalletBalance(user);
+
+        checkUserPendingOrders(user);
+
+        user.getCoupons().clear();
+        userRepository.save(user);
+
+        if (user.getWallet() != null) {
+            userWalletRepository.delete(user.getWallet());
+        }
+
+        if (user.getWarehouse() != null) {
+            warehouseRepository.delete(user.getWarehouse());
+        }
+
+        userRepository.delete(user);
+        logger.info("User deleted successfully: {}", user.getEmail());
+    }
+
+    private void checkUserWalletBalance(UserEntity user) {
+        if (user.getWallet() != null) {
+            UserWalletEntity wallet = userWalletRepository.findById(user.getWallet().getWalletId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Wallet not found for user: " + user.getId()));
+
+            if (wallet.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+                throw new UserHasBalanceException(
+                        "Cannot delete user with ID " + user.getId() +
+                                " because they have a balance of " + wallet.getBalance() +
+                                " in their wallet. Please transfer or withdraw the balance before deletion."
+                );
+            }
+        }
+    }
+
+    private void checkUserPendingOrders(UserEntity user) {
+        List<OrderItemEntity> pendingOrders = orderItemRepository.findByUserAndStatusNot(user, OrderItemStatusEnum.DELIVERED);
+
+        if (!pendingOrders.isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder();
+            errorMessage.append("Cannot delete user with ID ").append(user.getId())
+                    .append(" because they have ").append(pendingOrders.size())
+                    .append(" orders with status different from DELIVERED:\n");
+
+            for (OrderItemEntity order : pendingOrders) {
+                errorMessage.append("- Order ID: ").append(order.getId())
+                        .append(", Status: ").append(order.getStatus()).append("\n");
+            }
+
+            throw new UserHasPendingOrdersException(errorMessage.toString());
+        }
     }
 
     @Override
