@@ -1,0 +1,6 @@
+### POST request to example server
+DELETE http://localhost:8081/api/admin/v1/delete/user/01161cf9-22a8-4903-81f0-b0adf20a3a1a
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiIzNzViNDE5Ny1hMGI0LTRhNGQtOWViMC1lNTdhOTcyYzYyNDIiLCJzdWIiOiJmZWxpcGVwYW5vc3NvMjEyQGdtYWlsLmNvbSIsImlhdCI6MTc1NzQ2MjQ5OSwiZXhwIjoxODQzODYyNDk5fQ.87g0abuHmix1pcxRYL2h8t99T_KE9BFkJ0oxZYKPmCsRqSWKbQ2Tr5UDvKwk9fY5W0l-lf0e8XV2gH9qWScB9A
+
+###

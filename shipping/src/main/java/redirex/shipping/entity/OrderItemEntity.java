@@ -116,6 +116,9 @@ public class OrderItemEntity implements Serializable {
     @JoinColumn(name = "admin_assigned_id")
     private AdminEntity adminAssigned;
 
+    @OneToMany(mappedBy = "order_items", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ShipmentEntity> shipments;
+
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemPhotoEntity> photos = new ArrayList<>();
 

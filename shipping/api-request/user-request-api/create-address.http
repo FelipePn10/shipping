@@ -1,10 +1,10 @@
 ### POST request create address
-POST http://localhost:8081/api/user/address
+POST http://localhost:8081/api/user/address/9f93cc3-9d1f-4922-8f31-ac8463039d63/create/address
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiIxMDExOTY1NS1lM2YwLTQ0NzQtYmQzMi0zYzYxZDZiNTEyMjIiLCJzdWIiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwiaWF0IjoxNzU1NzE3MTM3LCJleHAiOjE4NDIxMTcxMzd9.hwvoc0ndbvzG8UFz0dO9e39Si7jgrw2jiZfVntJzHmjXfJt0DJHCP_jI73qzPU3wVxJiCETtRkKQWtr1jeSvSA
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiIyOWY5M2NjMy05ZDFmLTQ5MjItOGYzMS1hYzg0NjMwMzlkNjMiLCJzdWIiOiJmZWxpcGVwYW5vc3NvMkBnbWFpbC5jb20iLCJpYXQiOjE3NTczNTEyNzQsImV4cCI6MTg0Mzc1MTI3NH0.GhSz59_agQCO_4TZAHmKehq0wjzdP4PvqiMpSOYfUQYukSycKrQ7NQplGBro9BL-kQmhO8aUtq-2Um8tlNWflA
 
 {
-  "userId": "10119655-e3f0-4474-bd32-3c61d6b51222",
+  "userId": "9f93cc3-9d1f-4922-8f31-ac8463039d63",
   "recipientName": "felipe panosso",
   "country": "Brasil",
   "state": "Parana",
@@ -12,7 +12,7 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiIxMDExOTY1NS1lM2YwLTQ0N
   "street": "Avenida Lucio de Held",
   "zipcode": "87033230",
   "phone": "44991805405",
-  "residenceType": "COMMERCIAL",
+  "residenceType": "",
   "complement": ""
 }
 ###

@@ -1,10 +1,10 @@
-### GET request to example server
-POST http://localhost:8081/public/auth/admin/v1/login
+### POST request to login
+POST http://localhost:8081/public/admin/auth/login
 Content-Type: application/json
 
 {
-  "name": "Felipe Panosso",
-  "email": "felipepanosso3@gmail.com",
+  "fullname": "Felipe Panosso",
+  "email": "felipepanosso212@gmail.com",
   "password": "felipepanosso"
 }
 ###

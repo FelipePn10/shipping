@@ -41,11 +41,14 @@ public class ShipmentEntity implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
+    @ManyToOne
+    @JoinColumn(name = "order_items", nullable = false)
+    private OrderItemEntity order;
+
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "wallet_id", nullable = false)
     private UserWalletEntity wallet;
-
-    private Set<OrderItemEntity> orderItems = new HashSet<>();
 
     @NotBlank(message = "Shipping method is required")
     @Size(max = 50, message = "Shipping method must not exceed 50 characters")
@@ -103,14 +106,6 @@ public class ShipmentEntity implements Serializable {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
-
-    public void addOrderItem(OrderItemEntity orderItem) {
-        orderItems.add(orderItem);
-    }
-
-    public void removeOrderItem(OrderItemEntity orderItem) {
-        orderItems.remove(orderItem);
-    }
 
     public void applyCoupon(UserCouponEntity userCoupon) {
         if (userCoupon == null) {

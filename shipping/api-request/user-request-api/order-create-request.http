@@ -1,18 +1,18 @@
 ### POST request create order
-POST http://localhost:8081/private/api/v1/users/1298c68d-5ed3-4a5e-9e70-0ee4e4988a89/create/order
+POST http://localhost:8081/private/api/v1/users/01161cf9-22a8-4903-81f0-b0adf20a3a1a/create/order
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiIxMjk4YzY4ZC01ZWQzLTRhNWUtOWU3MC0wZWU0ZTQ5ODhhODkiLCJzdWIiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwiaWF0IjoxNzU2MzE1NjI3LCJleHAiOjE4NDI3MTU2Mjd9.OGjFcZ6qPiTv3Xaj2LAnHRHmv01sg3cXSNdAtppzRZr_39Nxg0nPGTCPf5rWQzwhdkRxtyFsdBxsbCiOcz8BTw
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiIwMTE2MWNmOS0yMmE4LTQ5MDMtODFmMC1iMGFkZjIwYTNhMWEiLCJzdWIiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwiaWF0IjoxNzU3MzU2MjU4LCJleHAiOjE4NDM3NTYyNTh9.22mm6hz0oa9Tm1kjCPFqOWFzW_v5xhVedUeimBkL8Kfe4f5HK8pXvdxbtLZifeD-uOmWNfinJuiHfBM6ACm2Ug
 
 {
-  "userId": "1298c68d-5ed3-4a5e-9e70-0ee4e4988a89",
-  "productName": "Dunk",
-  "warehouseId": "b1413d60-0761-4c4a-8446-de8a243902a0",
-  "description": "DT Batch J2",
-  "category": "TENNIS_SHOES",
-  "productUrl": "https://shop1802721248.v.weidian.com/item.html?itemID=7304860125&spider_token=c6b0",
-  "quantity": 1,
-  "size": "SIZE_SHOES_42",
+  "userId": "01161cf9-22a8-4903-81f0-b0adf20a3a1a",
+  "warehouseId": "1ed74535-7134-409c-a18c-bc87b2e125d9",
   "recipientCpf": "13042799954",
+  "productUrl": "https://shop1802721248.v.weidian.com/item.html?itemID=7304860125&spider_token=c6b0",
+  "category": "TENNIS_SHOES",
+  "size": "SIZE_SHOES_43",
+  "productName": "Dunk",
+  "description": "DT Batch J2",
+  "quantity": 1,
   "autoFetchPrice": true
 }
 

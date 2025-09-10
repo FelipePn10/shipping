@@ -1,12 +1,12 @@
 ### POST request create admin
-POST http://localhost:8081/public/v1/create/admin
+POST http://localhost:8081/public/admin/auth/v1/create/admin
 Content-Type: application/json
 
 {
   "fullname": "Felipe Panosso",
-  "email": "felipepanosso3@gmail.com",
+  "email": "felipepanosso212@gmail.com",
   "password": "felipepanosso",
-  "cpf": "12345678900",
+  "cpf": "12345678300",
   "role": "ROLE_ADMIN"
 }
 
