@@ -14,23 +14,26 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface ShipmentMapper {
+
     @Mapping(source = "user.wallet.walletId", target = "userId")
     @Mapping(target = "orderItemIds", source = "orderItems", qualifiedByName = "mapOrderItemIds")
     @Mapping(source = "appliedShippingCoupon.coupon.id", target = "appliedShippingCouponId")
     ShipmentRequest toDTO(ShipmentEntity entity);
 
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "wallet", ignore = true)
     @Mapping(target = "orderItems", ignore = true)
     @Mapping(target = "appliedShippingCoupon", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     ShipmentEntity toEntity(ShipmentRequest dto);
 
     @Named("mapOrderItemIds")
     default List<UUID> mapOrderItemIds(Set<OrderItemEntity> orderItems) {
-        if (orderItems == null) {
-            return null;
+        if (orderItems == null || orderItems.isEmpty()) {
+            return List.of();
         }
         return orderItems.stream()
-                .map(OrderItemEntity::getId) // Mapeia o ID do OrderItemEntity
-                .collect(Collectors.toList()).reversed();
+                .map(OrderItemEntity::getId)
+                .collect(Collectors.toList());
     }
 }

@@ -14,8 +14,10 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -107,6 +109,7 @@ public class OrderItemEntity implements Serializable {
     private WarehouseEntity warehouse;
 
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItemStatusHistoryEntity> statusHistory = new ArrayList<>();
 
     @Column(name = "delivered_at")
@@ -116,10 +119,13 @@ public class OrderItemEntity implements Serializable {
     @JoinColumn(name = "admin_assigned_id")
     private AdminEntity adminAssigned;
 
-    @OneToMany(mappedBy = "order_items", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ShipmentEntity> shipments;
+    // CORRIGIDO: mappedBy deve apontar para o campo correto na ShipmentEntity
+    @ManyToMany(mappedBy = "orderItems", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @Builder.Default
+    private Set<ShipmentEntity> shipments = new HashSet<>();
 
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItemPhotoEntity> photos = new ArrayList<>();
 
     public void setWarehouse(WarehouseEntity warehouse) {
@@ -138,7 +144,6 @@ public class OrderItemEntity implements Serializable {
         statusHistory.add(history);
         history.setOrderItem(this);
     }
-
 
     @Override
     public boolean equals(Object o) {

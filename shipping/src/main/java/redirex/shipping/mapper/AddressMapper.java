@@ -1,9 +1,8 @@
 package redirex.shipping.mapper;
 
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 import redirex.shipping.dto.request.AddressRequest;
 import redirex.shipping.dto.request.AddressUpdateRequest;
 import redirex.shipping.dto.request.CreateAddressRequest;
@@ -12,12 +11,28 @@ import redirex.shipping.entity.AddressEntity;
 
 @Mapper(componentModel = "spring")
 public interface AddressMapper {
+
+    @Mapping(source = "user.id", target = "userId")
     AddressResponse toResponse(AddressEntity entity);
-    AddressUpdateRequest toUpdateRequest(AddressRequest dto);
-    AddressRequest toDTO(CreateAddressRequest request);
-    AddressRequest toDTO(AddressUpdateRequest request);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "user", ignore = true)
     AddressEntity toEntity(AddressRequest dto);
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    AddressEntity toEntity(CreateAddressRequest request);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "user", ignore = true)
     void updateEntityFromDto(AddressRequest dto, @MappingTarget AddressEntity entity);
+
+    // Converte CreateAddressRequest -> AddressRequest
+    AddressRequest toDTO(CreateAddressRequest request);
 }

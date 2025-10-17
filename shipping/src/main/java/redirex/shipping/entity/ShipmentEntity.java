@@ -6,7 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import redirex.shipping.enums.CouponTypeEnum;
-import redirex.shipping.enums.OrderItemStatusEnum;
+import redirex.shipping.enums.ShipmentEnum;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -41,10 +41,15 @@ public class ShipmentEntity implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @ManyToOne
-    @JoinColumn(name = "order_items", nullable = false)
-    private OrderItemEntity order;
-
+    // CORRIGIDO: ManyToMany com JoinTable
+    @ManyToMany
+    @JoinTable(
+            name = "shipment_order_items",
+            joinColumns = @JoinColumn(name = "shipment_id"),
+            inverseJoinColumns = @JoinColumn(name = "order_item_id")
+    )
+    @Builder.Default
+    private Set<OrderItemEntity> orderItems = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "wallet_id", nullable = false)
@@ -59,6 +64,7 @@ public class ShipmentEntity implements Serializable {
     @DecimalMin(value = "0.0", message = "Shipping cost cannot be negative")
     @Digits(integer = 15, fraction = 4, message = "Shipping cost format is invalid")
     @Column(nullable = false, precision = 19, scale = 4)
+    @Builder.Default
     private BigDecimal shippingCost = BigDecimal.ZERO;
 
     @DecimalMin(value = "0.0", message = "Insurance cost cannot be negative")
@@ -75,6 +81,7 @@ public class ShipmentEntity implements Serializable {
     @DecimalMin(value = "0.0", message = "Total shipping paid cannot be negative")
     @Digits(integer = 15, fraction = 4, message = "Total shipping paid format is invalid")
     @Column(nullable = false, precision = 19, scale = 4)
+    @Builder.Default
     private BigDecimal totalShippingPaid = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -88,7 +95,7 @@ public class ShipmentEntity implements Serializable {
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderItemStatusEnum status = OrderItemStatusEnum.PENDING_SHIPPING_PAYMENT;
+    private ShipmentEnum status;
 
     @Column
     private LocalDateTime paidShippingAt;

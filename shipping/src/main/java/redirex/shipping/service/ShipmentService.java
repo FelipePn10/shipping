@@ -1,28 +1,16 @@
 package redirex.shipping.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import redirex.shipping.entity.ShipmentEntity;
-import redirex.shipping.entity.UserCouponEntity;
-import redirex.shipping.repositories.ShipmentRepository;
-import redirex.shipping.repositories.UserCouponRepository;
+import jakarta.validation.Valid;
+import redirex.shipping.dto.request.AddShipmentToOrderRequest;
+import redirex.shipping.dto.request.PaymentShipmentRequest;
+import redirex.shipping.dto.response.AddShipmentToOrderResponse;
+import redirex.shipping.dto.response.PaymentShipmentResponse;
 
 import java.util.UUID;
 
-@Service
-public class ShipmentService {
-    private ShipmentRepository shipmentRepository;
-    private UserCouponRepository userCouponRepository;
-
-    @Transactional
-    public void applyCouponToShipment(UUID shipmentId, UUID userCouponId) {
-        ShipmentEntity shipmentEntity = shipmentRepository.findById(shipmentId)
-                .orElseThrow(() -> new IllegalArgumentException("ShipmentEntity not found"));
-        UserCouponEntity userCoupon = userCouponRepository.findById(userCouponId)
-                .orElseThrow(() -> new IllegalArgumentException("UserCoupon not found"));
-
-        shipmentEntity.applyCoupon(userCoupon);
-        shipmentRepository.save(shipmentEntity);
-        userCouponRepository.save(userCoupon);
-    }
+public interface ShipmentService {
+    // Alterar Response e Request para os métodos, apenas esboço por enquanto
+    AddShipmentToOrderResponse addShipmentToOrder(UUID orderId, @Valid AddShipmentToOrderRequest request);
+    PaymentShipmentResponse    processOrderPayment(UUID orderId, @Valid PaymentShipmentRequest request);
+    void applyCouponToShipment(UUID shipmentId, UUID userCouponId);
 }

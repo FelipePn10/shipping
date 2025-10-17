@@ -189,13 +189,13 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkUserPendingOrders(UserEntity user) {
-        List<OrderItemEntity> pendingOrders = orderItemRepository.findByUserAndStatusNot(user, OrderItemStatusEnum.DELIVERED);
+        List<OrderItemEntity> pendingOrders = orderItemRepository.findByUserAndStatusNot(user, OrderItemStatusEnum.IN_WAREHOUSE);
 
         if (!pendingOrders.isEmpty()) {
             StringBuilder errorMessage = new StringBuilder();
             errorMessage.append("Cannot delete user with ID ").append(user.getId())
                     .append(" because they have ").append(pendingOrders.size())
-                    .append(" orders with status different from DELIVERED:\n");
+                    .append(" orders with status different from in warehouse:\n");
 
             for (OrderItemEntity order : pendingOrders) {
                 errorMessage.append("- Order ID: ").append(order.getId())
