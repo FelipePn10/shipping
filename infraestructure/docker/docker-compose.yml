@@ -2,7 +2,6 @@ services:
   db:
     image: postgres:16-alpine
     container_name: redirex_db
-    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -11,52 +10,43 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - redirex-network
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
-    networks:
-      - redirex-network
 
   redis:
     image: redis:7.2-alpine
     container_name: redirex_redis
-    restart: unless-stopped
     command: [
       "redis-server",
       "--requirepass", "${REDIS_PASSWORD}",
-      "--appendonly", "yes",
-      "--save", "60", "1",
-      "--loglevel", "warning"
+      "--appendonly", "yes"
     ]
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
     networks:
       - redirex-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   backend:
     build:
-      context: ../../  # Agora aponta para o root ~/IdeaProjects/shipping, incluindo 'shipping' e 'infraestructure'
-      dockerfile: infraestructure/docker/Dockerfile  # Path relativo ao compose file
+      context: ../..
+      dockerfile: infraestructure/docker/Dockerfile
     container_name: redirex_backend
-    restart: unless-stopped
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     ports:
       - "8081:8081"
-    volumes:
-      - maven-cache:/root/.m2  # Mantido para cache de deps no build (não afeta runtime)
     depends_on:
       db:
         condition: service_healthy
@@ -65,7 +55,6 @@ services:
     networks:
       - redirex-network
     environment:
-      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
@@ -83,25 +72,11 @@ services:
       APP_FRONTEND_URL: ${APP_FRONTEND_URL}
       PASSWORD_RESET_TOKEN_TIMEOUT_MINUTES: ${PASSWORD_RESET_TOKEN_TIMEOUT_MINUTES}
       STRIPE_API_SECRET_KEY: ${STRIPE_API_SECRET_KEY}
-      JAVA_OPTS: "-Xms512m -Xmx1024m"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
+    restart: unless-stopped
 
 volumes:
   postgres_data:
-    name: redirex_postgres_data
-    driver: local
   redis_data:
-    name: redirex_redis_data
-    driver: local
-  maven-cache:
-    name: redirex_maven_cache
-    driver: local
 
 networks:
   redirex-network:
-    driver: bridge
