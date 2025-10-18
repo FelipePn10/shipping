@@ -1,6 +1,8 @@
 package redirex.shipping.controller.User;
 
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SecurityException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 import redirex.shipping.dto.request.AuthUserRequest;
 import redirex.shipping.dto.response.ApiErrorResponse;
@@ -46,67 +49,112 @@ public class AuthUserController {
     @PostMapping("/user/login")
     public ResponseEntity<ApiResponse<AuthUserResponse>> login(
             @Valid @RequestBody AuthUserRequest authRequest) {
-        logger.info("Login attempt for email: {}", authRequest.email());
+
+        logger.info("Tentativa de login para email: {}", authRequest.email());
+
         try {
+            // Autentica o usuário - não precisa armazenar em variável, pois a exceção é lançada se falhar
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             authRequest.email(),
                             authRequest.password()
                     )
             );
+
+            logger.debug("Autenticação bem-sucedida para: {}", authRequest.email());
+
+            // Busca o ID do usuário
             UUID userId = userService.findUserIdByEmail(authRequest.email());
+
+            // Gera o token JWT
             String token = jwtUtil.generateToken(authRequest.email(), userId);
 
+            // Cria a resposta
             AuthUserResponse response = new AuthUserResponse(token, userId);
 
-            logger.info("Successful login for email: {}", authRequest.email());
+            logger.info("Login realizado com sucesso para: {}", authRequest.email());
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(response));
 
         } catch (BadCredentialsException e) {
-            logger.warn("Invalid credentials for email: {}", authRequest.email());
-            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid credentials");
+            logger.warn("Credenciais inválidas para: {}", authRequest.email());
+            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Email ou senha incorretos");
+
+        } catch (AuthenticationException e) {
+            logger.warn("Falha na autenticação para {}: {}", authRequest.email(), e.getMessage());
+            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Falha na autenticação");
+
+        } catch (SecurityException e) {
+            logger.error("Erro de segurança ao gerar token: {}", e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno de segurança");
+
         } catch (Exception e) {
-            logger.error("Error processing login: {}", e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing login");
+            logger.error("Erro inesperado no login para {}: {}", authRequest.email(), e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno no processamento do login");
         }
     }
 
     @PostMapping("/user/logout")
-    public ResponseEntity<ApiResponse<String>> logout(@RequestHeader("Authorization") String authorizationHeader) {
-        final String BEARER_PREFIX = "Bearer ";
-        logger.info("Logout request received");
+    public ResponseEntity<ApiResponse<String>> logout(
+            @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-            logger.warn("Invalid Authorization header format");
-            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Authorization header");
+        logger.info("Solicitação de logout recebida");
+
+        // Valida o header Authorization
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            logger.warn("Header Authorization ausente ou malformado");
+            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Header Authorization inválido");
         }
 
-        String token = authorizationHeader.substring(BEARER_PREFIX.length());
+        String token = authorizationHeader.substring(7).trim(); // Remove "Bearer "
+
+        if (token.isEmpty()) {
+            logger.warn("Token vazio no header Authorization");
+            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Token não fornecido");
+        }
+
         try {
+            // Verifica se o token já está na blacklist
             if (tokenBlacklistService.isTokenBlacklisted(token)) {
-                logger.warn("Token is already blacklisted");
-                return buildErrorResponse(HttpStatus.BAD_REQUEST, "Token already invalidated");
+                logger.warn("Token já está revogado");
+                return buildErrorResponse(HttpStatus.BAD_REQUEST, "Token já invalidado");
             }
 
+            // Verifica se o token é válido antes de adicionar à blacklist
+            String username = jwtUtil.getUsernameFromToken(token);
+
+            // Calcula o tempo de expiração restante
             long expirationInSeconds = jwtUtil.getExpirationTimeInSeconds(token);
+
             if (expirationInSeconds <= 0) {
-                logger.warn("Token has already expired");
-                return buildErrorResponse(HttpStatus.BAD_REQUEST, "Token already expired");
+                logger.warn("Token já expirado: {}", username);
+                return buildErrorResponse(HttpStatus.BAD_REQUEST, "Token já expirado");
             }
 
+            // Adiciona à blacklist
             tokenBlacklistService.addToBlacklist(token, expirationInSeconds);
-            logger.info("Token successfully blacklisted. Expires in {} seconds", expirationInSeconds);
 
-            return ResponseEntity.ok(ApiResponse.success("Logout successful"));
+            logger.info("Logout realizado com sucesso para: {}. Token expira em {} segundos",
+                    username, expirationInSeconds);
+
+            return ResponseEntity.ok(ApiResponse.success("Logout realizado com sucesso"));
+
+        } catch (ExpiredJwtException e) {
+            logger.warn("Token expirado durante logout: {}", e.getClaims().getSubject());
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Token expirado");
+
+        } catch (MalformedJwtException | SecurityException | IllegalArgumentException e) {
+            logger.warn("Token JWT inválido durante logout: {}", e.getMessage());
+            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Token inválido");
 
         } catch (TokenBlacklistService.RedisOperationException e) {
-            logger.error("Redis communication failure: {}", e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, "Service unavailable");
-        } catch (JwtException | IllegalArgumentException e) {
-            logger.error("Invalid JWT token: {}", e.getMessage(), e);
-            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid token");
+            logger.error("Falha na comunicação com Redis durante logout: {}", e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, "Serviço temporariamente indisponível");
+
+        } catch (Exception e) {
+            logger.error("Erro inesperado durante logout: {}", e.getMessage(), e);
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno durante logout");
         }
     }
 

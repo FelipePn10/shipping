@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
         try {
             // Criar cupom de boas-vindas
-            CouponEntity welcomeCoupon = welcomeCouponService.createWelcomeCoupon();
+            //CouponEntity welcomeCoupon = welcomeCouponService.createWelcomeCoupon();
 
             UserEntity user = UserEntity.builder()
                     .fullname(request.fullname())
@@ -78,9 +78,9 @@ public class UserServiceImpl implements UserService {
                     .role("ROLE_USER")
                     .createdAt(LocalDateTime.now())
                     .build();
-            if (welcomeCoupon != null) {
-                user.getCoupons().add(welcomeCoupon);
-            }
+//            if (welcomeCoupon != null) {
+//                user.getCoupons().add(welcomeCoupon);
+//            }
 
             user = userRepository.save(user);
 
@@ -93,17 +93,17 @@ public class UserServiceImpl implements UserService {
             userWalletService.createInitialWallet(user, CurrencyEnum.CNY);
 
             // Criar UserCouponEntity para rastreamento adicional
-            assert welcomeCoupon != null;
-            UserCouponEntity userCoupon = UserCouponEntity.builder()
-                    .user(user)
-                    .coupon(welcomeCoupon)
-                    .couponCode(welcomeCoupon.getCode())
-                    .discountPercentage(welcomeCoupon.getDiscountPercentage())
-                    .currency(CurrencyEnum.CNY)
-                    .used(false)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-            userCouponRepository.save(userCoupon);
+            //assert welcomeCoupon != null;
+//            UserCouponEntity userCoupon = UserCouponEntity.builder()
+//                    .user(user)
+//                    .coupon(welcomeCoupon)
+//                    .couponCode(welcomeCoupon.getCode())
+//                    .discountPercentage(welcomeCoupon.getDiscountPercentage())
+//                    .currency(CurrencyEnum.CNY)
+//                    .used(false)
+//                    .createdAt(LocalDateTime.now())
+//                    .build();
+//            userCouponRepository.save(userCoupon);
 
             logger.info("User registered successfully with email: {}", request.email());
 
