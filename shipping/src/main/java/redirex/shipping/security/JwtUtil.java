@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,35 +42,57 @@ public class JwtUtil {
     @Value("${jwt.expiration:86400}")
     private long expiration;
 
-    private SecretKey getSigningKey() {
+    // Chave fixa para garantir consistência
+    private SecretKey signingKey;
+
+    @PostConstruct
+    public void init() {
+        this.signingKey = initializeSigningKey();
+        logger.info("JwtUtil inicializado com chave de {} bits", signingKey.getEncoded().length * 8);
+    }
+
+    private SecretKey initializeSigningKey() {
         try {
-            // Se a secretKey não foi configurada ou é muito curta, geramos uma automaticamente
-            if (secretKey == null || secretKey.trim().isEmpty() || secretKey.length() < 64) {
-                logger.warn("Chave JWT não configurada ou muito curta. Gerando chave segura automaticamente...");
-                SecretKey generatedKey = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS512);
-                String base64Key = Base64.getEncoder().encodeToString(generatedKey.getEncoded());
-                logger.info("CHAVE JWT GERADA AUTOMATICAMENTE (Adicione ao application.properties): jwt.secret={}", base64Key);
-                return generatedKey;
+            // Se não há chave configurada ou é muito curta, cria uma fixa baseada no application name
+            if (secretKey == null || secretKey.trim().isEmpty() || secretKey.length() < 32) {
+                logger.warn("Chave JWT não configurada ou muito curta. Usando chave padrão...");
+
+                // Cria uma chave consistente baseada em um seed fixo
+                String defaultSeed = "redirex-shipping-default-secret-key-2025-for-hs512-algorithm";
+                byte[] keyBytes = defaultSeed.getBytes(StandardCharsets.UTF_8);
+
+                // Garante que tenha pelo menos 64 bytes para HS512
+                byte[] secureKeyBytes = new byte[64];
+                System.arraycopy(keyBytes, 0, secureKeyBytes, 0, Math.min(keyBytes.length, 64));
+
+                // Preenche o restante se necessário
+                if (keyBytes.length < 64) {
+                    for (int i = keyBytes.length; i < 64; i++) {
+                        secureKeyBytes[i] = (byte) i;
+                    }
+                }
+
+                return Keys.hmacShaKeyFor(secureKeyBytes);
             }
 
-            // Decodifica a chave Base64
+            // Usa a chave configurada
             byte[] keyBytes;
             try {
+                // Tenta decodificar como Base64
                 keyBytes = Base64.getDecoder().decode(secretKey);
             } catch (IllegalArgumentException e) {
-                // Se não for Base64 válido, usa a string diretamente como UTF-8
-                logger.warn("Chave JWT não é Base64 válido. Usando como string UTF-8...");
+                // Se falhar, usa como string UTF-8
+                logger.debug("Chave JWT não é Base64, usando como string UTF-8");
                 keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
             }
 
-            // Garante que a chave tenha tamanho suficiente para HS512
+            // Expande para 64 bytes se necessário
             if (keyBytes.length < 64) {
-                logger.warn("Chave JWT muito curta ({} bytes). Expandindo para 64 bytes...", keyBytes.length);
+                logger.debug("Expandindo chave JWT de {} para 64 bytes", keyBytes.length);
                 byte[] expandedKey = new byte[64];
                 System.arraycopy(keyBytes, 0, expandedKey, 0, Math.min(keyBytes.length, 64));
-                // Preenche o restante com zeros se necessário
                 for (int i = keyBytes.length; i < 64; i++) {
-                    expandedKey[i] = 0;
+                    expandedKey[i] = (byte) (i % 256);
                 }
                 keyBytes = expandedKey;
             }
@@ -77,7 +100,7 @@ public class JwtUtil {
             return Keys.hmacShaKeyFor(keyBytes);
 
         } catch (Exception e) {
-            logger.error("Erro ao criar chave de assinatura JWT: {}", e.getMessage(), e);
+            logger.error("Erro crítico ao inicializar chave JWT: {}", e.getMessage(), e);
             throw new SecurityException("Falha na configuração da chave JWT", e);
         }
     }
@@ -86,6 +109,7 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId.toString());
         claims.put("email", email);
+        claims.put("type", "ACCESS");
         return createToken(claims, email);
     }
 
@@ -93,13 +117,20 @@ public class JwtUtil {
         logger.debug("Gerando token JWT para: {}", subject);
 
         try {
-            return Jwts.builder()
+            Date now = new Date();
+            Date expiryDate = new Date(now.getTime() + expiration * 1000);
+
+            String token = Jwts.builder()
                     .setClaims(claims)
                     .setSubject(subject)
-                    .setIssuedAt(new Date(System.currentTimeMillis()))
-                    .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
-                    .signWith(getSigningKey())
+                    .setIssuedAt(now)
+                    .setExpiration(expiryDate)
+                    .signWith(signingKey)
                     .compact();
+
+            logger.debug("Token gerado com sucesso para: {}", subject);
+            return token;
+
         } catch (Exception e) {
             logger.error("Erro ao criar token JWT: {}", e.getMessage(), e);
             throw new SecurityException("Falha na criação do token JWT", e);
@@ -147,13 +178,28 @@ public class JwtUtil {
     public Boolean validateToken(String token, UserDetails userDetails) {
         try {
             final String username = getUsernameFromToken(token);
-            boolean isValid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+            logger.debug("Validando token para usuário: {} vs {}", username, userDetails.getUsername());
 
-            if (!isValid) {
-                logger.warn("Token inválido para usuário: {}", username);
+            boolean usernameMatches = username.equals(userDetails.getUsername());
+            boolean notExpired = !isTokenExpired(token);
+
+            if (!usernameMatches) {
+                logger.warn("Username não corresponde: token={}, userDetails={}", username, userDetails.getUsername());
+            }
+            if (!notExpired) {
+                logger.warn("Token expirado para: {}", username);
+            }
+
+            boolean isValid = usernameMatches && notExpired;
+
+            if (isValid) {
+                logger.debug("Token válido para: {}", username);
+            } else {
+                logger.warn("Token inválido para: {}", username);
             }
 
             return isValid;
+
         } catch (ExpiredJwtException e) {
             logger.warn("Token JWT expirado para: {}", e.getClaims().getSubject());
             return false;
@@ -185,7 +231,7 @@ public class JwtUtil {
     private Claims extractAllClaims(String token) {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+                    .setSigningKey(signingKey)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -204,7 +250,7 @@ public class JwtUtil {
         }
     }
 
-    // Métodos auxiliares para buscar IDs (mantidos para compatibilidade)
+    // Métodos auxiliares mantidos para compatibilidade
     public UUID getUserIdFromUsername(String username) {
         logger.debug("Buscando userId para: {}", username);
         UserEntity user = userRepository.findByEmail(username)

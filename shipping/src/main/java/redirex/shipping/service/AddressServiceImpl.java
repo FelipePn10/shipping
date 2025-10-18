@@ -35,12 +35,20 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    @PreAuthorize("@permissionService.isOwner(#dto.userId)")
+    @PreAuthorize("@permissionService.isOwner(#dto.userId())")
     public AddressResponse createdAddress(@Valid AddressRequest dto) {
         logger.info("Creating address for zipcode: {}", dto.zipcode());
         validateAddressDoesNotExist(dto.zipcode());
 
         UserEntity user = getAuthenticatedUser();
+
+        // Verifica se o userId do DTO corresponde ao usuário autenticado
+        if (!user.getId().equals(dto.userId())) {
+            logger.warn("Tentativa de criar endereço para outro usuário. Autenticado: {}, Solicitado: {}",
+                    user.getId(), dto.userId());
+            throw new AccessDeniedException("Não é permitido criar endereço para outro usuário");
+        }
+
         AddressEntity address = addressMapper.toEntity(dto);
         address.setUser(user);
         address.setCreatedAt(LocalDateTime.now());
@@ -52,14 +60,14 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    @PreAuthorize("@permissionService.isOwnerOrAdmin(#dto.userId)")
+    @PreAuthorize("@permissionService.isOwnerOrAdmin(#dto.userId())")
     public AddressResponse updateAddress(String zipcode, @Valid AddressRequest dto) {
         logger.info("Updating address for zipcode: {}", zipcode);
         AddressEntity address = addressRepository.findByZipcode(zipcode)
                 .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado"));
 
         UserEntity user = getAuthenticatedUser();
-        if (!address.getUser().getId().equals(user.getId())) {
+        if (!address.getUser().getId().equals(user.getId()) && !isAdmin(user)) {
             throw new AccessDeniedException("Usuário não tem permissão para alterar este endereço");
         }
 
@@ -82,15 +90,23 @@ public class AddressServiceImpl implements AddressService {
         AddressEntity address = addressRepository.findByZipcode(zipcode)
                 .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado"));
 
+        UserEntity user = getAuthenticatedUser();
+        if (!address.getUser().getId().equals(user.getId()) && !isAdmin(user)) {
+            throw new AccessDeniedException("Usuário não tem permissão para deletar este endereço");
+        }
+
         addressRepository.delete(address);
         logger.info("Address deleted successfully: {}", zipcode);
     }
-
 
     private UserEntity getAuthenticatedUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+    }
+
+    private boolean isAdmin(UserEntity user) {
+        return user.getRole().equals("ROLE_ADMIN");
     }
 
     private void validateAddressDoesNotExist(String zipcode) {

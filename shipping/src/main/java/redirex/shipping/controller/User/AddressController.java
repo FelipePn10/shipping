@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/user/address")
 public class AddressController {
     private static final Logger logger = LoggerFactory.getLogger(AddressController.class);
     private final AddressService addressService;
@@ -32,7 +32,7 @@ public class AddressController {
         this.addressMapper = addressMapper;
     }
 
-    @PostMapping("{userId}/create/address")
+    @PostMapping("/{userId}/create/address")
     public ResponseEntity<ApiResponse<AddressResponse>> createAddress(
             @PathVariable UUID userId,
             @Valid @RequestBody CreateAddressRequest request) {
@@ -59,9 +59,9 @@ public class AddressController {
                     .body(ApiResponse.error(error));
         } catch (Exception e) {
             logger.error("Internal server error: {}", e.getMessage(), e);
-            ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.BAD_REQUEST,
+            ApiErrorResponse error = ApiErrorResponse.create(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error internal server. Reason: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error(error));
         }
     }

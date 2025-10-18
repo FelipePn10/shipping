@@ -75,8 +75,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Extrai o token JWT do header
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            logger.debug("Header Authorization ausente ou sem prefixo Bearer");
-            filterChain.doFilter(request, response);
+            logger.warn("Header Authorization ausente ou sem prefixo Bearer para: {}", requestPath);
+            sendUnauthorizedError(response, "Token de autenticação não fornecido");
             return;
         }
 
@@ -91,12 +91,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             if (jwtToken.split("\\.").length != 3) {
-                logger.warn("Token JWT malformado");
+                logger.warn("Token JWT malformado - não possui 3 partes");
                 sendUnauthorizedError(response, "Token malformado");
                 return;
             }
 
-            logger.debug("Token JWT recebido ({} caracteres)", jwtToken.length());
+            logger.debug("Token JWT recebido ({} caracteres) para: {}", jwtToken.length(), requestPath);
 
             // Verifica se o token está na blacklist
             if (tokenBlacklistService.isTokenBlacklisted(jwtToken)) {
@@ -137,6 +137,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (jwtUtil.validateToken(jwtToken, userDetails)) {
                     logger.debug("Token válido para: {}", username);
                     setAuthenticationInContext(userDetails, request);
+                    logger.debug("Autenticação configurada no contexto para: {}", username);
                 } else {
                     logger.warn("Token inválido para: {}", username);
                     sendUnauthorizedError(response, "Token inválido");
@@ -157,9 +158,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicEndpoint(String path) {
-        return PUBLIC_ENDPOINTS.stream().anyMatch(path::startsWith);
+        return PUBLIC_ENDPOINTS.stream().anyMatch(path::startsWith) ||
+                path.equals("/public/auth/v1/user/login") ||
+                path.equals("/public/auth/v1/user/register");
     }
-
     private void setAuthenticationInContext(UserDetails userDetails, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 userDetails,
