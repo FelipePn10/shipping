@@ -5,14 +5,17 @@ FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 
-# Copiar pom.xml primeiro (cache layer)
-COPY pom.xml .
+# Copiar settings.xml para usar mirrors (agora acessível via context root)
+COPY infraestructure/docker/settings.xml /root/.m2/settings.xml
+
+# Copiar pom.xml (do subdir 'shipping')
+COPY shipping/pom.xml .
 
 # Baixar dependências (permite falha parcial)
 RUN mvn dependency:go-offline -B || true
 
-# Copiar código fonte
-COPY src ./src
+# Copiar código fonte (do subdir 'shipping')
+COPY shipping/src ./src
 
 # Build da aplicação
 RUN mvn clean package -DskipTests -B
