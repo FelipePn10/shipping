@@ -3,12 +3,12 @@ version: "3.9"
 services:
   db:
     image: postgres:16-alpine
-    container_name: redirex
+    container_name: redirex_db
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -26,13 +26,19 @@ services:
     image: redis:7.2-alpine
     container_name: redirex_redis
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --save 60 1 --loglevel warning
+    command: [
+      "redis-server",
+      "--requirepass", "${REDIS_PASSWORD}",
+      "--appendonly", "yes",
+      "--save", "60", "1",
+      "--loglevel", "warning"
+    ]
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,39 +46,40 @@ services:
     networks:
       - redirex-network
 
-#  backend:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    container_name: auth-backend
-#    working_dir: /app
-#    command: mvn spring-boot:run
-#    ports:
-#      - "8080:8080"
-#    volumes:
-#      - ../..:/app
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#      redis:
-#        condition: service_started
-#    networks:
-#      - app-network
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/authdb
-#      SPRING_DATASOURCE_USERNAME: postgres
-#      SPRING_DATASOURCE_PASSWORD: postgres123
-#      SPRING_REDIS_HOST: redis
-#      SPRING_REDIS_PORT: 6379
-#      SPRING_REDIS_PASSWORD: redisblacklist
+
+  # backend:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: redirex_backend
+  #   working_dir: /app
+  #   command: mvn spring-boot:run
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - redirex-network
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+  #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+  #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+  #     SPRING_REDIS_HOST: redis
+  #     SPRING_REDIS_PORT: 6379
+  #     SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
 
 volumes:
-    postgres_data:
-      name: redirex_postgres_data
-      driver: local
-    redis_data:
-      name: redirex_redis_data
-      driver: local
+  postgres_data:
+    name: redirex_postgres_data
+    driver: local
+  redis_data:
+    name: redirex_redis_data
+    driver: local
 
 networks:
   redirex-network:
