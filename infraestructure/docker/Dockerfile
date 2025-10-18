@@ -1,22 +1,59 @@
-FROM eclipse-temurin:21.0.3_9-jdk
+# ============================================
+# 🏗️ STAGE 1: Build
+# ============================================
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
 
-ARG MAVEN_VERSION=3.9.6
-ARG USER_HOME_DIR="/root"
-ARG SHA=706f01b20dec0305a822ab614d51f32b07ee11d0218175e55450242e49d2156386483b506b3a4e8a03ac8611bae96395fd5eec15f50d3013d5deed6d1ee18224
-ARG BASE_URL=https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries
+WORKDIR /build
 
-RUN apt-get update && \
-    apt-get install -y curl findutils git && \
-    curl -fsSL -o /tmp/apache-maven.tar.gz ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
-    echo "${SHA}  /tmp/apache-maven.tar.gz" | sha512sum -c - && \
-    mkdir -p /usr/share/maven /usr/share/maven/ref && \
-    tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 && \
-    rm -f /tmp/apache-maven.tar.gz && \
-    ln -s /usr/share/maven/bin/mvn /usr/bin/mvn && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Copiar pom.xml primeiro (cache layer)
+COPY pom.xml .
 
-ENV MAVEN_HOME=/usr/share/maven
-ENV MAVEN_CONFIG="$USER_HOME_DIR/.m2"
+# Baixar dependências (permite falha parcial)
+RUN mvn dependency:go-offline -B || true
+
+# Copiar código fonte
+COPY src ./src
+
+# Build da aplicação
+RUN mvn clean package -DskipTests -B
+
+# ============================================
+# 🚀 STAGE 2: Runtime (Production-ready)
+# ============================================
+FROM eclipse-temurin:21-jre-alpine
+
+# Metadados
+LABEL maintainer="Redirex Team"
+LABEL version="1.0"
+LABEL description="Redirex Shipping Backend"
+
+# Criar usuário não-root
+RUN addgroup -S spring && adduser -S spring -G spring
+
+# Instalar dependências
+RUN apk add --no-cache curl tzdata && rm -rf /var/cache/apk/*
+
+# Configurar timezone Brasil
+ENV TZ=America/Sao_Paulo
+RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 WORKDIR /app
+
+# Copiar JAR do stage anterior
+COPY --from=builder /build/target/*.jar app.jar
+
+# Permissões
+RUN chown -R spring:spring /app
+USER spring:spring
+
+# Configurações JVM
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+ENV SPRING_PROFILES_ACTIVE=dev
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8081/actuator/health || exit 1
+
+EXPOSE 8081
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar app.jar"]

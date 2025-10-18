@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:16-alpine
@@ -46,32 +44,54 @@ services:
     networks:
       - redirex-network
 
-
-  # backend:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: redirex_backend
-  #   working_dir: /app
-  #   command: mvn spring-boot:run
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - .:/app
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   networks:
-  #     - redirex-network
-  #   environment:
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
-  #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-  #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-  #     SPRING_REDIS_HOST: redis
-  #     SPRING_REDIS_PORT: 6379
-  #     SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
+  backend:
+    build:
+      context: ../../shipping
+      dockerfile: ../infraestructure/docker/Dockerfile
+      network: host
+    container_name: redirex_backend
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    ports:
+      - "8081:8081"
+    volumes:
+      - ../../shipping:/app
+      - maven-cache:/root/.m2
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - redirex-network
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      APP_FRONTEND_URL: ${APP_FRONTEND_URL}
+      PASSWORD_RESET_TOKEN_TIMEOUT_MINUTES: ${PASSWORD_RESET_TOKEN_TIMEOUT_MINUTES}
+      STRIPE_API_SECRET_KEY: ${STRIPE_API_SECRET_KEY}
+      JAVA_OPTS: "-Xms512m -Xmx1024m"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
 volumes:
   postgres_data:
@@ -79,6 +99,9 @@ volumes:
     driver: local
   redis_data:
     name: redirex_redis_data
+    driver: local
+  maven-cache:
+    name: redirex_maven_cache
     driver: local
 
 networks:
