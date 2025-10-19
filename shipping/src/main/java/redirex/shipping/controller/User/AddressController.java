@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/user/address")
+@RequestMapping("/api/v1/user/address")
 public class AddressController {
     private static final Logger logger = LoggerFactory.getLogger(AddressController.class);
     private final AddressService addressService;

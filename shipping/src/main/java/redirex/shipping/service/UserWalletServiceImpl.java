@@ -239,15 +239,15 @@ public class UserWalletServiceImpl implements UserWalletService {
     @Transactional
     public void debitFromWallet(UUID userId, CurrencyEnum currency, BigDecimal amount,
                                 String transactionType, String description, UUID orderItemId,
-                                UUID shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency) {
+                                UUID shipmentId, BigDecimal chargedAmount) {
         if (currency != CurrencyEnum.CNY) {
             throw new IllegalArgumentException("Debit operations only supported for CNY currency. Requested: " + currency);
         }
 
         if (orderItemId != null && shipmentId == null) {
-            debitForOrder(userId, currency, amount, transactionType, description, orderItemId, chargedAmount, chargedCurrency);
+            debitForOrder(userId, currency, amount, transactionType, description, orderItemId, chargedAmount);
         } else if (shipmentId != null && orderItemId == null) {
-            debitForShipment(userId, currency, amount, transactionType, description, shipmentId, chargedAmount, chargedCurrency);
+            debitForShipment(userId, currency, amount, transactionType, description, shipmentId, chargedAmount);
         } else {
             throw new IllegalArgumentException("Either orderItemId or shipmentId must be provided for debit, but not both.");
         }
@@ -255,7 +255,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Transactional
     public void debitForOrder(UUID userId, CurrencyEnum currency, BigDecimal amount, String transactionType, String description,
-                              UUID orderItemId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency)
+                              UUID orderItemId, BigDecimal chargedAmount)
             throws InsufficientBalanceException {
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -287,7 +287,6 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .relatedOrderItemId(orderItemId)
                 .relatedShipmentId(null)
                 .chargedAmount(chargedAmount)
-                .chargedCurrency(chargedCurrency)
                 .build();
 
         walletTransactionRepository.save(transaction);
@@ -298,7 +297,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Transactional
     public void debitForShipment(UUID userId, CurrencyEnum currency, BigDecimal amount, String transactionType, String description,
-                                 UUID shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency) throws InsufficientBalanceException {
+                                 UUID shipmentId, BigDecimal chargedAmount) throws InsufficientBalanceException {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Shipment payment amount must be positive.");
         }
@@ -328,7 +327,6 @@ public class UserWalletServiceImpl implements UserWalletService {
                 .relatedOrderItemId(null)
                 .relatedShipmentId(shipmentId)
                 .chargedAmount(chargedAmount)
-                .chargedCurrency(chargedCurrency)
                 .build();
         walletTransactionRepository.save(transaction);
 

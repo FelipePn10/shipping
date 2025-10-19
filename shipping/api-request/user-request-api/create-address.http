@@ -1,10 +1,10 @@
 ### POST request create address
-POST http://localhost:8081/api/user/address/b14ef7b1-c460-4a5d-bb6c-cdf0dbecd736/create/address
+POST http://localhost:8081/api/v1/user/address/734f8a10-53ab-4f7a-bb05-964ea38eaa6a/create/address
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ0eXBlIjoiQUNDRVNTIiwidXNlcklkIjoiYjE0ZWY3YjEtYzQ2MC00YTVkLWJiNmMtY2RmMGRiZWNkNzM2IiwiZW1haWwiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwic3ViIjoiZmVsaXBlcGFub3NzbzIxQGdtYWlsLmNvbSIsImlhdCI6MTc2MDgyMDczMiwiZXhwIjoxODQ3MjIwNzMyfQ.1Avvc7-hmzVmPhSlex_OB0JsFAOw2l_KFy9EwWiVVtqSPPIzCtf8hxKckJF7p-N3BONtq5Mp4R_vUHNFhQkPJQ
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJ0eXBlIjoiQUNDRVNTIiwidXNlcklkIjoiNzM0ZjhhMTAtNTNhYi00ZjdhLWJiMDUtOTY0ZWEzOGVhYTZhIiwiZW1haWwiOiJmZWxpcGVwYW5vc3NvMjFAZ21haWwuY29tIiwic3ViIjoiZmVsaXBlcGFub3NzbzIxQGdtYWlsLmNvbSIsImlhdCI6MTc2MDgzNTQxMSwiZXhwIjoxODQ3MjM1NDExfQ.M7kwGjK-3sYlY3Saj-yagVUyi8cNrdhuoAfVOuPO0ly9h_y2CnplH0L7e9_T-xpkUEx2WTCD_4VWy9nGhSO8Bw
 
 {
-  "userId": "b14ef7b1-c460-4a5d-bb6c-cdf0dbecd736",
+  "userId": "734f8a10-53ab-4f7a-bb05-964ea38eaa6a",
   "recipientName": "felipe panosso",
   "country": "Brasil",
   "state": "Parana",

@@ -175,8 +175,7 @@ public class OrderItemServiceImpl implements OrderItemService {
                     "Payment of the order: " + orderItemId,
                     orderItemId,
                     null,
-                    amount,
-                    CurrencyEnum.CNY
+                    amount
             );
         } catch (InsufficientBalanceException ex) {
             throw ex;

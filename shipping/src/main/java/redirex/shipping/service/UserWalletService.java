@@ -23,11 +23,10 @@ public interface UserWalletService {
          * @param orderItemId       ID do pedido relacionado (se houver).
          * @param shipmentId        ID do envio relacionado (se houver).
          * @param chargedAmount     O valor original da cobrança.
-         * @param chargedCurrency   A moeda original da cobrança.
          */
         void debitFromWallet(UUID userId, CurrencyEnum currency, BigDecimal amount,
                              String transactionType, String description, UUID orderItemId,
-                             UUID shipmentId, BigDecimal chargedAmount, CurrencyEnum chargedCurrency);
+                             UUID shipmentId, BigDecimal chargedAmount);
     void refundToWallet(UUID userId, CurrencyEnum currency, BigDecimal amount, String description, UUID orderItemId);
     BigDecimal getUserWalletBalance(UUID userId, CurrencyEnum currency);
     List<UserWalletEntity> listUserWallets(UUID userId);
